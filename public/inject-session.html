@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Session Bridge</title>
+  </head>
+  <body>
+    <script>
+      try {
+        const hash = window.location.hash.substring(1);
+        if (hash) {
+          const session = decodeURIComponent(hash);
+          const parsed = JSON.parse(session);
+          localStorage.setItem('sb-yjcqaxszvmpnlmypxjqq-auth-token', JSON.stringify(parsed));
+          const target = new URLSearchParams(window.location.search).get('next') || '/#/?noSplash=true';
+          window.location.href = target;
+        }
+      } catch (e) {
+        document.body.innerText = 'Failed: ' + e.message;
+      }
+    </script>
+  </body>
+</html>
+

@@ -1,0 +1,67 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* LIGHT THEME (Default - SSOT from Flutter Dart & DESIGN.md) */
+  --color-bg: 242 247 243; /* #F2F7F3 Pale Sage */
+  --color-surface: 255 255 255; /* #FFFFFF Pure White */
+  --color-border: 223 233 225; /* #DFE9E1 Pastel Mint Line */
+  --color-primary: 23 99 68; /* #176344 Court Emerald */
+  --color-accent: 41 154 99; /* #299A63 Vibrant Court Green */
+  --color-mint: 221 242 227; /* #DDF2E3 Soft Mint */
+  --color-text: 20 37 29; /* #14251D Dark Forest */
+  --color-muted: 97 115 106; /* #61736A Sage Grey */
+  --color-loss: 190 18 60; /* #BE123C Crimson Rose */
+  --color-streak: 148 98 0; /* #946200 Deep Streak Amber (4.84:1 WCAG AA text) */
+  --color-gold: 245 158 11; /* #F59E0B Sweet Spot Gold */
+  --color-on-primary: 255 255 255; /* #FFFFFF */
+  --color-court-dark: 9 40 30; /* #09281E Night Stadium - stays dark in both themes */
+}
+
+:root[data-theme="dark"] {
+  /* DARK THEME (Approved extension) */
+  --color-bg: 7 8 10; /* #07080A Obsidian */
+  --color-surface: 17 19 23; /* #111317 Graphite */
+  --color-border: 27 31 38; /* #1B1F26 Dark Slate */
+  --color-primary: 0 214 101; /* #00D665 Athletic Neon Green */
+  --color-accent: 0 232 114; /* #00E872 Vibrant Neon */
+  --color-mint: 13 46 28; /* #0D2E1C Deep Emerald */
+  --color-text: 255 255 255; /* #FFFFFF */
+  --color-muted: 126 134 149; /* #7E8695 Muted Slate */
+  --color-loss: 239 68 68; /* #EF4444 Crimson (adjusted from #E03131 for 5.01:1 WCAG AA contrast) */
+  --color-streak: 245 166 35; /* #F5A623 Amber Gold */
+  --color-gold: 245 158 11; /* #F59E0B Sweet Spot Gold */
+  --color-on-primary: 7 8 10; /* #07080A */
+  --color-court-dark: 9 40 30; /* #09281E Night Stadium - stays dark in both themes */
+}
+
+@layer base {
+  html, body {
+    background-color: rgb(var(--color-bg));
+    color: rgb(var(--color-text));
+    font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    overflow-x: hidden;
+    max-width: 100vw;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+}
+
+/* Custom scrollbar styling to match theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(var(--color-bg));
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--color-border));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--color-muted));
+}
