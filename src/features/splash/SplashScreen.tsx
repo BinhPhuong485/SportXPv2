@@ -73,21 +73,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
         </h1>
 
         {/* Official Slogan */}
-        <div className="px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[11px] font-bold tracking-[0.18em] text-[#DDF2E3] uppercase mb-8 shadow-sm">
+        <div className="px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[11px] font-bold tracking-[0.18em] text-app-mint uppercase mb-8 shadow-sm">
           MỖI SET CẦU • MỘT BƯỚC TIẾN
         </div>
 
         {/* Kinetic Loading Bar */}
         <div className="w-[150px] h-[3px] bg-white/15 rounded-full overflow-hidden">
           <div
-            className="h-full bg-linear-to-r from-[#299A63] via-[#00D665] to-[#F59E0B] transition-all duration-75 ease-out rounded-full"
+            className="h-full bg-gradient-to-r from-app-accent via-app-primary to-app-gold transition-all duration-75 ease-out rounded-full"
             style={{ width: `${progress * 100}%` }}
           />
         </div>
       </div>
 
       {/* Tap to skip bottom caption */}
-      <div className="absolute bottom-8 left-0 right-0 text-center text-[10px] font-bold tracking-[0.22em] text-[#61736A] uppercase opacity-90">
+      <div className="absolute bottom-8 left-0 right-0 text-center text-[10px] font-bold tracking-[0.22em] text-app-muted uppercase opacity-90">
         CHẠM ĐỂ BẮT ĐẦU
       </div>
     </div>
