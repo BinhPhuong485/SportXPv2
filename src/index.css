@@ -3,23 +3,23 @@
 @tailwind utilities;
 
 :root {
-  /* LIGHT THEME (Default - SSOT from Flutter Dart & DESIGN.md) */
+  /* LIGHT THEME (Default / Candidate 1: Emerald) */
   --color-bg: 242 247 243; /* #F2F7F3 Pale Sage */
   --color-surface: 255 255 255; /* #FFFFFF Pure White */
   --color-border: 223 233 225; /* #DFE9E1 Pastel Mint Line */
   --color-primary: 23 99 68; /* #176344 Court Emerald */
-  --color-accent: 41 154 99; /* #299A63 Vibrant Court Green (Flutter Parity) */
-  --color-accent-text: 23 99 68; /* #176344 High contrast for text (6.67:1 / 7.23:1 WCAG AA) */
+  --color-accent: 41 154 99; /* #299A63 Vibrant Court Green */
+  --color-accent-text: 23 99 68; /* #176344 High contrast */
   --color-mint: 221 242 227; /* #DDF2E3 Soft Mint */
   --color-text: 20 37 29; /* #14251D Dark Forest */
   --color-muted: 97 115 106; /* #61736A Sage Grey */
   --color-loss: 190 18 60; /* #BE123C Crimson Rose */
-  --color-streak: 148 98 0; /* #946200 Deep Streak Amber (4.84:1 WCAG AA text) */
+  --color-streak: 148 98 0; /* #946200 Deep Streak Amber */
   --color-gold: 245 158 11; /* #F59E0B Sweet Spot Gold */
   --color-on-primary: 255 255 255; /* #FFFFFF */
-  --color-court-dark: 9 40 30; /* #09281E Night Stadium - stays dark in both themes */
+  --color-court-dark: 9 40 30; /* #09281E Night Stadium */
 
-  /* Calendar Event Semantic Tokens (Light) - All >= 3:1 non-text & >= 4.5:1 text on bg */
+  /* Calendar Event Semantic Tokens (Light) */
   --color-event-hosting: 23 99 68; /* #176344 Court Emerald */
   --color-event-joined: 13 122 104; /* #0D7A68 Deep Teal */
   --color-event-waitlist: 180 83 9; /* #B45309 Amber Gold */
@@ -38,13 +38,13 @@
   --color-mint: 13 46 28; /* #0D2E1C Deep Pine / Soft container in dark */
   --color-text: 255 255 255; /* #FFFFFF */
   --color-muted: 126 134 149; /* #7E8695 Muted Slate */
-  --color-loss: 239 68 68; /* #EF4444 Crimson (adjusted from #E03131 for 5.01:1 WCAG AA contrast) */
+  --color-loss: 239 68 68; /* #EF4444 Crimson */
   --color-streak: 245 166 35; /* #F5A623 Amber Gold */
   --color-gold: 245 158 11; /* #F59E0B Sweet Spot Gold */
   --color-on-primary: 7 8 10; /* #07080A */
-  --color-court-dark: 9 40 30; /* #09281E Night Stadium - stays dark in both themes */
+  --color-court-dark: 9 40 30; /* #09281E Night Stadium */
 
-  /* Calendar Event Semantic Tokens (Dark) - All >= 3:1 non-text & >= 4.5:1 text on bg */
+  /* Calendar Event Semantic Tokens (Dark) */
   --color-event-hosting: 0 214 101; /* #00D665 Athletic Neon Green */
   --color-event-joined: 0 194 203; /* #00C2CB Bright Cyan */
   --color-event-waitlist: 245 158 11; /* #F59E0B Amber Gold */

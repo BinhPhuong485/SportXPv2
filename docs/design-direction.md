@@ -94,10 +94,27 @@ In accordance with `minimalist-ui` and `high-end-visual-design`:
 
 ## 7. Next-Session Screen-by-Screen Implementation Roadmap
 
-When Session 6 is approved, the styling polish will be applied systematically across all six core screens without altering database schemas or core business logic:
+Systematic styling polish across all screen groups without altering business logic or routes:
+1. **Screen Group 1: Splash, Auth & Onboarding** — Confident emerald identity block, refined input focus rings, smooth transitions.
+2. **Screen Group 2: Shell, Tìm kèo list & RoomCard, filter sheet, room detail & editor** — Rich court card layout, double-bezel badges, live status pill.
+3. **Screen Group 3: Calendar** — Rich month grid with distinct shape badges, filter chips, and per-item export.
+4. **Screen Group 4: Xếp hạng (Rankings)** — Richer podium with metallic accents (gold, silver, bronze), player cards.
+5. **Screen Group 5: Giải đấu (Tournaments)** — Tournament cards with fee and prize pools, banner treatments, registration warning.
+6. **Screen Group 6: Hồ sơ (Profile)** — Circular 164x164 SVG Elo gauge with glow, calibration badge, match diary cards.
+7. **Screen Group 7: Notifications & Toasts** — Clean slide-over sheets and tactile feedback.
 
-1. **Screen 1: Feed & Activity (`/`):**
-   - Polish `BadmintonCourtCanvas` with crisp court lines and smooth player position cards.
+---
+
+## 8. Reconciliation with Market-Readiness Direction & Final Polish Decisions
+
+### Mentor Feedback Reconciliation
+The initial MVP UI achieved functional completeness but was perceived as too utilitarian and minimal for commercial market launch. This revision enriches the visual language while preserving crisp performance and WCAG AA accessibility:
+
+1. **Confident Brand Color Blocks:** Hero sections and page headers now leverage confident, saturated brand color surfaces (`bg-header-gradient` with subtle emerald depth) to anchor user attention.
+2. **Tasteful Badminton Court Patterns:** Subtle court-line geometry (service court tramlines, center line, and net mesh at 3%–6% opacity) added to card headers and banners, grounding the app firmly in badminton culture.
+3. **Harmonious Color Balance:** The primary tournament emerald is complemented by warm amber-gold (`#B45309` / `#F59E0B`) for achievements/streaks, royal purple (`#6D28D9` / `#A78BFA`) for tournaments, and deep teal (`#0D7A68` / `#00C2CB`) for attendee events.
+4. **Custom Inline SVG Illustrations:** Empty states and podium headers feature custom vector illustrations (badminton shuttlecock, racket, court net, trophy stand) rather than generic placeholder text.
+5. **Double-Bezel Bento Depth:** Elevated cards use a concentric double-border (`border-app-border` with inset highlight `ring-1 ring-white/10` in dark and subtle shadow depth in light) creating a premium physical feel.
    - Refine match feed cards with tabular scores and clear win/loss badges.
 2. **Screen 2: Room Matchmaking (`/rooms`, `/rooms/:id`, `/rooms/new`):**
    - Apply double-bezel bento styling to room cards.

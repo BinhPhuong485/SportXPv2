@@ -119,7 +119,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
               </p>
             </div>
 
-            <BentoCard>
+            <BentoCard doubleBezel courtPattern>
               <div className="flex flex-col gap-5">
                 <div className="flex items-center justify-between text-xs font-bold text-app-muted tracking-wider">
                   <span>THẺ VẬN ĐỘNG VIÊN</span>

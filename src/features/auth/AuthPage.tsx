@@ -109,8 +109,8 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
   return (
     <>
       <div className="min-h-screen w-full flex flex-col bg-app-background antialiased select-none">
-        {/* Top Material 3 AppBar matching Flutter */}
-        <header className="w-full h-14 bg-app-primary text-white flex items-center justify-center shrink-0 shadow-xs relative z-10">
+        {/* Top Material 3 AppBar with Gradient Depth */}
+        <header className="w-full h-14 bg-header-gradient text-white flex items-center justify-center shrink-0 shadow-xs border-b border-app-border/20 relative z-10">
           <div className="flex items-center gap-2">
             <div className="p-1 rounded-full bg-white/15 flex items-center justify-center">
               <Zap size={16} className="text-white" fill="currentColor" />
@@ -122,25 +122,25 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
         {/* Main Form Body */}
         <div className="flex-1 w-full max-w-[460px] mx-auto px-6 py-7 flex flex-col justify-start animate-fade-in">
           {/* Title and Tagline */}
-          <div className="text-center mb-7">
-            <h2 className="text-2xl font-extrabold text-app-text mb-1.5">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-extrabold text-app-text mb-1.5 tracking-tight">
               {isSignUp ? 'Bắt đầu lên sân.' : 'Chào mừng trở lại.'}
             </h2>
-            <p className="text-[13px] text-app-muted">
+            <p className="text-[13px] text-app-muted font-medium">
               {isSignUp
                 ? 'Tạo tài khoản để ghi nhận set cầu và tính hạng Elo.'
                 : 'Mỗi set cầu. Một bước tiến.'}
             </p>
           </div>
 
-          {/* Segmented Switcher */}
-          <div className="p-1 bg-app-surface rounded-[14px] border border-app-border flex mb-6">
+          {/* Segmented Switcher with Spring Touch */}
+          <div className="p-1 bg-app-surface rounded-[14px] border border-app-border flex mb-6 shadow-2xs">
             <button
               type="button"
               onClick={() => toggleMode(false)}
-              className={`flex-1 py-2.5 text-[13px] font-bold rounded-[10px] transition-all ${
+              className={`flex-1 py-2.5 text-[13px] font-bold rounded-[10px] transition-all select-none ${
                 !isSignUp
-                  ? 'bg-app-primary text-app-background shadow-xs'
+                  ? 'bg-app-primary text-app-on-primary shadow-xs'
                   : 'text-app-muted hover:text-app-text'
               }`}
             >
@@ -149,9 +149,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
             <button
               type="button"
               onClick={() => toggleMode(true)}
-              className={`flex-1 py-2.5 text-[13px] font-bold rounded-[10px] transition-all ${
+              className={`flex-1 py-2.5 text-[13px] font-bold rounded-[10px] transition-all select-none ${
                 isSignUp
-                  ? 'bg-app-primary text-app-background shadow-xs'
+                  ? 'bg-app-primary text-app-on-primary shadow-xs'
                   : 'text-app-muted hover:text-app-text'
               }`}
             >

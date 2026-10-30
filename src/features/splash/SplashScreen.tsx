@@ -37,13 +37,13 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
   return (
     <div
       onClick={onComplete}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#09281E] cursor-pointer select-none overflow-hidden"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-app-court-dark cursor-pointer select-none overflow-hidden"
     >
       {/* Ambient Court Glow Effect */}
       <div
-        className="absolute w-[360px] h-[360px] rounded-full blur-[90px] pointer-events-none opacity-40 animate-pulse"
+        className="absolute w-[400px] h-[400px] rounded-full blur-[100px] pointer-events-none opacity-30 animate-pulse"
         style={{
-          background: 'radial-gradient(circle, #299A63 0%, #176344 40%, transparent 70%)',
+          background: 'radial-gradient(circle, rgb(var(--color-accent)) 0%, rgb(var(--color-primary)) 50%, transparent 70%)',
         }}
       />
 
