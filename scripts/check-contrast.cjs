@@ -31,6 +31,7 @@ const lightTokens = {
   muted: '#61736A',
   primary: '#176344',
   accent: '#299A63',
+  accentText: '#176344',
   loss: '#BE123C',
   streak: '#946200',
   mint: '#DDF2E3',
@@ -43,7 +44,8 @@ const darkTokens = {
   muted: '#7E8695',
   primary: '#00D665',
   accent: '#00E872',
-  loss: '#E03131',
+  accentText: '#00E872',
+  loss: '#EF4444',
   streak: '#F5A623',
   mint: '#0D2E1C',
 };

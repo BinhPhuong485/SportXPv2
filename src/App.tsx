@@ -4,7 +4,6 @@ import { AuthGate } from './features/auth/AuthGate';
 import { OnboardingGate } from './features/onboarding/OnboardingGate';
 import { AuthPage } from './features/auth/AuthPage';
 import { SportXpShell } from './features/shell/SportXpShell';
-import { FeedPage } from './features/feed/FeedPage';
 import { ManagedRoomsPage } from './features/rooms/ManagedRoomsPage';
 import { LeaderboardPage } from './features/rankings/LeaderboardPage';
 import { ProfilePage } from './features/profile/ProfilePage';
@@ -14,8 +13,6 @@ import { ScanProfilePage } from './features/social/ScanProfilePage';
 import { RoomDetailPage } from './features/rooms/RoomDetailPage';
 import { RoomEditorPage } from './features/rooms/RoomEditorPage';
 import { RoomSessionPage } from './features/rooms/RoomSessionPage';
-import { ActivityDetailPage } from './features/feed/ActivityDetailPage';
-import { ActivityEditorPage } from './features/feed/ActivityEditorPage';
 import { TournamentsPage } from './features/tournaments/TournamentsPage';
 
 import { OnboardingPage } from './features/onboarding/OnboardingPage';
@@ -66,7 +63,6 @@ export const App: React.FC = () => {
         <Route path="/rankings" element={<LeaderboardPage />} />
         <Route path="/tournaments" element={<TournamentsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/feed" element={<FeedPage />} />
       </Route>
 
       {/* Standalone Protected Sub-pages */}
@@ -136,36 +132,6 @@ export const App: React.FC = () => {
           <AuthGate>
             <OnboardingGate>
               <RoomSessionPage />
-            </OnboardingGate>
-          </AuthGate>
-        }
-      />
-      <Route
-        path="/activities/:activityId"
-        element={
-          <AuthGate>
-            <OnboardingGate>
-              <ActivityDetailPage />
-            </OnboardingGate>
-          </AuthGate>
-        }
-      />
-      <Route
-        path="/activities/:activityId/edit"
-        element={
-          <AuthGate>
-            <OnboardingGate>
-              <ActivityEditorPage />
-            </OnboardingGate>
-          </AuthGate>
-        }
-      />
-      <Route
-        path="/tournaments"
-        element={
-          <AuthGate>
-            <OnboardingGate>
-              <TournamentsPage />
             </OnboardingGate>
           </AuthGate>
         }

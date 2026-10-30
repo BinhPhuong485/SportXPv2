@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Zap, Eye, EyeOff, AlertTriangle, AlertCircle, CheckCircle2, AtSign, Lock, IdCard } from 'lucide-react';
 import { supabase, startupError } from '../../core/config/supabase';
 import { ForgotPasswordSheet } from './ForgotPasswordSheet';
@@ -8,6 +9,7 @@ interface AuthPageProps {
 }
 
 export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
+  const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -90,7 +92,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
         });
 
         if (signInError) throw signInError;
-        onSuccess?.();
+        if (onSuccess) {
+          onSuccess();
+        } else {
+          navigate('/');
+        }
       }
     } catch (err: unknown) {
       const authErr = err as { message?: string };

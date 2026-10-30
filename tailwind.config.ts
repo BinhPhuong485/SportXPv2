@@ -14,6 +14,7 @@ export default {
         'app-border': 'rgb(var(--color-border) / <alpha-value>)',
         'app-primary': 'rgb(var(--color-primary) / <alpha-value>)',
         'app-accent': 'rgb(var(--color-accent) / <alpha-value>)',
+        'app-accent-text': 'rgb(var(--color-accent-text) / <alpha-value>)',
         'app-mint': 'rgb(var(--color-mint) / <alpha-value>)',
         'app-text': 'rgb(var(--color-text) / <alpha-value>)',
         'app-muted': 'rgb(var(--color-muted) / <alpha-value>)',

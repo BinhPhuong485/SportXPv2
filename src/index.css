@@ -8,7 +8,8 @@
   --color-surface: 255 255 255; /* #FFFFFF Pure White */
   --color-border: 223 233 225; /* #DFE9E1 Pastel Mint Line */
   --color-primary: 23 99 68; /* #176344 Court Emerald */
-  --color-accent: 41 154 99; /* #299A63 Vibrant Court Green */
+  --color-accent: 41 154 99; /* #299A63 Vibrant Court Green (Flutter Parity) */
+  --color-accent-text: 23 99 68; /* #176344 High contrast for text (6.67:1 / 7.23:1 WCAG AA) */
   --color-mint: 221 242 227; /* #DDF2E3 Soft Mint */
   --color-text: 20 37 29; /* #14251D Dark Forest */
   --color-muted: 97 115 106; /* #61736A Sage Grey */
@@ -26,6 +27,7 @@
   --color-border: 27 31 38; /* #1B1F26 Dark Slate */
   --color-primary: 0 214 101; /* #00D665 Athletic Neon Green */
   --color-accent: 0 232 114; /* #00E872 Vibrant Neon */
+  --color-accent-text: 0 232 114; /* #00E872 (12.20:1 AAA) */
   --color-mint: 13 46 28; /* #0D2E1C Deep Emerald */
   --color-text: 255 255 255; /* #FFFFFF */
   --color-muted: 126 134 149; /* #7E8695 Muted Slate */
