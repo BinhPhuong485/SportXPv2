@@ -286,7 +286,7 @@ export const RoomEditorPage: React.FC = () => {
               <ArrowLeft size={18} />
             </button>
             <h1 className="text-base font-extrabold tracking-tight">
-              {isEditing ? 'Sửa điều kiện buổi chơi' : 'Tạo buổi chơi'}
+              {isEditing ? 'Sửa điều kiện buổi chơi' : 'Tạo kèo'}
             </h1>
           </div>
         </div>
@@ -305,48 +305,48 @@ export const RoomEditorPage: React.FC = () => {
         )}
 
         <form onSubmit={handleSave} className="flex flex-col gap-4">
-          {/* SECTION 1: LOBBY CODE HERO BANNER */}
-          <section className="bg-app-surface rounded-[20px] p-4 border border-app-primary/30 flex flex-col gap-3 shadow-xs">
-            <div className="flex items-center justify-between">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-app-primary/15 text-app-primary text-[11px] font-extrabold tracking-wider">
-                <Trophy size={13} />
-                <span>SẢNH PHÒNG THI ĐẤU</span>
-              </div>
-              <span
-                className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold ${
-                  isPrivate
-                    ? 'bg-app-streak/15 text-app-streak'
-                    : 'bg-app-primary/15 text-app-primary'
-                }`}
-              >
-                {isPrivate ? 'PHÒNG KÍN' : 'PHÒNG CÔNG KHAI'}
-              </span>
-            </div>
-
-            <div className="p-3.5 bg-app-background rounded-xl border border-app-border flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="text-[10px] font-semibold text-app-muted uppercase tracking-wider">
-                  MÃ PHÒNG (ROOM CODE)
-                </span>
-                <span className="text-2xl font-black text-app-primary tracking-widest tabular-nums mt-0.5 font-mono">
-                  {roomCode}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={copyRoomCode}
-                  title="Sao chép mã phòng"
-                  className="h-9 px-3 rounded-xl bg-app-surface border border-app-border text-app-text hover:bg-app-background flex items-center gap-1.5 text-xs font-semibold transition-colors"
+          {/* SECTION 1: LOBBY CODE HERO BANNER (Chỉ hiển thị khi đang sửa phòng đã tạo) */}
+          {isEditing && (
+            <section className="bg-app-surface rounded-[20px] p-4 border border-app-primary/30 flex flex-col gap-3 shadow-xs">
+              <div className="flex items-center justify-between">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-app-primary/15 text-app-primary text-[11px] font-extrabold tracking-wider">
+                  <Trophy size={13} />
+                  <span>SẢNH PHÒNG THI ĐẤU</span>
+                </div>
+                <span
+                  className={`px-2.5 py-1 rounded-md text-[10px] font-extrabold ${
+                    isPrivate
+                      ? 'bg-app-streak/15 text-app-streak'
+                      : 'bg-app-primary/15 text-app-primary'
+                  }`}
                 >
-                  {copiedCode ? (
-                    <Check size={15} className="text-app-primary" />
-                  ) : (
-                    <Copy size={15} />
-                  )}
-                  <span>{copiedCode ? 'Đã chép' : 'Sao chép'}</span>
-                </button>
-                {!isEditing && (
+                  {isPrivate ? 'PHÒNG KÍN' : 'PHÒNG CÔNG KHAI'}
+                </span>
+              </div>
+
+              <div className="p-3.5 bg-app-background rounded-xl border border-app-border flex items-center justify-between">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-semibold text-app-muted uppercase tracking-wider">
+                    MÃ PHÒNG (ROOM CODE)
+                  </span>
+                  <span className="text-2xl font-black text-app-primary tracking-widest tabular-nums mt-0.5 font-mono">
+                    {roomCode}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={copyRoomCode}
+                    title="Sao chép mã phòng"
+                    className="h-9 px-3 rounded-xl bg-app-surface border border-app-border text-app-text hover:bg-app-background flex items-center gap-1.5 text-xs font-semibold transition-colors"
+                  >
+                    {copiedCode ? (
+                      <Check size={15} className="text-app-primary" />
+                    ) : (
+                      <Copy size={15} />
+                    )}
+                    <span>{copiedCode ? 'Đã chép' : 'Sao chép'}</span>
+                  </button>
                   <button
                     type="button"
                     onClick={regenerateRoomCode}
@@ -355,14 +355,14 @@ export const RoomEditorPage: React.FC = () => {
                   >
                     <RefreshCw size={15} />
                   </button>
-                )}
+                </div>
               </div>
-            </div>
 
-            <p className="text-[11px] text-app-muted leading-relaxed">
-              Chia sẻ mã cho người muốn tham gia. Phòng private ẩn khỏi sảnh; public hiện theo khu vực sân.
-            </p>
-          </section>
+              <p className="text-[11px] text-app-muted leading-relaxed">
+                Chia sẻ mã cho người muốn tham gia. Phòng private ẩn khỏi sảnh; public hiện theo khu vực sân.
+              </p>
+            </section>
+          )}
 
           {/* SECTION 2: GAME MODE SELECTOR (PUBLIC VS PRIVATE) */}
           <section className="bg-app-surface rounded-[20px] p-4 border border-app-border flex flex-col gap-3 shadow-xs">
@@ -429,7 +429,11 @@ export const RoomEditorPage: React.FC = () => {
               <div className="p-2.5 rounded-xl bg-app-background border border-app-border flex items-start gap-2 text-[11px] text-app-muted">
                 <KeyRound size={15} className="text-app-streak shrink-0 mt-0.5" />
                 <span>
-                  Khóa bảo vệ: Chia sẻ mã <strong>{roomCode}</strong> cho người muốn tham gia. Nhập mã chỉ mở chi tiết, vẫn kiểm tra trình độ, lịch và số chỗ khi đăng ký.
+                  {isEditing ? (
+                    <>Khóa bảo vệ: Chia sẻ mã <strong>{roomCode}</strong> cho người muốn tham gia. Nhập mã chỉ mở chi tiết, vẫn kiểm tra trình độ, lịch và số chỗ khi đăng ký.</>
+                  ) : (
+                    <>Khóa bảo vệ: Mã phòng sẽ được cấp tự động sau khi tạo kèo xong để bạn chia sẻ cho bạn bè tham gia. Nhập mã chỉ mở chi tiết, vẫn kiểm tra trình độ, lịch và số chỗ khi đăng ký.</>
+                  )}
                 </span>
               </div>
             )}
@@ -908,9 +912,16 @@ export const RoomEditorPage: React.FC = () => {
           <button
             type="submit"
             disabled={busy}
-            className="w-full h-13 rounded-2xl bg-app-primary text-app-on-primary font-black text-sm tracking-wide uppercase hover:brightness-105 active:scale-[0.99] disabled:opacity-50 transition-all shadow-md mt-2"
+            className="w-full py-4 px-6 rounded-btn bg-app-primary text-app-on-primary font-black text-base tracking-wide uppercase hover:brightness-105 active:scale-[0.99] disabled:opacity-50 transition-all shadow-md mt-4 flex items-center justify-center gap-2"
           >
-            {busy ? 'ĐANG LƯU…' : 'LƯU BUỔI CHƠI'}
+            {busy ? (
+              <>
+                <RefreshCw size={18} className="animate-spin" />
+                <span>{isEditing ? 'ĐANG LƯU…' : 'ĐANG TẠO KÈO…'}</span>
+              </>
+            ) : (
+              <span>{isEditing ? 'LƯU BUỔI CHƠI' : 'TẠO KÈO'}</span>
+            )}
           </button>
 
           <div className="h-8" />
