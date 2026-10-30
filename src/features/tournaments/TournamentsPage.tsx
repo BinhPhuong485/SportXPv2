@@ -73,27 +73,6 @@ export const TournamentsPage: React.FC = () => {
     }
   };
 
-  const handleWithdraw = async () => {
-    if (!activeTournament) return;
-    setSheetBusy(true);
-    try {
-      await tournamentRepository.withdrawTournament(activeTournament.id);
-      setIsSheetOpen(false);
-      setFeedback({
-        type: 'success',
-        message: `Đã hủy đăng ký tham gia "${activeTournament.title}".`,
-      });
-      await loadTournaments();
-    } catch (e) {
-      setFeedback({
-        type: 'error',
-        message: e instanceof Error ? e.message : 'Hủy đăng ký không thành công.',
-      });
-    } finally {
-      setSheetBusy(false);
-    }
-  };
-
   return (
     <PageContent>
       {/* 1. Filter Chips */}
@@ -185,7 +164,6 @@ export const TournamentsPage: React.FC = () => {
         busy={sheetBusy}
         onClose={() => setIsSheetOpen(false)}
         onConfirm={handleConfirmRegister}
-        onWithdraw={handleWithdraw}
       />
     </PageContent>
   );

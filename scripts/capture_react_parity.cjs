@@ -109,7 +109,7 @@ async function run() {
     // Perform Login
     console.log('Performing login in React...');
     await page.type('input[type="email"]', 'bp@gmail.com');
-    await page.type('input[type="password"]', '12345678@');
+    await page.type('input[type="password"]', (process.env.TEST_PWD || ""));
     await page.keyboard.press('Enter');
     await new Promise((r) => setTimeout(r, 4000));
 
@@ -194,7 +194,7 @@ async function run() {
     });
     await new Promise((r) => setTimeout(r, 300));
     await desk.type('input[type="email"]', 'bp@gmail.com');
-    await desk.type('input[type="password"]', '12345678@');
+    await desk.type('input[type="password"]', (process.env.TEST_PWD || ""));
     await desk.keyboard.press('Enter');
     await new Promise((r) => setTimeout(r, 4000));
 

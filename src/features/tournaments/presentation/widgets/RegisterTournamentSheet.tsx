@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { Tournament, getFormatLabel, getRankRequirement } from '../../domain/tournament';
 
 interface RegisterTournamentSheetProps {
@@ -7,7 +8,6 @@ interface RegisterTournamentSheetProps {
   isRegistered?: boolean;
   onClose: () => void;
   onConfirm: () => void;
-  onWithdraw?: () => void;
   busy?: boolean;
 }
 
@@ -17,9 +17,16 @@ export const RegisterTournamentSheet: React.FC<RegisterTournamentSheetProps> = (
   isRegistered = false,
   onClose,
   onConfirm,
-  onWithdraw,
   busy = false,
 }) => {
+  const [understood, setUnderstood] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setUnderstood(false);
+    }
+  }, [isOpen, tournament?.id]);
+
   if (!isOpen || !tournament) return null;
 
   const feeText = tournament.entryFee === 0 ? 'Miễn phí' : `${tournament.entryFee.toLocaleString('vi-VN')} VNĐ`;
@@ -68,22 +75,15 @@ export const RegisterTournamentSheet: React.FC<RegisterTournamentSheetProps> = (
           </div>
         </div>
 
-        {/* Action button */}
+        {/* Action area */}
         {isRegistered ? (
-          <div className="flex flex-col gap-2 pt-1">
+          <div className="flex flex-col gap-2.5 pt-1">
             <div className="p-2.5 rounded-xl bg-app-mint/30 border border-app-primary/20 text-center text-xs font-bold text-app-primary">
               ✓ Bạn đã đăng ký tham gia giải đấu này
             </div>
-            {onWithdraw && (
-              <button
-                type="button"
-                disabled={busy}
-                onClick={onWithdraw}
-                className="w-full h-12 rounded-[12px] border border-app-loss text-app-loss text-xs font-bold hover:bg-app-loss/10 transition-colors flex items-center justify-center"
-              >
-                {busy ? 'ĐANG XỬ LÝ…' : 'HỦY ĐĂNG KÝ (RÚT LUI KHỎI GIẢI)'}
-              </button>
-            )}
+            <p className="text-center text-xs text-app-muted italic">
+              Để huỷ đăng ký, vui lòng liên hệ ban tổ chức.
+            </p>
             <button
               type="button"
               onClick={onClose}
@@ -93,12 +93,32 @@ export const RegisterTournamentSheet: React.FC<RegisterTournamentSheetProps> = (
             </button>
           </div>
         ) : (
-          <div className="pt-2">
+          <div className="flex flex-col gap-3 pt-1">
+            {/* Warning banner */}
+            <div className="p-3 rounded-xl bg-app-streak/10 border border-app-streak/30 flex items-start gap-2.5 text-xs text-app-text">
+              <AlertTriangle size={16} className="text-app-streak shrink-0 mt-0.5" />
+              <p className="leading-relaxed">
+                <span className="font-bold text-app-streak">Lưu ý:</span> sau khi đăng ký, bạn không thể tự huỷ trong ứng dụng. Muốn huỷ đăng ký, vui lòng liên hệ ban tổ chức.
+              </p>
+            </div>
+
+            {/* Mandatory confirmation checkbox */}
+            <label className="flex items-center gap-2.5 cursor-pointer select-none text-xs text-app-text font-medium px-0.5">
+              <input
+                type="checkbox"
+                checked={understood}
+                onChange={(e) => setUnderstood(e.target.checked)}
+                className="w-4 h-4 rounded border-app-border text-app-primary accent-app-primary cursor-pointer"
+              />
+              <span>Tôi đã hiểu</span>
+            </label>
+
+            {/* Register submit button */}
             <button
               type="button"
-              disabled={busy}
+              disabled={busy || !understood}
               onClick={onConfirm}
-              className="w-full h-12 rounded-[12px] bg-app-primary text-app-on-primary font-bold text-xs uppercase tracking-wide hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center shadow-xs"
+              className="w-full h-12 rounded-[12px] bg-app-primary text-app-on-primary font-bold text-xs uppercase tracking-wide hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center shadow-xs disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {busy ? 'ĐANG GỬI…' : 'GỬI ĐĂNG KÝ VẬN ĐỘNG VIÊN'}
             </button>
@@ -108,4 +128,3 @@ export const RegisterTournamentSheet: React.FC<RegisterTournamentSheetProps> = (
     </div>
   );
 };
-

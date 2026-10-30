@@ -13,7 +13,7 @@ $url = ($envContent -split "`n" | Where-Object { $_ -match "^VITE_SUPABASE_URL="
 $key = ($envContent -split "`n" | Where-Object { $_ -match "^VITE_SUPABASE_ANON_KEY=" } | ForEach-Object { ($_ -split "=")[1].Trim() })
 
 $headers = @{ "apikey" = $key; "Content-Type" = "application/json" }
-$body = @{ "email" = "bp@gmail.com"; "password" = "12345678@" } | ConvertTo-Json
+$body = @{ "email" = "bp@gmail.com"; "password" = "$env:TEST_PWD" } | ConvertTo-Json
 $res = Invoke-RestMethod -Uri "$url/auth/v1/token?grant_type=password" -Method Post -Headers $headers -Body $body
 $sessionJson = $res | ConvertTo-Json -Compress
 $encodedSession = [System.Uri]::EscapeDataString($sessionJson)

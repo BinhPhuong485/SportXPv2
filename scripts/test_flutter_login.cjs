@@ -45,7 +45,7 @@ async function testLogin() {
     // Type password: click on password input (x: 187, y: 405)
     await page.mouse.click(187, 405);
     await new Promise((r) => setTimeout(r, 300));
-    await page.keyboard.type('12345678@');
+    await page.keyboard.type((process.env.TEST_PWD || ""));
 
     // Click "ĐĂNG NHẬP" button (x: 187, y: 520)
     console.log('Submitting login...');

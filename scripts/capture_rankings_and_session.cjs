@@ -56,7 +56,7 @@ async function captureAll() {
 
     await fPage.mouse.click(187, 325);
     await new Promise((r) => setTimeout(r, 200));
-    await fPage.keyboard.type('12345678@', { delay: 15 });
+    await fPage.keyboard.type((process.env.TEST_PWD || ""), { delay: 15 });
 
     await fPage.mouse.click(187, 435);
     await new Promise((r) => setTimeout(r, 6000));
@@ -102,7 +102,7 @@ async function captureAll() {
 
     await fDesk.mouse.click(720, 350);
     await new Promise((r) => setTimeout(r, 200));
-    await fDesk.keyboard.type('12345678@', { delay: 15 });
+    await fDesk.keyboard.type((process.env.TEST_PWD || ""), { delay: 15 });
 
     await fDesk.mouse.click(720, 460);
     await new Promise((r) => setTimeout(r, 6000));
@@ -128,7 +128,7 @@ async function captureAll() {
 
     // Login React
     await rPage.type('input[type="email"]', 'bp@gmail.com');
-    await rPage.type('input[type="password"]', '12345678@');
+    await rPage.type('input[type="password"]', (process.env.TEST_PWD || ""));
     await rPage.click('button[type="submit"]');
     await new Promise((r) => setTimeout(r, 4000));
 
@@ -185,7 +185,7 @@ async function captureAll() {
     await new Promise((r) => setTimeout(r, 2000));
 
     await rDesk.type('input[type="email"]', 'bp@gmail.com');
-    await rDesk.type('input[type="password"]', '12345678@');
+    await rDesk.type('input[type="password"]', (process.env.TEST_PWD || ""));
     await rDesk.click('button[type="submit"]');
     await new Promise((r) => setTimeout(r, 4000));
 

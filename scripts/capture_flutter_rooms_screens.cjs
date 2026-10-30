@@ -29,7 +29,7 @@ async function captureFlutterRooms() {
 
     await page.mouse.click(187, 325);
     await new Promise((r) => setTimeout(r, 300));
-    await page.keyboard.type('12345678@', { delay: 30 });
+    await page.keyboard.type((process.env.TEST_PWD || ""), { delay: 30 });
 
     await page.mouse.click(187, 435);
     console.log('Waiting for ManagedRoomsPage (Tab 0)...');
@@ -88,7 +88,7 @@ async function captureFlutterRooms() {
 
     await desk.mouse.click(720, 350);
     await new Promise((r) => setTimeout(r, 300));
-    await desk.keyboard.type('12345678@', { delay: 30 });
+    await desk.keyboard.type((process.env.TEST_PWD || ""), { delay: 30 });
 
     await desk.mouse.click(720, 460);
     console.log('Waiting for Desktop ManagedRoomsPage...');

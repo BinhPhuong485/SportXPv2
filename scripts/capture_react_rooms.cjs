@@ -65,7 +65,7 @@ async function capture() {
     // Fill in login credentials
     console.log('Logging in with test account...');
     await page.type('input[type="email"]', 'bp@gmail.com', { delay: 20 });
-    await page.type('input[type="password"]', '12345678@', { delay: 20 });
+    await page.type('input[type="password"]', (process.env.TEST_PWD || ""), { delay: 20 });
 
     // Click submit button
     await page.evaluate(() => {

@@ -18,6 +18,13 @@
   --color-gold: 245 158 11; /* #F59E0B Sweet Spot Gold */
   --color-on-primary: 255 255 255; /* #FFFFFF */
   --color-court-dark: 9 40 30; /* #09281E Night Stadium - stays dark in both themes */
+
+  /* Calendar Event Semantic Tokens (Light) - All >= 3:1 non-text & >= 4.5:1 text on bg */
+  --color-event-hosting: 23 99 68; /* #176344 Court Emerald */
+  --color-event-joined: 13 122 104; /* #0D7A68 Deep Teal */
+  --color-event-waitlist: 180 83 9; /* #B45309 Amber Gold */
+  --color-event-tournament: 109 40 217; /* #6D28D9 Deep Violet */
+  --color-event-cancelled: 190 18 60; /* #BE123C Crimson Rose */
 }
 
 :root[data-theme="dark"] {
@@ -28,7 +35,7 @@
   --color-primary: 0 214 101; /* #00D665 Athletic Neon Green */
   --color-accent: 0 232 114; /* #00E872 Vibrant Neon */
   --color-accent-text: 0 232 114; /* #00E872 (12.20:1 AAA) */
-  --color-mint: 13 46 28; /* #0D2E1C Deep Emerald */
+  --color-mint: 13 46 28; /* #0D2E1C Deep Pine / Soft container in dark */
   --color-text: 255 255 255; /* #FFFFFF */
   --color-muted: 126 134 149; /* #7E8695 Muted Slate */
   --color-loss: 239 68 68; /* #EF4444 Crimson (adjusted from #E03131 for 5.01:1 WCAG AA contrast) */
@@ -36,6 +43,13 @@
   --color-gold: 245 158 11; /* #F59E0B Sweet Spot Gold */
   --color-on-primary: 7 8 10; /* #07080A */
   --color-court-dark: 9 40 30; /* #09281E Night Stadium - stays dark in both themes */
+
+  /* Calendar Event Semantic Tokens (Dark) - All >= 3:1 non-text & >= 4.5:1 text on bg */
+  --color-event-hosting: 0 214 101; /* #00D665 Athletic Neon Green */
+  --color-event-joined: 0 194 203; /* #00C2CB Bright Cyan */
+  --color-event-waitlist: 245 158 11; /* #F59E0B Amber Gold */
+  --color-event-tournament: 167 139 250; /* #A78BFA Soft Violet */
+  --color-event-cancelled: 239 68 68; /* #EF4444 Crimson */
 }
 
 @layer base {

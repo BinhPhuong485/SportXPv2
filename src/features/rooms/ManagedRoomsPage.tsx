@@ -27,6 +27,9 @@ import {
 import { RoomCard } from './presentation/widgets/RoomCard';
 import { RoomFilterSheet } from './presentation/widgets/RoomFilterSheet';
 import { ModalSheet } from '../../shared/components/ModalSheet';
+import { calendarRepository } from '../calendar/data/calendarRepository';
+import { CalendarEvent } from '../calendar/domain/calendarEvent';
+import { UpcomingRoomsStrip } from '../calendar/presentation/widgets/UpcomingRoomsStrip';
 
 export const ManagedRoomsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -40,6 +43,7 @@ export const ManagedRoomsPage: React.FC = () => {
 
   const [items, setItems] = useState<ManagedRoomData[]>([]);
   const [notices, setNotices] = useState<RoomNotice[]>([]);
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [more, setMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,6 +125,7 @@ export const ManagedRoomsPage: React.FC = () => {
 
   useEffect(() => {
     load(true);
+    calendarRepository.loadUserCalendarEvents().then(setCalendarEvents).catch(() => {});
   }, [mainTab, mineSubTab, filter]);
 
   const handleJoinByCode = async () => {
@@ -214,6 +219,15 @@ export const ManagedRoomsPage: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => navigate('/calendar')}
+            title="Lịch thi đấu"
+            className="w-9 h-9 rounded-xl border border-app-border bg-app-surface text-app-primary flex items-center justify-center hover:border-app-primary/50 transition-colors shadow-2xs active:scale-95"
+          >
+            <Calendar size={17} />
+          </button>
+
           <button
             type="button"
             onClick={() => {
@@ -385,29 +399,32 @@ export const ManagedRoomsPage: React.FC = () => {
             )}
           </div>
         ) : (
-          <div className="flex justify-center gap-2 py-1">
-            <button
-              type="button"
-              onClick={() => setMineSubTab('mine')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${
-                mineSubTab === 'mine'
-                  ? 'bg-app-primary text-app-on-primary border-app-primary shadow-xs'
-                  : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
-              }`}
-            >
-              Sắp tới
-            </button>
-            <button
-              type="button"
-              onClick={() => setMineSubTab('history')}
-              className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${
-                mineSubTab === 'history'
-                  ? 'bg-app-primary text-app-on-primary border-app-primary shadow-xs'
-                  : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
-              }`}
-            >
-              Lịch sử
-            </button>
+          <div className="flex flex-col gap-2">
+            <UpcomingRoomsStrip events={calendarEvents} />
+            <div className="flex justify-center gap-2 py-1">
+              <button
+                type="button"
+                onClick={() => setMineSubTab('mine')}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${
+                  mineSubTab === 'mine'
+                    ? 'bg-app-primary text-app-on-primary border-app-primary shadow-xs'
+                    : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
+                }`}
+              >
+                Sắp tới
+              </button>
+              <button
+                type="button"
+                onClick={() => setMineSubTab('history')}
+                className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${
+                  mineSubTab === 'history'
+                    ? 'bg-app-primary text-app-on-primary border-app-primary shadow-xs'
+                    : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
+                }`}
+              >
+                Lịch sử
+              </button>
+            </div>
           </div>
         )}
 

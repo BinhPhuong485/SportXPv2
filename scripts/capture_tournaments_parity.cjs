@@ -29,7 +29,7 @@ async function captureTournaments() {
 
     await page.mouse.click(187, 325);
     await new Promise((r) => setTimeout(r, 200));
-    await page.keyboard.type('12345678@', { delay: 15 });
+    await page.keyboard.type((process.env.TEST_PWD || ""), { delay: 15 });
 
     await page.mouse.click(187, 435);
     await new Promise((r) => setTimeout(r, 6000));

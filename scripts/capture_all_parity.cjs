@@ -63,7 +63,7 @@ async function captureAll() {
     await pageA.goto('http://127.0.0.1:4173/#/auth');
     await new Promise((r) => setTimeout(r, 800));
     await pageA.type('input[type="email"]', 'bp@gmail.com', { delay: 15 });
-    await pageA.type('input[type="password"]', '12345678@', { delay: 15 });
+    await pageA.type('input[type="password"]', (process.env.TEST_PWD || ""), { delay: 15 });
     await pageA.evaluate(() => {
       const btns = Array.from(document.querySelectorAll('button'));
       const login = btns.find((b) => b.textContent && b.textContent.includes('ĐĂNG NHẬP'));
@@ -175,7 +175,7 @@ async function captureAll() {
     await pageB.goto('http://127.0.0.1:4173/#/auth');
     await new Promise((r) => setTimeout(r, 800));
     await pageB.type('input[type="email"]', 'domixi@gmail.com', { delay: 15 });
-    await pageB.type('input[type="password"]', '12345678@', { delay: 15 });
+    await pageB.type('input[type="password"]', (process.env.TEST_PWD || ""), { delay: 15 });
     await pageB.evaluate(() => {
       const btns = Array.from(document.querySelectorAll('button'));
       const login = btns.find((b) => b.textContent && b.textContent.includes('ĐĂNG NHẬP'));
@@ -238,7 +238,7 @@ async function captureAll() {
     await pageDesk.goto('http://127.0.0.1:4173/#/auth');
     await new Promise((r) => setTimeout(r, 800));
     await pageDesk.type('input[type="email"]', 'bp@gmail.com', { delay: 15 });
-    await pageDesk.type('input[type="password"]', '12345678@', { delay: 15 });
+    await pageDesk.type('input[type="password"]', (process.env.TEST_PWD || ""), { delay: 15 });
     await pageDesk.evaluate(() => {
       const btns = Array.from(document.querySelectorAll('button'));
       const login = btns.find((b) => b.textContent && b.textContent.includes('ĐĂNG NHẬP'));

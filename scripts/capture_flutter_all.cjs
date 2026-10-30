@@ -64,7 +64,7 @@ async function captureAllFlutter() {
 
     await page.mouse.click(187, 325);
     await new Promise((r) => setTimeout(r, 300));
-    await page.keyboard.type('12345678@', { delay: 40 });
+    await page.keyboard.type((process.env.TEST_PWD || ""), { delay: 40 });
 
     console.log('Submitting login...');
     await page.mouse.click(187, 435);
@@ -149,7 +149,7 @@ async function captureAllFlutter() {
     // Password at 720, 370
     await deskPage.mouse.click(720, 370);
     await new Promise((r) => setTimeout(r, 300));
-    await deskPage.keyboard.type('12345678@', { delay: 40 });
+    await deskPage.keyboard.type((process.env.TEST_PWD || ""), { delay: 40 });
 
     // Submit at 720, 480
     await deskPage.mouse.click(720, 480);

@@ -17,7 +17,7 @@ async function runSessionFlow() {
   const rA = await fetch(url + '/auth/v1/token?grant_type=password', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', apikey: key },
-    body: JSON.stringify({ email: 'bp@gmail.com', password: '12345678@' }),
+    body: JSON.stringify({ email: 'bp@gmail.com', password: (process.env.TEST_PWD || "") }),
   });
   const dataA = await rA.json();
   const tokenA = dataA.access_token;
@@ -27,7 +27,7 @@ async function runSessionFlow() {
   const rB = await fetch(url + '/auth/v1/token?grant_type=password', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', apikey: key },
-    body: JSON.stringify({ email: 'domixi@gmail.com', password: '12345678@' }),
+    body: JSON.stringify({ email: 'domixi@gmail.com', password: (process.env.TEST_PWD || "") }),
   });
   const dataB = await rB.json();
   const tokenB = dataB.access_token;
@@ -117,7 +117,7 @@ async function runSessionFlow() {
     await fPage.keyboard.type('bp@gmail.com', { delay: 15 });
     await fPage.mouse.click(187, 325);
     await new Promise((r) => setTimeout(r, 150));
-    await fPage.keyboard.type('12345678@', { delay: 15 });
+    await fPage.keyboard.type((process.env.TEST_PWD || ""), { delay: 15 });
     await fPage.mouse.click(187, 435);
     await new Promise((r) => setTimeout(r, 6000));
 

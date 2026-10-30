@@ -95,7 +95,7 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
               onClick={onRegister}
               className="w-full h-11 rounded-[12px] bg-app-mint text-app-primary border border-app-primary/30 text-xs font-bold hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center gap-1.5"
             >
-              <span>✓ ĐÃ ĐĂNG KÝ (XEM CHI TIẾT / RÚT LUI)</span>
+              <span>✓ ĐÃ ĐĂNG KÝ (XEM THÔNG TIN)</span>
             </button>
           ) : isFull ? (
             <button
