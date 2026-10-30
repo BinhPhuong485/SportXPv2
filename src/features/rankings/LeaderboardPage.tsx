@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { RefreshCw, CircleDot, ChevronDown, Trophy, TrendingUp } from 'lucide-react';
+import { RefreshCw, CircleDot, ChevronDown, Trophy, TrendingUp, Medal } from 'lucide-react';
 import { useAuthStore } from '../../shared/hooks/useAuth';
 import { Court, PlayerProfile } from '../../core/types/database.types';
 import {
   leaderboardRepository,
   PlayerCourtRank,
-  getPlayerInitials,
 } from './data/leaderboardRepository';
 import { CourtPickerSheet } from './presentation/widgets/CourtPickerSheet';
 import { DuolingoRankRow } from './presentation/widgets/DuolingoRankRow';
@@ -131,7 +130,7 @@ export const LeaderboardPage: React.FC = () => {
   const currentUserProfile = allPlayers.find((p) => p.id === currentUserId);
 
   const hasPodium = viewMode === 'all' && allPlayers.length >= 1;
-  const listPlayers = hasPodium ? displayPlayers.slice(3) : displayPlayers;
+  const listPlayers = displayPlayers;
 
   return (
     <div className="min-h-full flex flex-col bg-app-background text-app-text select-none">
@@ -220,9 +219,7 @@ export const LeaderboardPage: React.FC = () => {
                       }
                       className="flex flex-col items-center cursor-pointer group"
                     >
-                      <div className="w-12 h-12 rounded-full bg-app-mint border border-app-border flex items-center justify-center text-sm font-bold text-app-primary shrink-0 mb-2 group-hover:scale-105 transition-transform">
-                        {getPlayerInitials(allPlayers[1].displayName)}
-                      </div>
+                      <Medal size={36} className="text-slate-400 mb-2 drop-shadow-xs group-hover:scale-110 transition-transform" />
                       <span className="text-xs font-bold text-app-text text-center truncate max-w-full px-1">
                         {allPlayers[1].displayName}
                       </span>
@@ -235,9 +232,7 @@ export const LeaderboardPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center opacity-40">
-                      <div className="w-12 h-12 rounded-full border border-dashed border-app-border flex items-center justify-center text-xs text-app-muted shrink-0 mb-2">
-                        —
-                      </div>
+                      <Medal size={30} className="text-app-muted/40 mb-2" />
                       <span className="text-xs font-medium text-app-muted text-center truncate max-w-full px-1">
                         Trống
                       </span>
@@ -257,10 +252,7 @@ export const LeaderboardPage: React.FC = () => {
                     }
                     className="flex flex-col items-center cursor-pointer group"
                   >
-                    <Trophy size={22} className="text-app-streak mb-1.5" />
-                    <div className="w-15 h-15 rounded-full bg-app-mint border-2 border-app-streak flex items-center justify-center text-base font-extrabold text-app-streak shrink-0 mb-2 group-hover:scale-105 transition-transform">
-                      {getPlayerInitials(allPlayers[0].displayName)}
-                    </div>
+                    <Trophy size={44} className="text-app-streak mb-2 drop-shadow-sm group-hover:scale-110 transition-transform" />
                     <span className="text-xs font-extrabold text-app-text text-center truncate max-w-full px-1">
                       {allPlayers[0].displayName}
                     </span>
@@ -280,9 +272,7 @@ export const LeaderboardPage: React.FC = () => {
                       }
                       className="flex flex-col items-center cursor-pointer group"
                     >
-                      <div className="w-12 h-12 rounded-full bg-app-mint border border-app-border flex items-center justify-center text-sm font-bold text-app-primary shrink-0 mb-2 group-hover:scale-105 transition-transform">
-                        {getPlayerInitials(allPlayers[2].displayName)}
-                      </div>
+                      <Medal size={34} className="text-amber-700 dark:text-amber-500 mb-2 drop-shadow-xs group-hover:scale-110 transition-transform" />
                       <span className="text-xs font-bold text-app-text text-center truncate max-w-full px-1">
                         {allPlayers[2].displayName}
                       </span>
@@ -295,9 +285,7 @@ export const LeaderboardPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="flex flex-col items-center opacity-40">
-                      <div className="w-12 h-12 rounded-full border border-dashed border-app-border flex items-center justify-center text-xs text-app-muted shrink-0 mb-2">
-                        —
-                      </div>
+                      <Medal size={28} className="text-app-muted/40 mb-2" />
                       <span className="text-xs font-medium text-app-muted text-center truncate max-w-full px-1">
                         Trống
                       </span>

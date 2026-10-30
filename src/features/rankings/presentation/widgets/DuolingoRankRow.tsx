@@ -28,6 +28,38 @@ export const DuolingoRankRow: React.FC<DuolingoRankRowProps> = ({
     return isCurrentUser ? 'text-app-primary' : 'text-[#64748B]';
   };
 
+  const getRowContainerStyle = () => {
+    if (isCurrentUser) {
+      return 'bg-app-primary/10 border-l-[3.5px] border-l-app-primary';
+    }
+    if (rank === 1) {
+      return 'bg-amber-500/[0.05] dark:bg-amber-500/[0.08] border-l-[3.5px] border-l-amber-500 hover:bg-amber-500/[0.1]';
+    }
+    if (rank === 2) {
+      return 'bg-slate-400/[0.04] dark:bg-slate-400/[0.08] border-l-[3.5px] border-l-slate-400 hover:bg-slate-400/[0.08]';
+    }
+    if (rank === 3) {
+      return 'bg-amber-700/[0.04] dark:bg-amber-700/[0.08] border-l-[3.5px] border-l-amber-700 hover:bg-amber-700/[0.08]';
+    }
+    return 'border-l-[3.5px] border-l-transparent hover:bg-app-background/50';
+  };
+
+  const getAvatarStyle = () => {
+    if (isCurrentUser) {
+      return 'border-1.5 border-app-primary bg-app-mint text-app-primary';
+    }
+    if (rank === 1) {
+      return 'border-1.5 border-amber-400/80 bg-amber-500/10 text-amber-600 dark:text-amber-400';
+    }
+    if (rank === 2) {
+      return 'border-1.5 border-slate-400/80 bg-slate-500/10 text-slate-600 dark:text-slate-300';
+    }
+    if (rank === 3) {
+      return 'border-1.5 border-amber-700/60 bg-amber-700/10 text-amber-700 dark:text-amber-400';
+    }
+    return 'border-app-border bg-app-background text-app-text';
+  };
+
   const getTierColorStyle = () => {
     switch (tier.group) {
       case 'Nhập môn':
@@ -54,9 +86,9 @@ export const DuolingoRankRow: React.FC<DuolingoRankRowProps> = ({
   return (
     <div
       onClick={onTap}
-      className={`w-full px-3.5 py-2.5 flex items-center cursor-pointer transition-colors ${
-        isCurrentUser ? 'bg-app-primary/10 border-l-[3.5px] border-l-app-primary' : 'hover:bg-app-background/50'
-      } ${showDivider ? 'border-b border-app-border/40' : ''}`}
+      className={`w-full px-3.5 py-2.5 flex items-center cursor-pointer transition-colors ${getRowContainerStyle()} ${
+        showDivider ? 'border-b border-app-border/40' : ''
+      }`}
     >
       {/* Rank Number & Delta */}
       <div className="w-11 flex flex-col items-center justify-center shrink-0">
@@ -84,15 +116,9 @@ export const DuolingoRankRow: React.FC<DuolingoRankRowProps> = ({
 
       {/* Avatar Initials Circle */}
       <div
-        className={`w-9 h-9 rounded-full bg-app-background flex items-center justify-center shrink-0 mx-2 border ${
-          isCurrentUser ? 'border-1.5 border-app-primary' : 'border-app-border'
-        }`}
+        className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 mx-2 border ${getAvatarStyle()}`}
       >
-        <span
-          className={`text-xs font-bold ${
-            isCurrentUser ? 'text-app-primary' : 'text-app-text'
-          }`}
-        >
+        <span className="text-xs font-bold">
           {initials}
         </span>
       </div>
