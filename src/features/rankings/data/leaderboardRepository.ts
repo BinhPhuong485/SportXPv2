@@ -36,18 +36,28 @@ export class SupabaseLeaderboardRepository {
         .select('id, name, distance_km')
         .order('name', { ascending: true });
       if (error || !data) return [];
-      return data.map((r: any) => ({
-        id: r.id,
-        name: r.name,
-        distance_km: r.distance_km,
-        distanceKm: r.distance_km,
-      }));
+      
+      const courtItems: Court[] = [
+        {
+          id: 'all',
+          name: 'Tất cả cụm sân (Toàn thành phố)',
+          distance_km: undefined,
+          distanceKm: undefined,
+        },
+        ...data.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          distance_km: r.distance_km,
+          distanceKm: r.distance_km,
+        })),
+      ];
+      return courtItems;
     } catch {
       return [];
     }
   }
 
-  async getCourtLeaderboard(courtId: string, limit?: number): Promise<PlayerProfile[]> {
+  async getCourtLeaderboard(courtId: string = 'all', limit?: number): Promise<PlayerProfile[]> {
     if (!supabase) return [];
     try {
       let query = supabase
@@ -55,9 +65,12 @@ export class SupabaseLeaderboardRepository {
         .select(LEADERBOARD_COLUMNS)
         .not('elo_rating', 'is', null)
         .eq('onboarding_step', 5)
-        .eq('home_court_id', courtId)
         .order('elo_rating', { ascending: false })
         .order('id', { ascending: true });
+
+      if (courtId && courtId !== 'all') {
+        query = query.eq('home_court_id', courtId);
+      }
 
       if (limit && limit > 0) {
         query = query.limit(limit);
@@ -90,7 +103,7 @@ export class SupabaseLeaderboardRepository {
     }
   }
 
-  async getNearbyPlayers(courtId: string, playerId: string, radius = 5): Promise<PlayerProfile[]> {
+  async getNearbyPlayers(courtId: string = 'all', playerId: string, radius = 5): Promise<PlayerProfile[]> {
     const all = await this.getCourtLeaderboard(courtId);
     const index = all.findIndex((p) => p.id === playerId);
     if (index === -1) {
@@ -101,7 +114,7 @@ export class SupabaseLeaderboardRepository {
     return all.slice(start, end);
   }
 
-  async getPlayerCourtRank(playerId: string, courtId: string): Promise<PlayerCourtRank | null> {
+  async getPlayerCourtRank(playerId: string, courtId: string = 'all'): Promise<PlayerCourtRank | null> {
     try {
       const list = await this.getCourtLeaderboard(courtId);
       const index = list.findIndex((p) => p.id === playerId);
@@ -120,7 +133,9 @@ export class SupabaseLeaderboardRepository {
       }
 
       const courts = await this.getCourts();
-      const courtName = courts.find((c) => c.id === courtId)?.name || 'Sân thi đấu';
+      const courtName = courtId === 'all'
+        ? 'Toàn hệ thống'
+        : (courts.find((c) => c.id === courtId)?.name || 'Sân thi đấu');
 
       return {
         rank,
