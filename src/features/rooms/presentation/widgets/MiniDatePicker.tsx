@@ -237,3 +237,4 @@ export const MiniDatePicker: React.FC<MiniDatePickerProps> = ({
     </div>
   );
 };
+
