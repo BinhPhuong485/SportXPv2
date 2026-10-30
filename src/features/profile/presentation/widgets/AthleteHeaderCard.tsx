@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit2, CheckCircle2 } from 'lucide-react';
+import { Edit2, CheckCircle2, Sparkles } from 'lucide-react';
 import { BentoCard } from '../../../../shared/components/BentoCard';
 import {
   PlayerProfile,
@@ -28,37 +28,40 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
   const strokeDashoffset = circumference * (1 - Math.min(Math.max(progressRatio, 0.03), 1.0));
 
   return (
-    <BentoCard highlighted>
+    <BentoCard highlighted doubleBezel courtPattern className="relative overflow-hidden">
       <div className="flex flex-col">
         {/* Header row: Avatar, Name, Home court, Verified badge, Edit button */}
         <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-[54px] h-[54px] rounded-full bg-app-mint text-app-primary flex items-center justify-center text-lg font-extrabold uppercase shrink-0 overflow-hidden">
-              {player.avatarUrl ? (
-                <img
-                  src={player.avatarUrl}
-                  alt={player.displayName}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    // Fallback to initials
-                    (e.currentTarget as HTMLElement).style.display = 'none';
-                  }}
-                />
-              ) : (
-                <span>{getInitials(player.displayName)}</span>
+          <div className="flex items-center gap-3.5 min-w-0">
+            <div className="relative">
+              <div className="w-14 h-14 rounded-full bg-app-mint text-app-primary border-2 border-app-primary/30 flex items-center justify-center text-lg font-black uppercase shrink-0 overflow-hidden shadow-xs">
+                {player.avatarUrl ? (
+                  <img
+                    src={player.avatarUrl}
+                    alt={player.displayName}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <span>{getInitials(player.displayName)}</span>
+                )}
+              </div>
+              {player.isIdentityVerified && (
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-app-surface flex items-center justify-center shadow-xs">
+                  <CheckCircle2 size={16} className="text-app-primary" />
+                </div>
               )}
             </div>
 
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <h2 className="text-[22px] font-extrabold text-app-text leading-tight truncate">
+                <h2 className="text-xl font-black text-app-text leading-tight truncate">
                   {player.displayName}
                 </h2>
-                {player.isIdentityVerified && (
-                  <CheckCircle2 size={18} className="text-app-primary shrink-0" />
-                )}
               </div>
-              <p className="text-xs text-app-muted mt-0.5 truncate">
+              <p className="text-xs text-app-muted mt-0.5 truncate font-medium">
                 {player.homeCourtName || 'Hồ sơ vận động viên'}
               </p>
             </div>
@@ -68,17 +71,17 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
             <button
               type="button"
               onClick={onEdit}
-              className="p-2 text-app-muted hover:text-app-text rounded-full transition-colors shrink-0"
+              className="w-10 h-10 rounded-full border border-app-border bg-app-surface flex items-center justify-center text-app-muted hover:text-app-text hover:border-app-primary/40 active:scale-95 transition-all shrink-0 shadow-2xs"
               title="Chỉnh sửa hồ sơ"
             >
-              <Edit2 size={19} />
+              <Edit2 size={17} />
             </button>
           )}
         </div>
 
         {/* 164x164 Circular Elo Meter matching Flutter */}
         <div className="relative w-[164px] h-[164px] mx-auto my-6 flex items-center justify-center">
-          <svg className="w-full h-full -rotate-90" viewBox="0 0 164 164">
+          <svg className="w-full h-full -rotate-90 drop-shadow-xs" viewBox="0 0 164 164">
             {/* Background ring */}
             <circle
               cx="82"
@@ -86,7 +89,7 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
               r="72"
               fill="none"
               stroke="currentColor"
-              strokeWidth="8"
+              strokeWidth="9"
               className="text-app-border"
             />
             {/* Progress ring */}
@@ -96,18 +99,19 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
               r="72"
               fill="none"
               stroke="currentColor"
-              strokeWidth="8"
+              strokeWidth="9"
               strokeDasharray={circumference}
               strokeDashoffset={strokeDashoffset}
               strokeLinecap="round"
-              className="text-app-primary transition-all duration-700"
+              className="text-app-primary transition-all duration-700 ease-out"
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <span className="text-[40px] font-extrabold leading-none tracking-tight text-app-primary tabular-nums">
+            <span className="text-[42px] font-black leading-none tracking-tight text-app-primary tabular-nums">
               {player.eloRating ?? '—'}
             </span>
-            <span className="text-xs font-semibold text-app-muted mt-1.5">
+            <span className="text-[11px] font-bold text-app-muted mt-2 tracking-wide uppercase flex items-center gap-1">
+              <Sparkles size={11} className="text-app-gold" />
               {calibrated ? player.tierName : 'Đang phân hạng'}
             </span>
           </div>
@@ -116,32 +120,32 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
         {/* Calibration or Tier Progression Info */}
         <div className="text-center flex flex-col items-center">
           {!calibrated ? (
-            <>
-              <p className="text-sm font-bold text-app-text">
-                {placementCompleted}/5 trận
+            <div className="px-4 py-2.5 rounded-btn bg-app-mint/50 border border-app-primary/20 flex flex-col items-center">
+              <p className="text-xs font-black text-app-primary">
+                {placementCompleted}/5 trận phân hạng
               </p>
-              <p className="text-xs text-app-muted mt-1">
-                Điểm tạm tính · Hoàn tất phân hạng để xác định trình độ.
+              <p className="text-[11px] text-app-muted mt-0.5 font-medium">
+                Điểm tạm tính · Hoàn tất 5 trận để chính thức kích hoạt xếp hạng.
               </p>
-            </>
+            </div>
           ) : (
-            <>
-              <p className="text-sm font-bold text-app-text">
+            <div className="px-4 py-2.5 rounded-btn bg-app-mint/50 border border-app-primary/20 flex flex-col items-center">
+              <p className="text-xs font-black text-app-primary">
                 {next.pointsNeeded > 0
-                  ? `Còn ${next.pointsNeeded} Elo đến ${next.nextTier}`
+                  ? `Còn ${next.pointsNeeded} Elo để thăng hạng ${next.nextTier}`
                   : next.nextTier}
               </p>
-              <p className="text-xs text-app-muted mt-1">
+              <p className="text-[11px] text-app-muted mt-0.5 font-medium">
                 {next.pointsNeeded > 0
-                  ? `Tiến độ trong bậc hiện tại · Mốc ${next.targetElo} Elo`
-                  : 'Bạn đã đạt bậc cao nhất hiện tại'}
+                  ? `Mục tiêu kế tiếp: mốc ${next.targetElo} Elo`
+                  : 'Bạn đã đạt bậc xếp hạng cao nhất hiện tại'}
               </p>
-            </>
+            </div>
           )}
 
           {player.createdAt && (
-            <p className="text-[11px] text-app-muted mt-3">
-              Tham gia {formatMemberSince(player.createdAt)}
+            <p className="text-[11px] text-app-muted mt-3 font-medium">
+              Thành viên từ {formatMemberSince(player.createdAt)}
             </p>
           )}
         </div>
@@ -149,4 +153,3 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
     </BentoCard>
   );
 };
-

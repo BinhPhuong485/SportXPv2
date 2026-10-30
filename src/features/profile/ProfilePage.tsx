@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { RefreshCw, LogOut } from 'lucide-react';
 import { PageContent } from '../../shared/components/PageContent';
 import { BentoCard } from '../../shared/components/BentoCard';
+import { Button } from '../../shared/components/Button';
 import { useAuthStore } from '../../shared/hooks/useAuth';
 import { PlayerProfile, MatchDiaryItem } from './domain/playerProfile';
 import { profileRepository } from './data/profileRepository';
@@ -55,9 +56,9 @@ export const ProfilePage: React.FC = () => {
   if (loading && !profile) {
     return (
       <PageContent>
-        <div className="py-20 flex flex-col items-center justify-center text-center">
-          <div className="w-8 h-8 rounded-full border-2 border-app-primary border-t-transparent animate-spin mb-3" />
-          <p className="text-xs text-app-muted">Đang tải hồ sơ vận động viên…</p>
+        <div className="py-24 flex flex-col items-center justify-center text-center">
+          <div className="w-8 h-8 rounded-full border-3 border-app-primary border-t-transparent animate-spin mb-3" />
+          <p className="text-xs text-app-muted font-medium">Đang tải hồ sơ vận động viên…</p>
         </div>
       </PageContent>
     );
@@ -66,32 +67,34 @@ export const ProfilePage: React.FC = () => {
   if (!profile) {
     return (
       <PageContent>
-        <BentoCard>
-          <div className="flex flex-col gap-2">
-            <h3 className="text-lg font-bold text-app-text">Hồ sơ chưa khả dụng</h3>
-            <p className="text-sm text-app-muted">
+        <BentoCard doubleBezel>
+          <div className="flex flex-col gap-2 text-center py-4">
+            <h3 className="text-lg font-black text-app-text">Hồ sơ chưa khả dụng</h3>
+            <p className="text-xs text-app-muted">
               Bạn đã đăng nhập nhưng chưa tải được hồ sơ. Hãy thử tải lại hoặc đăng xuất để đăng nhập lại.
             </p>
           </div>
         </BentoCard>
 
         <div className="flex flex-col gap-3 pt-2">
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="lg"
             onClick={loadData}
-            className="w-full h-11 rounded-[12px] bg-app-primary text-app-on-primary font-bold text-xs uppercase flex items-center justify-center gap-2 hover:brightness-105 transition-all shadow-xs"
+            icon={<RefreshCw size={16} />}
+            className="w-full uppercase tracking-wider text-xs font-black shadow-xs"
           >
-            <RefreshCw size={16} />
-            <span>TẢI LẠI HỒ SƠ</span>
-          </button>
-          <button
-            type="button"
+            TẢI LẠI HỒ SƠ
+          </Button>
+          <Button
+            variant="danger"
+            size="lg"
             onClick={signOut}
-            className="w-full h-11 rounded-[12px] bg-app-surface border border-app-border text-app-loss font-bold text-xs uppercase flex items-center justify-center gap-2 hover:bg-app-loss/10 transition-all"
+            icon={<LogOut size={16} />}
+            className="w-full uppercase tracking-wider text-xs font-black"
           >
-            <LogOut size={16} />
-            <span>ĐĂNG XUẤT</span>
-          </button>
+            ĐĂNG XUẤT
+          </Button>
         </div>
       </PageContent>
     );
@@ -101,7 +104,7 @@ export const ProfilePage: React.FC = () => {
     <PageContent>
       {/* Feedback banner */}
       {feedback && (
-        <div className="p-3 rounded-xl bg-app-mint/30 border border-app-primary/30 text-app-primary text-xs font-bold text-center animate-in fade-in duration-200">
+        <div className="p-3.5 rounded-btn bg-app-mint border border-app-primary/30 text-app-primary text-xs font-black text-center shadow-xs animate-in fade-in duration-200">
           ✓ {feedback}
         </div>
       )}
@@ -122,23 +125,25 @@ export const ProfilePage: React.FC = () => {
       <HealthSyncCard />
 
       {/* 5. ACTION BUTTONS: CẬP NHẬT & ĐĂNG XUẤT */}
-      <div className="flex gap-3 pt-1">
-        <button
-          type="button"
+      <div className="grid grid-cols-2 gap-3 pt-1">
+        <Button
+          variant="outline"
+          size="lg"
           onClick={loadData}
-          className="flex-1 h-12 rounded-[12px] border border-app-border bg-app-surface text-app-muted hover:text-app-text text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-2xs"
+          icon={<RefreshCw size={16} />}
+          className="uppercase tracking-wider text-xs font-black shadow-2xs"
         >
-          <RefreshCw size={16} />
-          <span>CẬP NHẬT</span>
-        </button>
-        <button
-          type="button"
+          CẬP NHẬT
+        </Button>
+        <Button
+          variant="danger"
+          size="lg"
           onClick={signOut}
-          className="flex-1 h-12 rounded-[12px] border border-app-border bg-app-surface text-app-loss hover:bg-app-loss/10 text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-2xs"
+          icon={<LogOut size={16} />}
+          className="uppercase tracking-wider text-xs font-black shadow-2xs"
         >
-          <LogOut size={16} />
-          <span>ĐĂNG XUẤT</span>
-        </button>
+          ĐĂNG XUẤT
+        </Button>
       </div>
 
       {/* Edit Profile Bottom Sheet */}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, User, MapPin } from 'lucide-react';
 import { PlayerProfile } from '../../domain/playerProfile';
 import { Court } from '../../../rooms/data/managedRoomRepository';
+import { Button } from '../../../../shared/components/Button';
 
 interface EditProfileSheetProps {
   isOpen: boolean;
@@ -64,11 +65,11 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-xs transition-opacity duration-200"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[720px] bg-app-surface rounded-t-[24px] p-5 pb-8 border-t border-app-border shadow-2xl flex flex-col gap-4 animate-in slide-in-from-bottom duration-200"
+        className="w-full max-w-[720px] bg-app-surface rounded-t-bento p-6 pb-9 border-t border-app-border shadow-2xl flex flex-col gap-4 animate-in slide-in-from-bottom duration-300 ease-out"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drag handle */}
@@ -76,21 +77,26 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
 
         {/* Header */}
         <div className="flex items-center justify-between pb-2 border-b border-app-border/40">
-          <span className="text-xs font-bold text-app-muted tracking-widest uppercase">
-            CHỈNH SỬA HỒ SƠ
-          </span>
+          <div>
+            <span className="text-[11px] font-black text-app-muted tracking-widest uppercase">
+              THIẾT LẬP THÔNG TIN
+            </span>
+            <h3 className="text-base font-black text-app-text mt-0.5">
+              Chỉnh sửa hồ sơ cá nhân
+            </h3>
+          </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-full text-app-muted hover:text-app-text transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-app-muted hover:text-app-text hover:bg-app-background transition-colors"
           >
-            <X size={19} />
+            <X size={18} />
           </button>
         </div>
 
         {/* Error notification */}
         {error && (
-          <div className="p-3 rounded-xl bg-app-loss/10 border border-app-loss/30 text-app-loss text-xs font-semibold">
+          <div className="p-3 rounded-btn bg-app-loss/10 border border-app-loss/30 text-app-loss text-xs font-bold">
             {error}
           </div>
         )}
@@ -98,7 +104,7 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Display Name field */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-app-muted">Tên hiển thị</label>
+            <label className="text-xs font-black text-app-text">Tên hiển thị</label>
             <div className="relative flex items-center">
               <User size={16} className="absolute left-3.5 text-app-muted" />
               <input
@@ -106,15 +112,15 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
                 value={displayName}
                 maxLength={40}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Nhập tên của bạn..."
-                className="w-full h-11 pl-10 pr-4 rounded-xl bg-app-background border border-app-border text-app-text text-sm focus:outline-hidden focus:border-app-primary transition-colors"
+                placeholder="Nhập tên hiển thị..."
+                className="w-full h-12 pl-10 pr-4 rounded-btn bg-app-background border border-app-border text-app-text text-sm font-semibold focus:outline-hidden focus:border-app-primary focus:ring-1 focus:ring-app-primary/30 transition-all"
               />
             </div>
           </div>
 
           {/* Home Court field */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-bold text-app-muted">
+            <label className="text-xs font-black text-app-text">
               Sân nhà / Sân quen thuộc (Home Court)
             </label>
             <div className="relative flex items-center">
@@ -123,7 +129,7 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
                 value={homeCourtId || ''}
                 disabled={loadingCourts}
                 onChange={(e) => setHomeCourtId(e.target.value || null)}
-                className="w-full h-11 pl-10 pr-8 rounded-xl bg-app-background border border-app-border text-app-text text-sm focus:outline-hidden focus:border-app-primary transition-colors appearance-none"
+                className="w-full h-12 pl-10 pr-8 rounded-btn bg-app-background border border-app-border text-app-text text-sm font-semibold focus:outline-hidden focus:border-app-primary focus:ring-1 focus:ring-app-primary/30 transition-all appearance-none cursor-pointer"
               >
                 <option value="">Chưa chọn sân quen (Tự do)</option>
                 {courts.map((court) => (
@@ -138,16 +144,18 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
           </div>
 
           {/* Submit button */}
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="lg"
             disabled={saving}
-            className="w-full h-12 mt-2 rounded-[12px] bg-app-primary text-app-on-primary font-bold text-xs uppercase tracking-wider hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center shadow-xs disabled:opacity-60"
+            loading={saving}
+            className="w-full uppercase tracking-wider text-xs font-black mt-2 shadow-xs"
           >
-            {saving ? 'ĐANG LƯU…' : 'LƯU THAY ĐỔI'}
-          </button>
+            LƯU THAY ĐỔI
+          </Button>
         </form>
       </div>
     </div>
   );
 };
-
