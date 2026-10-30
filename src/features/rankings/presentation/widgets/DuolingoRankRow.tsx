@@ -21,81 +21,78 @@ export const DuolingoRankRow: React.FC<DuolingoRankRowProps> = ({
   const elo = player.eloRating ?? 750;
   const tier = rankTierFromElo(elo);
 
-  const getRankBadgeStyle = () => {
-    if (rank === 1) return 'text-app-gold font-black';
-    if (rank === 2) return 'text-app-muted font-black';
-    if (rank === 3) return 'text-amber-600 dark:text-amber-400 font-black';
-    return isCurrentUser ? 'text-app-primary font-black' : 'text-app-muted font-bold';
+  const getRankColor = () => {
+    if (rank === 1) return 'text-[#F59E0B]';
+    if (rank === 2) return 'text-[#94A3B8]';
+    if (rank === 3) return 'text-[#D97706]';
+    return isCurrentUser ? 'text-app-primary' : 'text-[#64748B]';
   };
 
-  const getTierClasses = (group: string) => {
-    switch (group) {
+  const getTierColorStyle = () => {
+    switch (tier.group) {
       case 'Nhập môn':
       case 'Yếu':
-        return 'bg-app-surface text-app-muted border-app-border';
+        return { color: '#94A3B8', bg: 'rgba(148, 163, 184, 0.15)' };
       case 'Trung bình yếu':
       case 'Trung bình':
-        return 'bg-app-streak/15 text-app-streak border-app-streak/30';
+        return { color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.15)' };
       case 'Trung bình khá':
-        return 'bg-app-event-joined/15 text-app-event-joined border-app-event-joined/30';
+        return { color: '#60A5FA', bg: 'rgba(96, 165, 250, 0.15)' };
       case 'Khá':
-        return 'bg-app-event-tournament/15 text-app-event-tournament border-app-event-tournament/30';
+        return { color: '#A855F7', bg: 'rgba(168, 85, 247, 0.15)' };
       case 'Tốt':
-        return 'bg-app-loss/15 text-app-loss border-app-loss/30';
+        return { color: '#EC4899', bg: 'rgba(236, 72, 153, 0.15)' };
       case 'Cao thủ phong trào':
       default:
-        return 'bg-app-primary/15 text-app-primary border-app-primary/30';
+        return { color: 'rgb(var(--color-primary))', bg: 'rgba(var(--color-primary), 0.15)' };
     }
   };
 
+  const tierStyle = getTierColorStyle();
   const initials = getPlayerInitials(player.displayName);
 
   return (
     <div
       onClick={onTap}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          onTap();
-        }
-      }}
-      className={`w-full px-4 py-3 flex items-center cursor-pointer transition-all duration-200 active:scale-[0.99] select-none ${
-        isCurrentUser
-          ? 'bg-app-primary/10 border-l-4 border-l-app-primary shadow-xs'
-          : 'hover:bg-app-surface/60'
+      className={`w-full px-3.5 py-2.5 flex items-center cursor-pointer transition-colors ${
+        isCurrentUser ? 'bg-app-primary/10 border-l-[3.5px] border-l-app-primary' : 'hover:bg-app-background/50'
       } ${showDivider ? 'border-b border-app-border/40' : ''}`}
     >
       {/* Rank Number & Delta */}
       <div className="w-11 flex flex-col items-center justify-center shrink-0">
-        <span className={`text-sm tabular-nums ${getRankBadgeStyle()}`}>
+        <span
+          className={`text-sm tabular-nums ${
+            rank <= 3 || isCurrentUser ? 'font-black' : 'font-bold'
+          } ${getRankColor()}`}
+        >
           #{rank}
         </span>
-        <div className="flex items-center text-[10px] font-extrabold mt-0.5 tabular-nums">
+        <div className="flex items-center text-[10px] font-extrabold mt-0.5">
           {player.rankDelta > 0 ? (
-            <span className="text-app-primary flex items-center font-bold">
+            <span className="text-[#10B981] flex items-center">
               ▲{player.rankDelta}
             </span>
           ) : player.rankDelta < 0 ? (
-            <span className="text-app-loss flex items-center font-bold">
+            <span className="text-[#EF4444] flex items-center">
               ▼{Math.abs(player.rankDelta)}
             </span>
           ) : (
-            <span className="text-app-muted font-bold">–</span>
+            <span className="text-[#64748B] font-bold">–</span>
           )}
         </div>
       </div>
 
       {/* Avatar Initials Circle */}
       <div
-        className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 mx-2.5 transition-transform ${
-          isCurrentUser
-            ? 'bg-app-mint text-app-primary ring-2 ring-app-primary/50 font-black'
-            : 'bg-app-background text-app-text border border-app-border font-bold'
+        className={`w-9 h-9 rounded-full bg-app-background flex items-center justify-center shrink-0 mx-2 border ${
+          isCurrentUser ? 'border-1.5 border-app-primary' : 'border-app-border'
         }`}
       >
-        <span className="text-xs uppercase">
+        <span
+          className={`text-xs font-bold ${
+            isCurrentUser ? 'text-app-primary' : 'text-app-text'
+          }`}
+        >
           {initials}
         </span>
       </div>
@@ -105,31 +102,30 @@ export const DuolingoRankRow: React.FC<DuolingoRankRowProps> = ({
         <div className="flex items-center gap-1.5">
           <span
             className={`text-sm truncate ${
-              isCurrentUser ? 'font-black text-app-text' : 'font-semibold text-app-text'
+              isCurrentUser ? 'font-extrabold text-app-text' : 'font-semibold text-app-text'
             }`}
           >
             {player.displayName}
           </span>
           {isCurrentUser && (
-            <span className="px-1.5 py-0.5 rounded-badge bg-app-primary text-app-on-primary text-[9px] font-black tracking-wider uppercase shrink-0">
+            <span className="px-1.5 py-0.5 rounded bg-app-primary text-app-on-primary text-[9px] font-black tracking-wider shrink-0">
               BẠN
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 mt-1">
+        <div className="flex items-center gap-1.5 mt-0.5">
           {/* Tier badge */}
           <span
-            className={`px-2 py-0.5 rounded-badge text-[10px] font-bold border shrink-0 ${getTierClasses(
-              tier.group
-            )}`}
+            className="px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0"
+            style={{ color: tierStyle.color, backgroundColor: tierStyle.bg }}
           >
             {tier.label}
           </span>
 
           {/* Win streak */}
           {player.winStreak > 0 && (
-            <span className="flex items-center gap-0.5 text-[11px] font-extrabold text-app-streak shrink-0">
+            <span className="flex items-center text-[10px] font-extrabold text-app-streak shrink-0">
               🔥 {player.winStreak}
             </span>
           )}
@@ -139,15 +135,13 @@ export const DuolingoRankRow: React.FC<DuolingoRankRowProps> = ({
       {/* Elo Score */}
       <div className="flex flex-col items-end justify-center shrink-0">
         <span
-          className={`text-base font-black tabular-nums tracking-tight ${
+          className={`text-base font-extrabold tabular-nums ${
             isCurrentUser ? 'text-app-primary' : 'text-app-text'
           }`}
         >
           {elo}
         </span>
-        <span className="text-[10px] font-semibold text-app-muted uppercase tracking-wider">
-          Elo
-        </span>
+        <span className="text-[10px] font-semibold text-app-muted">Elo</span>
       </div>
     </div>
   );

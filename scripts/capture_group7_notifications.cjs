@@ -64,12 +64,14 @@ async function run() {
   await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 10000 }).catch(() => {});
   await new Promise((r) => setTimeout(r, 1500));
 
-  // Navigate to Rooms where TopAppBar is present
-  console.log('Navigating to Rooms with notice=true...');
-  await page.goto('http://localhost:5174/#/rooms?notice=true', { waitUntil: 'networkidle0' });
-  await new Promise((r) => setTimeout(r, 1500));
+  // Open notification sheet by clicking the notification bell icon
+  console.log('Opening Notification Modal Sheet...');
+  await page.setViewport({ width: 375, height: 812 });
+  await page.waitForSelector('button[aria-label="Thông báo"]', { timeout: 8000 });
+  await page.click('button[aria-label="Thông báo"]');
+  await new Promise((r) => setTimeout(r, 800));
 
-  // Capture dual theme at 375px
+  // Capture dual theme
   console.log('Capturing Notification Sheet at 375px...');
   await captureDualTheme('notification-sheet', { width: 375, height: 812 });
 
@@ -81,3 +83,4 @@ run().catch((err) => {
   console.error(err);
   process.exit(1);
 });
+

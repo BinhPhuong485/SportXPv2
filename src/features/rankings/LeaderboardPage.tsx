@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { RefreshCw, CircleDot, ChevronDown, Trophy, TrendingUp, Medal, Sparkles } from 'lucide-react';
+import { RefreshCw, CircleDot, ChevronDown, Trophy, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '../../shared/hooks/useAuth';
 import { Court, PlayerProfile } from '../../core/types/database.types';
 import {
@@ -11,7 +11,6 @@ import { CourtPickerSheet } from './presentation/widgets/CourtPickerSheet';
 import { DuolingoRankRow } from './presentation/widgets/DuolingoRankRow';
 import { MyFixedStandingBar } from './presentation/widgets/MyFixedStandingBar';
 import { PlayerDetailModal } from './presentation/widgets/PlayerDetailModal';
-import { EmptyState } from '../../shared/components/EmptyState';
 
 type LeaderboardViewMode = 'all' | 'nearMe';
 
@@ -138,7 +137,7 @@ export const LeaderboardPage: React.FC = () => {
     <div className="min-h-full flex flex-col bg-app-background text-app-text select-none">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-btn bg-app-surface text-app-text border border-app-border shadow-xl text-xs font-bold animate-in fade-in slide-in-from-top duration-200">
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-app-surface text-app-text border border-app-border shadow-xl text-xs font-bold animate-in fade-in slide-in-from-top duration-200">
           {toastMessage}
         </div>
       )}
@@ -146,25 +145,20 @@ export const LeaderboardPage: React.FC = () => {
       {/* Main Scroll Content */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto px-4 py-3 pb-28 max-w-[720px] w-full mx-auto flex flex-col gap-4"
+        className="flex-1 overflow-y-auto px-4 py-3 pb-24 max-w-[720px] w-full mx-auto flex flex-col gap-4"
       >
         {/* Top Header */}
         <div className="flex items-center justify-between pt-1">
-          <div>
-            <h1 className="text-2xl font-black tracking-tight text-app-text">
-              Bảng xếp hạng
-            </h1>
-            <p className="text-xs text-app-muted mt-0.5">
-              Hệ thống xếp hạng Elo theo câu lạc bộ & khu vực
-            </p>
-          </div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-app-text">
+            Bảng xếp hạng
+          </h1>
           <button
             type="button"
             onClick={loadCourtsAndData}
             title="Cập nhật bảng xếp hạng"
-            className="w-10 h-10 rounded-full flex items-center justify-center text-app-muted hover:text-app-text hover:bg-app-surface border border-transparent hover:border-app-border active:scale-95 transition-all"
+            className="w-10 h-10 rounded-full flex items-center justify-center text-app-muted hover:text-app-text hover:bg-app-surface/60 active:scale-95 transition-all"
           >
-            <RefreshCw size={18} className={loading ? 'animate-spin text-app-primary' : ''} />
+            <RefreshCw size={19} className={loading ? 'animate-spin text-app-primary' : ''} />
           </button>
         </div>
 
@@ -172,38 +166,37 @@ export const LeaderboardPage: React.FC = () => {
         <button
           type="button"
           onClick={() => setIsCourtPickerOpen(true)}
-          className="w-full p-3.5 rounded-bento bg-app-surface border border-app-border shadow-xs hover:border-app-primary/50 flex items-center justify-between text-left active:scale-[0.99] transition-all group"
+          className="w-full p-3.5 rounded-[14px] bg-app-surface border border-app-border flex items-center justify-between text-left hover:border-app-primary/50 active:scale-[0.99] transition-all shadow-xs"
         >
-          <div className="flex items-center gap-3.5 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-app-primary/10 border border-app-primary/20 flex items-center justify-center text-app-primary shrink-0 group-hover:scale-105 transition-transform">
-              <CircleDot size={20} />
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-9 h-9 rounded-full bg-app-primary/10 flex items-center justify-center text-app-primary shrink-0">
+              <CircleDot size={18} />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-[15px] font-black text-app-text truncate group-hover:text-app-primary transition-colors">
+              <span className="text-[15px] font-bold text-app-text truncate">
                 {currentCourtName}
               </span>
-              <span className="text-xs text-app-muted mt-0.5 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-app-primary" />
-                {allPlayers.length} tay vợt đang tranh tài
+              <span className="text-xs text-app-muted mt-0.5">
+                {allPlayers.length} tay vợt
               </span>
             </div>
           </div>
-          <ChevronDown size={18} className="text-app-muted shrink-0 ml-2 group-hover:text-app-text transition-colors" />
+          <ChevronDown size={18} className="text-app-muted shrink-0 ml-2" />
         </button>
 
         {/* Loading Spinner */}
         {loading && allPlayers.length === 0 ? (
-          <div className="py-24 flex flex-col items-center justify-center gap-3 text-app-muted text-xs">
-            <div className="w-8 h-8 border-3 border-app-primary border-t-transparent rounded-full animate-spin" />
-            <span className="font-medium">Đang tải bảng xếp hạng…</span>
+          <div className="py-20 flex flex-col items-center justify-center gap-3 text-app-muted text-xs">
+            <div className="w-7 h-7 border-2 border-app-primary border-t-transparent rounded-full animate-spin" />
+            <span>Đang tải bảng xếp hạng…</span>
           </div>
         ) : errorMessage && allPlayers.length === 0 ? (
-          <div className="py-16 flex flex-col items-center justify-center gap-3 text-center px-4 bg-app-surface rounded-bento border border-app-border">
+          <div className="py-16 flex flex-col items-center justify-center gap-3 text-center px-4">
             <span className="text-sm text-app-muted">{errorMessage}</span>
             <button
               type="button"
               onClick={loadCourtsAndData}
-              className="px-4 py-2.5 rounded-btn bg-app-primary text-app-on-primary font-bold text-xs flex items-center gap-2 hover:brightness-105 active:scale-95 transition-all shadow-xs"
+              className="px-4 py-2 rounded-xl bg-app-primary text-app-on-primary font-bold text-xs flex items-center gap-1.5"
             >
               <RefreshCw size={14} />
               <span>Thử lại</span>
@@ -211,108 +204,75 @@ export const LeaderboardPage: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Top 3 Podium Card with Double Bezel */}
+            {/* Top 3 Podium */}
             {hasPodium && (
-              <div className="relative rounded-bento bg-app-surface border border-app-border p-4 pt-5 pb-3 overflow-hidden shadow-xs">
-                {/* Court watermark accent */}
-                <div className="absolute top-0 right-0 w-44 h-44 bg-radial from-app-primary/10 to-transparent pointer-events-none -mr-16 -mt-16 rounded-full" />
-                
-                <div className="flex items-center justify-between mb-4 px-1">
-                  <div className="flex items-center gap-2">
-                    <Medal size={16} className="text-app-gold" />
-                    <span className="text-xs font-black tracking-wider uppercase text-app-text">
-                      Top 3 Xuất Sắc Nhất
-                    </span>
-                  </div>
-                  <span className="text-[11px] text-app-muted font-medium flex items-center gap-1">
-                    <Sparkles size={12} className="text-app-primary" />
-                    Dẫn đầu sân
-                  </span>
-                </div>
+              <div className="flex flex-col gap-3 mt-1">
+                <span className="text-xs font-bold text-app-muted px-1">
+                  Top tay vợt tại sân
+                </span>
 
-                <div className="grid grid-cols-3 items-end gap-2.5 pt-1">
-                  {/* Rank #2 (Left - Silver) */}
+                <div className="grid grid-cols-3 items-end gap-2 pt-2 pb-1">
+                  {/* Rank #2 (Left) */}
                   <div
                     onClick={() =>
                       setSelectedPlayerModal({ player: allPlayers[1], rank: 2 })
                     }
-                    role="button"
-                    tabIndex={0}
-                    className="flex flex-col items-center cursor-pointer group active:scale-95 transition-transform"
+                    className="flex flex-col items-center cursor-pointer group"
                   >
-                    <div className="relative mb-2">
-                      <div className="w-13 h-13 rounded-full bg-app-background border-2 border-app-border flex items-center justify-center text-sm font-black text-app-text shrink-0 group-hover:scale-105 transition-transform shadow-xs">
-                        {getPlayerInitials(allPlayers[1].displayName)}
-                      </div>
-                      <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-app-surface border border-app-border flex items-center justify-center text-[10px] font-black text-app-muted shadow-xs">
-                        2
-                      </span>
+                    <div className="w-12 h-12 rounded-full bg-app-mint border border-app-border flex items-center justify-center text-sm font-bold text-app-primary shrink-0 mb-2 group-hover:scale-105 transition-transform">
+                      {getPlayerInitials(allPlayers[1].displayName)}
                     </div>
                     <span className="text-xs font-bold text-app-text text-center truncate max-w-full px-1">
                       {allPlayers[1].displayName}
                     </span>
-                    <span className="text-[11px] font-semibold text-app-muted tabular-nums mt-0.5">
+                    <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
                       {allPlayers[1].eloRating ?? '—'} Elo
                     </span>
-                    <div className="w-full h-12 mt-2 rounded-t-xl bg-app-background/90 border-t-2 border-t-app-muted/60 flex items-center justify-center shadow-inner">
-                      <span className="text-base font-black text-app-muted">#2</span>
+                    <div className="w-full h-11 mt-2.5 rounded-t-[14px] bg-app-surface border-t-3 border-t-app-primary flex items-center justify-center shadow-xs">
+                      <span className="text-lg font-extrabold text-app-primary">#2</span>
                     </div>
                   </div>
 
-                  {/* Rank #1 (Center - Gold Champion) */}
+                  {/* Rank #1 (Center - Champion) */}
                   <div
                     onClick={() =>
                       setSelectedPlayerModal({ player: allPlayers[0], rank: 1 })
                     }
-                    role="button"
-                    tabIndex={0}
-                    className="flex flex-col items-center cursor-pointer group active:scale-95 transition-transform z-10"
+                    className="flex flex-col items-center cursor-pointer group"
                   >
-                    <Trophy size={22} className="text-app-gold animate-bounce-subtle mb-1" />
-                    <div className="relative mb-2">
-                      <div className="w-16 h-16 rounded-full bg-app-mint border-2 border-app-gold ring-4 ring-app-gold/20 flex items-center justify-center text-base font-black text-app-streak shrink-0 group-hover:scale-105 transition-transform shadow-md">
-                        {getPlayerInitials(allPlayers[0].displayName)}
-                      </div>
-                      <span className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-app-gold text-white flex items-center justify-center text-xs font-black shadow-sm">
-                        👑
-                      </span>
+                    <Trophy size={22} className="text-app-streak mb-1.5" />
+                    <div className="w-15 h-15 rounded-full bg-app-mint border-2 border-app-streak flex items-center justify-center text-base font-extrabold text-app-streak shrink-0 mb-2 group-hover:scale-105 transition-transform">
+                      {getPlayerInitials(allPlayers[0].displayName)}
                     </div>
-                    <span className="text-xs font-black text-app-text text-center truncate max-w-full px-1">
+                    <span className="text-xs font-extrabold text-app-text text-center truncate max-w-full px-1">
                       {allPlayers[0].displayName}
                     </span>
-                    <span className="text-[11px] font-bold text-app-streak tabular-nums mt-0.5">
+                    <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
                       {allPlayers[0].eloRating ?? '—'} Elo
                     </span>
-                    <div className="w-full h-18 mt-2 rounded-t-xl bg-app-mint/40 border-t-3 border-t-app-gold flex items-center justify-center shadow-inner">
-                      <span className="text-xl font-black text-app-gold">#1</span>
+                    <div className="w-full h-16 mt-2.5 rounded-t-[14px] bg-app-surface border-t-3 border-t-app-streak flex items-center justify-center shadow-xs">
+                      <span className="text-xl font-black text-app-streak">#1</span>
                     </div>
                   </div>
 
-                  {/* Rank #3 (Right - Bronze) */}
+                  {/* Rank #3 (Right) */}
                   <div
                     onClick={() =>
                       setSelectedPlayerModal({ player: allPlayers[2], rank: 3 })
                     }
-                    role="button"
-                    tabIndex={0}
-                    className="flex flex-col items-center cursor-pointer group active:scale-95 transition-transform"
+                    className="flex flex-col items-center cursor-pointer group"
                   >
-                    <div className="relative mb-2">
-                      <div className="w-13 h-13 rounded-full bg-app-background border-2 border-amber-600/40 dark:border-amber-400/40 flex items-center justify-center text-sm font-black text-amber-700 dark:text-amber-400 shrink-0 group-hover:scale-105 transition-transform shadow-xs">
-                        {getPlayerInitials(allPlayers[2].displayName)}
-                      </div>
-                      <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-app-surface border border-app-border flex items-center justify-center text-[10px] font-black text-amber-600 dark:text-amber-400 shadow-xs">
-                        3
-                      </span>
+                    <div className="w-12 h-12 rounded-full bg-app-mint border border-app-border flex items-center justify-center text-sm font-bold text-app-primary shrink-0 mb-2 group-hover:scale-105 transition-transform">
+                      {getPlayerInitials(allPlayers[2].displayName)}
                     </div>
                     <span className="text-xs font-bold text-app-text text-center truncate max-w-full px-1">
                       {allPlayers[2].displayName}
                     </span>
-                    <span className="text-[11px] font-semibold text-app-muted tabular-nums mt-0.5">
+                    <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
                       {allPlayers[2].eloRating ?? '—'} Elo
                     </span>
-                    <div className="w-full h-10 mt-2 rounded-t-xl bg-app-background/90 border-t-2 border-t-amber-600/60 dark:border-t-amber-400/60 flex items-center justify-center shadow-inner">
-                      <span className="text-base font-black text-amber-700 dark:text-amber-400">#3</span>
+                    <div className="w-full h-9 mt-2.5 rounded-t-[14px] bg-app-surface border-t-3 border-t-app-primary flex items-center justify-center shadow-xs">
+                      <span className="text-base font-extrabold text-app-primary">#3</span>
                     </div>
                   </div>
                 </div>
@@ -321,19 +281,17 @@ export const LeaderboardPage: React.FC = () => {
 
             {/* Motivation banner */}
             {userCourtRank?.pointsToNextRank != null && (
-              <div className="p-3.5 rounded-btn bg-app-mint border border-app-primary/25 flex items-center gap-3 shadow-xs">
-                <div className="w-8 h-8 rounded-full bg-app-primary/20 flex items-center justify-center text-app-primary shrink-0">
-                  <TrendingUp size={18} />
-                </div>
+              <div className="p-4 rounded-2xl bg-app-mint flex items-center gap-3 shadow-xs">
+                <TrendingUp size={20} className="text-app-primary shrink-0" />
                 <span className="text-xs font-bold text-app-primary leading-snug">
-                  Còn <span className="font-black underline">{userCourtRank.pointsToNextRank} Elo</span> để vượt{' '}
-                  <span className="font-black">{userCourtRank.nextPlayerName ?? 'vị trí phía trên'}</span>
+                  Còn {userCourtRank.pointsToNextRank} Elo để vượt{' '}
+                  {userCourtRank.nextPlayerName ?? 'vị trí phía trên'}
                 </span>
               </div>
             )}
 
             {/* Segmented Button View Mode */}
-            <div className="w-full p-1 bg-app-surface rounded-btn border border-app-border grid grid-cols-2 gap-1 shadow-xs">
+            <div className="w-full p-1 bg-app-surface rounded-[14px] border border-app-border grid grid-cols-2 gap-1 shadow-xs">
               <button
                 type="button"
                 onClick={() => setViewMode('all')}
@@ -343,7 +301,7 @@ export const LeaderboardPage: React.FC = () => {
                     : 'text-app-muted hover:text-app-text'
                 }`}
               >
-                Tất cả ({allPlayers.length})
+                Tất cả
               </button>
               <button
                 type="button"
@@ -360,13 +318,11 @@ export const LeaderboardPage: React.FC = () => {
 
             {/* Ranked List Section */}
             {listPlayers.length === 0 ? (
-              <EmptyState
-                type="racket"
-                title="Chưa có vận động viên"
-                description="Bảng xếp hạng tại sân này chưa có người chơi nào ghi nhận kết quả."
-              />
+              <div className="py-8 text-center text-xs text-app-muted bg-app-surface rounded-2xl border border-app-border p-4">
+                Chưa có vận động viên trong bảng xếp hạng sân này.
+              </div>
             ) : (
-              <div className="bg-app-surface rounded-bento border border-app-border overflow-hidden shadow-xs divide-y divide-app-border/40">
+              <div className="bg-app-surface rounded-2xl border border-app-border overflow-hidden shadow-xs divide-y divide-app-border/40">
                 {listPlayers.map((player) => {
                   const playerRank = allPlayers.findIndex((p) => p.id === player.id) + 1;
                   const isCurrent = player.id === currentUserId;
