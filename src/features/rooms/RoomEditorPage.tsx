@@ -16,10 +16,14 @@ import {
   CheckCircle2,
   KeyRound,
   Check,
+  ChevronDown,
+  ChevronUp,
+  Clock,
 } from 'lucide-react';
 import { managedRoomRepository, roomFailure } from './data/managedRoomRepository';
 import { ManagedRoomData, Court, newRoomRequestId } from './domain/managedRoom';
 import { RoomUiFormatters } from './presentation/widgets/roomUiFormatters';
+import { MiniDatePicker } from './presentation/widgets/MiniDatePicker';
 
 function generateRoomCode(): string {
   const hex = Math.random().toString(16).substring(2, 8).toUpperCase();
@@ -60,6 +64,7 @@ export const RoomEditorPage: React.FC = () => {
     d.setHours(d.getHours() + 2, 0, 0, 0);
     return d;
   });
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
 
   // Load courts and existing room (if editing)
   useEffect(() => {
@@ -165,14 +170,57 @@ export const RoomEditorPage: React.FC = () => {
     return `${datePrefix}, ${hours}:${minutes}`;
   };
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value; // YYYY-MM-DDTHH:mm
+  const formatDateLabel = (d: Date) => {
+    const weekdays = ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+    const now = new Date();
+    const isToday =
+      d.getFullYear() === now.getFullYear() &&
+      d.getMonth() === now.getMonth() &&
+      d.getDate() === now.getDate();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const isTomorrow =
+      d.getFullYear() === tomorrow.getFullYear() &&
+      d.getMonth() === tomorrow.getMonth() &&
+      d.getDate() === tomorrow.getDate();
+
+    const prefix = isToday ? 'Hôm nay' : isTomorrow ? 'Ngày mai' : weekdays[d.getDay()];
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${prefix}, ${dd}/${mm}/${yyyy}`;
+  };
+
+  const handleSelectDate = (date: Date) => {
+    const updated = new Date(startsAt);
+    updated.setFullYear(date.getFullYear(), date.getMonth(), date.getDate());
+    setStartsAt(updated);
+    setIsDatePickerOpen(false);
+  };
+
+  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
     if (!val) return;
-    const parsed = new Date(val);
-    if (!isNaN(parsed.getTime())) {
-      setStartsAt(parsed);
+    const [hhStr, mmStr] = val.split(':');
+    const hh = parseInt(hhStr, 10);
+    const mm = parseInt(mmStr, 10);
+    if (!isNaN(hh) && !isNaN(mm)) {
+      const updated = new Date(startsAt);
+      updated.setHours(hh, mm, 0, 0);
+      setStartsAt(updated);
     }
   };
+
+  const handleQuickTime = (hh: number, mm: number) => {
+    const updated = new Date(startsAt);
+    updated.setHours(hh, mm, 0, 0);
+    setStartsAt(updated);
+  };
+
+  const timeString = `${String(startsAt.getHours()).padStart(2, '0')}:${String(
+    startsAt.getMinutes()
+  ).padStart(2, '0')}`;
+
 
   const validate = (): string | null => {
     const t = title.trim();
@@ -260,9 +308,6 @@ export const RoomEditorPage: React.FC = () => {
   const currentCancel = parseInt(cancelBeforeMinutes, 10) || 60;
   const capCount = parseInt(capacity, 10) || 4;
 
-  const isoDateTimeString = new Date(startsAt.getTime() - startsAt.getTimezoneOffset() * 60000)
-    .toISOString()
-    .slice(0, 16);
 
   if (loading) {
     return (
@@ -497,35 +542,111 @@ export const RoomEditorPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Start time */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-app-muted">
-                Thời gian bắt đầu thi đấu
+            {/* Start date & time */}
+            <div className="flex flex-col gap-2">
+              <label className="text-xs font-semibold text-app-muted flex items-center justify-between">
+                <span>Thời gian thi đấu</span>
+                <span className="text-[11px] text-app-primary font-bold">
+                  {formatDisplayStart(startsAt)}
+                </span>
               </label>
-              <div className="p-3 rounded-xl bg-app-background border border-app-border flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-app-primary/12 text-app-primary flex items-center justify-center">
-                    <Calendar size={18} />
+
+              {/* Date Button & Time Picker in a responsive 2-column grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {/* Date Button (Sổ lịch nhỏ ra) */}
+                <button
+                  type="button"
+                  onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
+                  className={`p-3 rounded-xl border flex items-center justify-between text-left transition-all ${
+                    isDatePickerOpen
+                      ? 'bg-app-primary/10 border-app-primary text-app-primary shadow-xs'
+                      : 'bg-app-background border-app-border hover:border-app-primary/40 text-app-text'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-app-primary/15 text-app-primary flex items-center justify-center shrink-0">
+                      <Calendar size={17} />
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[10px] font-bold text-app-muted uppercase tracking-wider">
+                        Ngày thi đấu
+                      </span>
+                      <span className="text-xs font-black truncate">
+                        {formatDateLabel(startsAt)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col">
-                    <span className="text-[11px] text-app-muted">Bắt đầu lúc</span>
-                    <span className="text-sm font-bold text-app-text">
-                      {formatDisplayStart(startsAt)}
-                    </span>
+                  <div className="text-app-muted shrink-0 ml-1">
+                    {isDatePickerOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                   </div>
-                </div>
-                <div className="relative">
+                </button>
+
+                {/* Time Picker Box */}
+                <div className="p-3 rounded-xl bg-app-background border border-app-border flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-app-primary/15 text-app-primary flex items-center justify-center shrink-0">
+                      <Clock size={17} />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-bold text-app-muted uppercase tracking-wider">
+                        Giờ bắt đầu
+                      </span>
+                      <span className="text-xs font-black text-app-text">
+                        {timeString}
+                      </span>
+                    </div>
+                  </div>
                   <input
-                    type="datetime-local"
-                    value={isoDateTimeString}
-                    onChange={handleDateChange}
+                    type="time"
+                    value={timeString}
+                    onChange={handleTimeChange}
                     disabled={busy}
-                    className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    className="bg-app-surface border border-app-border rounded-lg px-2.5 py-1 text-xs font-black text-app-primary cursor-pointer hover:border-app-primary focus:outline-hidden"
                   />
-                  <div className="px-3 py-1.5 rounded-lg bg-app-surface border border-app-border text-xs font-bold text-app-primary hover:border-app-primary pointer-events-none">
-                    Đổi giờ
-                  </div>
                 </div>
+              </div>
+
+              {/* Collapsible Mini Calendar (Lịch nhỏ sổ ra) */}
+              {isDatePickerOpen && (
+                <div className="mt-1">
+                  <MiniDatePicker
+                    selectedDate={startsAt}
+                    onSelectDate={handleSelectDate}
+                    onClose={() => setIsDatePickerOpen(false)}
+                    minDate={new Date()}
+                  />
+                </div>
+              )}
+
+              {/* Quick Time Presets */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-1">
+                <span className="text-[10px] font-bold text-app-muted shrink-0 mr-1">
+                  Giờ nhanh:
+                </span>
+                {[
+                  { label: '17:00', h: 17, m: 0 },
+                  { label: '18:00', h: 18, m: 0 },
+                  { label: '19:00', h: 19, m: 0 },
+                  { label: '19:30', h: 19, m: 30 },
+                  { label: '20:00', h: 20, m: 0 },
+                ].map((item) => {
+                  const isCurrentTime =
+                    startsAt.getHours() === item.h && startsAt.getMinutes() === item.m;
+                  return (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => handleQuickTime(item.h, item.m)}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-bold whitespace-nowrap transition-colors ${
+                        isCurrentTime
+                          ? 'bg-app-primary text-app-on-primary'
+                          : 'bg-app-background border border-app-border text-app-muted hover:text-app-text'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
