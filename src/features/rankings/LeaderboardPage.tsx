@@ -130,7 +130,7 @@ export const LeaderboardPage: React.FC = () => {
   const currentCourtName = currentCourt?.name || 'Sân thi đấu';
   const currentUserProfile = allPlayers.find((p) => p.id === currentUserId);
 
-  const hasPodium = viewMode === 'all' && allPlayers.length >= 3;
+  const hasPodium = viewMode === 'all' && allPlayers.length >= 1;
   const listPlayers = hasPodium ? displayPlayers.slice(3) : displayPlayers;
 
   return (
@@ -213,25 +213,42 @@ export const LeaderboardPage: React.FC = () => {
 
                 <div className="grid grid-cols-3 items-end gap-2 pt-2 pb-1">
                   {/* Rank #2 (Left) */}
-                  <div
-                    onClick={() =>
-                      setSelectedPlayerModal({ player: allPlayers[1], rank: 2 })
-                    }
-                    className="flex flex-col items-center cursor-pointer group"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-app-mint border border-app-border flex items-center justify-center text-sm font-bold text-app-primary shrink-0 mb-2 group-hover:scale-105 transition-transform">
-                      {getPlayerInitials(allPlayers[1].displayName)}
+                  {allPlayers[1] ? (
+                    <div
+                      onClick={() =>
+                        setSelectedPlayerModal({ player: allPlayers[1], rank: 2 })
+                      }
+                      className="flex flex-col items-center cursor-pointer group"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-app-mint border border-app-border flex items-center justify-center text-sm font-bold text-app-primary shrink-0 mb-2 group-hover:scale-105 transition-transform">
+                        {getPlayerInitials(allPlayers[1].displayName)}
+                      </div>
+                      <span className="text-xs font-bold text-app-text text-center truncate max-w-full px-1">
+                        {allPlayers[1].displayName}
+                      </span>
+                      <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
+                        {allPlayers[1].eloRating ?? '—'} Elo
+                      </span>
+                      <div className="w-full h-11 mt-2.5 rounded-t-[14px] bg-app-surface border-t-3 border-t-app-primary flex items-center justify-center shadow-xs">
+                        <span className="text-lg font-extrabold text-app-primary">#2</span>
+                      </div>
                     </div>
-                    <span className="text-xs font-bold text-app-text text-center truncate max-w-full px-1">
-                      {allPlayers[1].displayName}
-                    </span>
-                    <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
-                      {allPlayers[1].eloRating ?? '—'} Elo
-                    </span>
-                    <div className="w-full h-11 mt-2.5 rounded-t-[14px] bg-app-surface border-t-3 border-t-app-primary flex items-center justify-center shadow-xs">
-                      <span className="text-lg font-extrabold text-app-primary">#2</span>
+                  ) : (
+                    <div className="flex flex-col items-center opacity-40">
+                      <div className="w-12 h-12 rounded-full border border-dashed border-app-border flex items-center justify-center text-xs text-app-muted shrink-0 mb-2">
+                        —
+                      </div>
+                      <span className="text-xs font-medium text-app-muted text-center truncate max-w-full px-1">
+                        Trống
+                      </span>
+                      <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
+                        —
+                      </span>
+                      <div className="w-full h-11 mt-2.5 rounded-t-[14px] bg-app-surface/60 border-t-3 border-t-app-border flex items-center justify-center shadow-xs">
+                        <span className="text-lg font-extrabold text-app-muted">#2</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Rank #1 (Center - Champion) */}
                   <div
@@ -256,25 +273,42 @@ export const LeaderboardPage: React.FC = () => {
                   </div>
 
                   {/* Rank #3 (Right) */}
-                  <div
-                    onClick={() =>
-                      setSelectedPlayerModal({ player: allPlayers[2], rank: 3 })
-                    }
-                    className="flex flex-col items-center cursor-pointer group"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-app-mint border border-app-border flex items-center justify-center text-sm font-bold text-app-primary shrink-0 mb-2 group-hover:scale-105 transition-transform">
-                      {getPlayerInitials(allPlayers[2].displayName)}
+                  {allPlayers[2] ? (
+                    <div
+                      onClick={() =>
+                        setSelectedPlayerModal({ player: allPlayers[2], rank: 3 })
+                      }
+                      className="flex flex-col items-center cursor-pointer group"
+                    >
+                      <div className="w-12 h-12 rounded-full bg-app-mint border border-app-border flex items-center justify-center text-sm font-bold text-app-primary shrink-0 mb-2 group-hover:scale-105 transition-transform">
+                        {getPlayerInitials(allPlayers[2].displayName)}
+                      </div>
+                      <span className="text-xs font-bold text-app-text text-center truncate max-w-full px-1">
+                        {allPlayers[2].displayName}
+                      </span>
+                      <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
+                        {allPlayers[2].eloRating ?? '—'} Elo
+                      </span>
+                      <div className="w-full h-9 mt-2.5 rounded-t-[14px] bg-app-surface border-t-3 border-t-app-primary flex items-center justify-center shadow-xs">
+                        <span className="text-base font-extrabold text-app-primary">#3</span>
+                      </div>
                     </div>
-                    <span className="text-xs font-bold text-app-text text-center truncate max-w-full px-1">
-                      {allPlayers[2].displayName}
-                    </span>
-                    <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
-                      {allPlayers[2].eloRating ?? '—'} Elo
-                    </span>
-                    <div className="w-full h-9 mt-2.5 rounded-t-[14px] bg-app-surface border-t-3 border-t-app-primary flex items-center justify-center shadow-xs">
-                      <span className="text-base font-extrabold text-app-primary">#3</span>
+                  ) : (
+                    <div className="flex flex-col items-center opacity-40">
+                      <div className="w-12 h-12 rounded-full border border-dashed border-app-border flex items-center justify-center text-xs text-app-muted shrink-0 mb-2">
+                        —
+                      </div>
+                      <span className="text-xs font-medium text-app-muted text-center truncate max-w-full px-1">
+                        Trống
+                      </span>
+                      <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
+                        —
+                      </span>
+                      <div className="w-full h-9 mt-2.5 rounded-t-[14px] bg-app-surface/60 border-t-3 border-t-app-border flex items-center justify-center shadow-xs">
+                        <span className="text-base font-extrabold text-app-muted">#3</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             )}
@@ -318,9 +352,11 @@ export const LeaderboardPage: React.FC = () => {
 
             {/* Ranked List Section */}
             {listPlayers.length === 0 ? (
-              <div className="py-8 text-center text-xs text-app-muted bg-app-surface rounded-2xl border border-app-border p-4">
-                Chưa có vận động viên trong bảng xếp hạng sân này.
-              </div>
+              allPlayers.length === 0 ? (
+                <div className="py-8 text-center text-xs text-app-muted bg-app-surface rounded-2xl border border-app-border p-4">
+                  Chưa có vận động viên trong bảng xếp hạng sân này.
+                </div>
+              ) : null
             ) : (
               <div className="bg-app-surface rounded-2xl border border-app-border overflow-hidden shadow-xs divide-y divide-app-border/40">
                 {listPlayers.map((player) => {
