@@ -247,8 +247,8 @@ export const RoomDetailPage: React.FC = () => {
           </div>
         )}
 
-        {/* 1. STATUS & TITLE CARD */}
-        <BentoCard highlighted={room.status === 'IN_PROGRESS'}>
+        {/* 1. STATUS & TITLE CARD WITH DOUBLE-BEZEL DEPTH */}
+        <BentoCard highlighted={room.status === 'IN_PROGRESS'} doubleBezel courtPattern>
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-2">
               <span className="px-2.5 py-1 rounded-md bg-app-primary/12 text-app-primary text-xs font-extrabold tracking-wider border border-app-primary/30">

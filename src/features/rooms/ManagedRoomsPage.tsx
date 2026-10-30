@@ -27,6 +27,7 @@ import {
 import { RoomCard } from './presentation/widgets/RoomCard';
 import { RoomFilterSheet } from './presentation/widgets/RoomFilterSheet';
 import { ModalSheet } from '../../shared/components/ModalSheet';
+import { EmptyState } from '../../shared/components/EmptyState';
 import { calendarRepository } from '../calendar/data/calendarRepository';
 import { CalendarEvent } from '../calendar/domain/calendarEvent';
 import { UpcomingRoomsStrip } from '../calendar/presentation/widgets/UpcomingRoomsStrip';
@@ -565,55 +566,39 @@ export const ManagedRoomsPage: React.FC = () => {
 
           {/* Empty State */}
           {!loading && items.length === 0 && !error && (
-            <div className="py-16 px-4 flex flex-col items-center justify-center text-center">
-              <div className="w-16 h-16 rounded-full bg-app-surface border border-app-border flex items-center justify-center text-app-muted mb-3.5 shadow-2xs">
-                {scope === 'mine' ? (
-                  <Activity size={32} />
-                ) : scope === 'history' ? (
-                  <History size={32} />
-                ) : (
-                  <SearchX size={32} />
-                )}
-              </div>
-
-              <h3 className="text-base font-bold text-app-text mb-1">
-                {scope === 'mine'
-                  ? 'Bạn chưa tham gia hoặc làm host buổi chơi nào sắp tới.'
-                  : scope === 'history'
-                  ? 'Chưa có lịch sử buổi chơi nào hoàn tất.'
-                  : filter.hasActiveFilter
-                  ? 'Không tìm thấy kèo phù hợp với bộ lọc.'
-                  : 'Chưa có buổi chơi nào mở tuyển trong khu vực.'}
-              </h3>
-
-              <p className="text-xs text-app-muted max-w-[300px] leading-relaxed mb-6">
-                {scope === 'mine'
-                  ? 'Tìm kèo ở mục "Tìm kèo" hoặc dùng "Nhập mã" ở trên để vào phòng.'
-                  : scope === 'history'
-                  ? 'Các buổi chơi sau khi kết thúc sẽ hiển thị tại đây.'
-                  : 'Thử mở rộng phạm vi tìm kiếm hoặc bỏ bớt tiêu chí lọc.'}
-              </p>
-
-              {filter.hasActiveFilter && scope === 'discover' ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const fresh = new RoomFilterState();
-                    setFilter(fresh);
-                  }}
-                  className="px-5 py-2.5 rounded-xl border border-app-border bg-app-surface text-app-text text-xs font-bold hover:border-app-primary transition-all active:scale-95"
-                >
-                  Xóa bộ lọc
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => navigate('/rooms/new')}
-                  className="px-5 py-2.5 rounded-xl border border-app-primary text-app-primary text-xs font-bold hover:bg-app-mint/30 active:scale-95 transition-all"
-                >
-                  TẠO KÈO ĐẦU TIÊN
-                </button>
-              )}
+            <div className="py-8 px-4">
+              <EmptyState
+                type="shuttlecock"
+                title={
+                  scope === 'mine'
+                    ? 'Bạn chưa tham gia hoặc làm host buổi chơi nào sắp tới.'
+                    : scope === 'history'
+                    ? 'Chưa có lịch sử buổi chơi nào hoàn tất.'
+                    : filter.hasActiveFilter
+                    ? 'Không tìm thấy kèo phù hợp với bộ lọc.'
+                    : 'Chưa có buổi chơi nào mở tuyển trong khu vực.'
+                }
+                description={
+                  scope === 'mine'
+                    ? 'Tìm kèo ở mục "Tìm kèo" hoặc dùng "Nhập mã" ở trên để vào phòng.'
+                    : scope === 'history'
+                    ? 'Các buổi chơi sau khi kết thúc sẽ hiển thị tại đây.'
+                    : 'Thử mở rộng phạm vi tìm kiếm hoặc bỏ bớt tiêu chí lọc.'
+                }
+                actionLabel={
+                  filter.hasActiveFilter && scope === 'discover'
+                    ? 'XÓA BỘ LỌC'
+                    : 'TẠO KÈO ĐẦU TIÊN'
+                }
+                onAction={
+                  filter.hasActiveFilter && scope === 'discover'
+                    ? () => {
+                        const fresh = new RoomFilterState();
+                        setFilter(fresh);
+                      }
+                    : () => navigate('/rooms/new')
+                }
+              />
             </div>
           )}
 
