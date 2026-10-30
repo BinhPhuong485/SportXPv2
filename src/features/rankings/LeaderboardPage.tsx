@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { RefreshCw, CircleDot, ChevronDown, Trophy, TrendingUp } from 'lucide-react';
+import { RefreshCw, CircleDot, ChevronDown, Trophy, TrendingUp, Medal } from 'lucide-react';
 import { useAuthStore } from '../../shared/hooks/useAuth';
 import { Court, PlayerProfile } from '../../core/types/database.types';
 import {
   leaderboardRepository,
   PlayerCourtRank,
-  getPlayerInitials,
 } from './data/leaderboardRepository';
 import { CourtPickerSheet } from './presentation/widgets/CourtPickerSheet';
 import { DuolingoRankRow } from './presentation/widgets/DuolingoRankRow';
@@ -130,8 +129,8 @@ export const LeaderboardPage: React.FC = () => {
   const currentCourtName = currentCourt?.name || 'Sân thi đấu';
   const currentUserProfile = allPlayers.find((p) => p.id === currentUserId);
 
-  const hasPodium = viewMode === 'all' && allPlayers.length >= 3;
-  const listPlayers = hasPodium ? displayPlayers.slice(3) : displayPlayers;
+  const hasPodium = viewMode === 'all' && allPlayers.length >= 1;
+  const listPlayers = displayPlayers;
 
   return (
     <div className="min-h-full flex flex-col bg-app-background text-app-text select-none">
@@ -213,25 +212,38 @@ export const LeaderboardPage: React.FC = () => {
 
                 <div className="grid grid-cols-3 items-end gap-2 pt-2 pb-1">
                   {/* Rank #2 (Left) */}
-                  <div
-                    onClick={() =>
-                      setSelectedPlayerModal({ player: allPlayers[1], rank: 2 })
-                    }
-                    className="flex flex-col items-center cursor-pointer group"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-app-mint border border-app-border flex items-center justify-center text-sm font-bold text-app-primary shrink-0 mb-2 group-hover:scale-105 transition-transform">
-                      {getPlayerInitials(allPlayers[1].displayName)}
+                  {allPlayers[1] ? (
+                    <div
+                      onClick={() =>
+                        setSelectedPlayerModal({ player: allPlayers[1], rank: 2 })
+                      }
+                      className="flex flex-col items-center cursor-pointer group"
+                    >
+                      <Medal size={36} className="text-slate-400 mb-2 drop-shadow-xs group-hover:scale-110 transition-transform" />
+                      <span className="text-xs font-bold text-app-text text-center truncate max-w-full px-1">
+                        {allPlayers[1].displayName}
+                      </span>
+                      <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
+                        {allPlayers[1].eloRating ?? '—'} Elo
+                      </span>
+                      <div className="w-full h-11 mt-2.5 rounded-t-[14px] bg-app-surface border-t-3 border-t-app-primary flex items-center justify-center shadow-xs">
+                        <span className="text-lg font-extrabold text-app-primary">#2</span>
+                      </div>
                     </div>
-                    <span className="text-xs font-bold text-app-text text-center truncate max-w-full px-1">
-                      {allPlayers[1].displayName}
-                    </span>
-                    <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
-                      {allPlayers[1].eloRating ?? '—'} Elo
-                    </span>
-                    <div className="w-full h-11 mt-2.5 rounded-t-[14px] bg-app-surface border-t-3 border-t-app-primary flex items-center justify-center shadow-xs">
-                      <span className="text-lg font-extrabold text-app-primary">#2</span>
+                  ) : (
+                    <div className="flex flex-col items-center opacity-40">
+                      <Medal size={30} className="text-app-muted/40 mb-2" />
+                      <span className="text-xs font-medium text-app-muted text-center truncate max-w-full px-1">
+                        Trống
+                      </span>
+                      <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
+                        —
+                      </span>
+                      <div className="w-full h-11 mt-2.5 rounded-t-[14px] bg-app-surface/60 border-t-3 border-t-app-border flex items-center justify-center shadow-xs">
+                        <span className="text-lg font-extrabold text-app-muted">#2</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Rank #1 (Center - Champion) */}
                   <div
@@ -240,10 +252,7 @@ export const LeaderboardPage: React.FC = () => {
                     }
                     className="flex flex-col items-center cursor-pointer group"
                   >
-                    <Trophy size={22} className="text-app-streak mb-1.5" />
-                    <div className="w-15 h-15 rounded-full bg-app-mint border-2 border-app-streak flex items-center justify-center text-base font-extrabold text-app-streak shrink-0 mb-2 group-hover:scale-105 transition-transform">
-                      {getPlayerInitials(allPlayers[0].displayName)}
-                    </div>
+                    <Trophy size={44} className="text-app-streak mb-2 drop-shadow-sm group-hover:scale-110 transition-transform" />
                     <span className="text-xs font-extrabold text-app-text text-center truncate max-w-full px-1">
                       {allPlayers[0].displayName}
                     </span>
@@ -256,25 +265,38 @@ export const LeaderboardPage: React.FC = () => {
                   </div>
 
                   {/* Rank #3 (Right) */}
-                  <div
-                    onClick={() =>
-                      setSelectedPlayerModal({ player: allPlayers[2], rank: 3 })
-                    }
-                    className="flex flex-col items-center cursor-pointer group"
-                  >
-                    <div className="w-12 h-12 rounded-full bg-app-mint border border-app-border flex items-center justify-center text-sm font-bold text-app-primary shrink-0 mb-2 group-hover:scale-105 transition-transform">
-                      {getPlayerInitials(allPlayers[2].displayName)}
+                  {allPlayers[2] ? (
+                    <div
+                      onClick={() =>
+                        setSelectedPlayerModal({ player: allPlayers[2], rank: 3 })
+                      }
+                      className="flex flex-col items-center cursor-pointer group"
+                    >
+                      <Medal size={34} className="text-amber-700 dark:text-amber-500 mb-2 drop-shadow-xs group-hover:scale-110 transition-transform" />
+                      <span className="text-xs font-bold text-app-text text-center truncate max-w-full px-1">
+                        {allPlayers[2].displayName}
+                      </span>
+                      <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
+                        {allPlayers[2].eloRating ?? '—'} Elo
+                      </span>
+                      <div className="w-full h-9 mt-2.5 rounded-t-[14px] bg-app-surface border-t-3 border-t-app-primary flex items-center justify-center shadow-xs">
+                        <span className="text-base font-extrabold text-app-primary">#3</span>
+                      </div>
                     </div>
-                    <span className="text-xs font-bold text-app-text text-center truncate max-w-full px-1">
-                      {allPlayers[2].displayName}
-                    </span>
-                    <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
-                      {allPlayers[2].eloRating ?? '—'} Elo
-                    </span>
-                    <div className="w-full h-9 mt-2.5 rounded-t-[14px] bg-app-surface border-t-3 border-t-app-primary flex items-center justify-center shadow-xs">
-                      <span className="text-base font-extrabold text-app-primary">#3</span>
+                  ) : (
+                    <div className="flex flex-col items-center opacity-40">
+                      <Medal size={28} className="text-app-muted/40 mb-2" />
+                      <span className="text-xs font-medium text-app-muted text-center truncate max-w-full px-1">
+                        Trống
+                      </span>
+                      <span className="text-[11px] text-app-muted tabular-nums mt-0.5">
+                        —
+                      </span>
+                      <div className="w-full h-9 mt-2.5 rounded-t-[14px] bg-app-surface/60 border-t-3 border-t-app-border flex items-center justify-center shadow-xs">
+                        <span className="text-base font-extrabold text-app-muted">#3</span>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
             )}
@@ -318,9 +340,11 @@ export const LeaderboardPage: React.FC = () => {
 
             {/* Ranked List Section */}
             {listPlayers.length === 0 ? (
-              <div className="py-8 text-center text-xs text-app-muted bg-app-surface rounded-2xl border border-app-border p-4">
-                Chưa có vận động viên trong bảng xếp hạng sân này.
-              </div>
+              allPlayers.length === 0 ? (
+                <div className="py-8 text-center text-xs text-app-muted bg-app-surface rounded-2xl border border-app-border p-4">
+                  Chưa có vận động viên trong bảng xếp hạng sân này.
+                </div>
+              ) : null
             ) : (
               <div className="bg-app-surface rounded-2xl border border-app-border overflow-hidden shadow-xs divide-y divide-app-border/40">
                 {listPlayers.map((player) => {

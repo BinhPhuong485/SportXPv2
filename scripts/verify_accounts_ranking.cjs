@@ -16,7 +16,7 @@ async function verifyRankings() {
   console.log('Signing in as Account A...');
   await supabase.auth.signInWithPassword({
     email: 'bp@gmail.com',
-    password: '12345678@'
+    password: (process.env.TEST_PWD || "")
   });
 
   console.log('Querying profiles for A and B...');

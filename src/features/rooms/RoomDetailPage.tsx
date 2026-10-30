@@ -247,8 +247,8 @@ export const RoomDetailPage: React.FC = () => {
           </div>
         )}
 
-        {/* 1. STATUS & TITLE CARD */}
-        <BentoCard highlighted={room.status === 'IN_PROGRESS'}>
+        {/* 1. STATUS & TITLE CARD WITH DOUBLE-BEZEL DEPTH */}
+        <BentoCard highlighted={room.status === 'IN_PROGRESS'} doubleBezel courtPattern>
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-2">
               <span className="px-2.5 py-1 rounded-md bg-app-primary/12 text-app-primary text-xs font-extrabold tracking-wider border border-app-primary/30">
@@ -496,27 +496,18 @@ export const RoomDetailPage: React.FC = () => {
             </div>
           ) : /* Case 2: Session in progress or completed */
           ['IN_PROGRESS', 'COMPLETED'].includes(room.status) ? (
-            <div className="w-full flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => navigate(`/rooms/${room.id}/session`)}
-                className="flex-1 h-12 rounded-[14px] bg-app-primary text-app-on-primary font-bold text-xs flex items-center justify-center gap-2 hover:brightness-105 transition-all shadow-xs"
-              >
-                <Play size={16} fill="currentColor" />
-                <span>TRẬN ĐẤU / ĐIỂM DANH</span>
-              </button>
-
-              {room.isHost && room.status === 'IN_PROGRESS' && (
+            room.isHost && room.status === 'IN_PROGRESS' ? (
+              <div className="w-full flex items-center gap-3">
                 <button
                   type="button"
                   disabled={busy}
                   onClick={() => executeAction('finish')}
-                  className="h-12 px-4 rounded-[14px] border border-app-border text-app-muted hover:text-app-text font-bold text-xs transition-all"
+                  className="w-full h-12 rounded-[14px] border border-app-border text-app-muted hover:text-app-text font-bold text-xs transition-all"
                 >
                   KẾT THÚC
                 </button>
-              )}
-            </div>
+              </div>
+            ) : null
           ) : /* Case 3: Host with draft room */
           room.isHost && room.status === 'DRAFT' ? (
             <div className="w-full flex items-center gap-3">

@@ -14,8 +14,8 @@ const clientA = createClient(supabaseUrl, supabaseAnonKey);
 const clientB = createClient(supabaseUrl, supabaseAnonKey);
 
 async function testWaitlist() {
-  await clientA.auth.signInWithPassword({ email: 'bp@gmail.com', password: '12345678@' });
-  await clientB.auth.signInWithPassword({ email: 'domixi@gmail.com', password: '12345678@' });
+  await clientA.auth.signInWithPassword({ email: 'bp@gmail.com', password: (process.env.TEST_PWD || "") });
+  await clientB.auth.signInWithPassword({ email: 'domixi@gmail.com', password: (process.env.TEST_PWD || "") });
 
   const { data: courts } = await clientA.from('courts').select('id').limit(1);
   const now = Date.now();

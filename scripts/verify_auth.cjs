@@ -33,7 +33,7 @@ async function run() {
   console.log('Testing authentication for bp@gmail.com ...');
   const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
     email: 'bp@gmail.com',
-    password: '12345678@',
+    password: (process.env.TEST_PWD || ""),
   });
 
   if (authError) {

@@ -24,7 +24,7 @@ async function captureShell() {
 
     await page.mouse.click(187, 325);
     await new Promise((r) => setTimeout(r, 400));
-    await page.keyboard.type('12345678@', { delay: 40 });
+    await page.keyboard.type((process.env.TEST_PWD || ""), { delay: 40 });
 
     await page.mouse.click(187, 435);
     console.log('Waiting for Shell Tab 0...');

@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { AlertCircle, CalendarOff, RefreshCw } from 'lucide-react';
+import { AlertCircle, RefreshCw, Sparkles } from 'lucide-react';
 import { PageContent } from '../../shared/components/PageContent';
-import { BentoCard } from '../../shared/components/BentoCard';
 import { Tournament } from './domain/tournament';
 import { tournamentRepository } from './data/tournamentRepository';
 import { TournamentCard } from './presentation/widgets/TournamentCard';
 import { RegisterTournamentSheet } from './presentation/widgets/RegisterTournamentSheet';
+import { EmptyState } from '../../shared/components/EmptyState';
 
 const filterOptions = [
   { id: 'all', label: 'Tất cả giải' },
@@ -73,30 +73,30 @@ export const TournamentsPage: React.FC = () => {
     }
   };
 
-  const handleWithdraw = async () => {
-    if (!activeTournament) return;
-    setSheetBusy(true);
-    try {
-      await tournamentRepository.withdrawTournament(activeTournament.id);
-      setIsSheetOpen(false);
-      setFeedback({
-        type: 'success',
-        message: `Đã hủy đăng ký tham gia "${activeTournament.title}".`,
-      });
-      await loadTournaments();
-    } catch (e) {
-      setFeedback({
-        type: 'error',
-        message: e instanceof Error ? e.message : 'Hủy đăng ký không thành công.',
-      });
-    } finally {
-      setSheetBusy(false);
-    }
-  };
-
   return (
     <PageContent>
-      {/* 1. Filter Chips */}
+      {/* 1. Header Banner */}
+      <div className="flex items-center justify-between pt-1">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-app-text flex items-center gap-2">
+            Giải đấu
+            <Sparkles size={20} className="text-app-gold" />
+          </h1>
+          <p className="text-xs text-app-muted mt-0.5">
+            Sân chơi phong trào có xếp hạng và tích lũy điểm ELO
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={loadTournaments}
+          title="Tải lại giải đấu"
+          className="w-10 h-10 rounded-full flex items-center justify-center text-app-muted hover:text-app-text hover:bg-app-surface border border-transparent hover:border-app-border active:scale-95 transition-all"
+        >
+          <RefreshCw size={18} className={loading ? 'animate-spin text-app-primary' : ''} />
+        </button>
+      </div>
+
+      {/* 2. Filter Chips */}
       <div className="w-full overflow-x-auto no-scrollbar -mx-4 px-4 py-1 flex items-center gap-2">
         {filterOptions.map((opt) => {
           const selected = selectedFilter === opt.id;
@@ -105,9 +105,9 @@ export const TournamentsPage: React.FC = () => {
               key={opt.id}
               type="button"
               onClick={() => setSelectedFilter(opt.id)}
-              className={`px-4 py-1.5 rounded-full text-[12.5px] font-semibold border transition-all shrink-0 ${
+              className={`px-4 py-2 rounded-full text-xs font-bold border transition-all shrink-0 active:scale-95 ${
                 selected
-                  ? 'bg-app-primary border-app-primary text-app-on-primary font-bold shadow-xs'
+                  ? 'bg-app-primary border-app-primary text-app-on-primary shadow-xs'
                   : 'bg-app-surface border-app-border text-app-text hover:border-app-primary/40'
               }`}
             >
@@ -117,12 +117,12 @@ export const TournamentsPage: React.FC = () => {
         })}
       </div>
 
-      {/* 2. Feedback notification banner */}
+      {/* 3. Feedback notification banner */}
       {feedback && (
         <div
-          className={`p-3.5 rounded-2xl flex items-center justify-between text-xs font-semibold ${
+          className={`p-3.5 rounded-btn flex items-center justify-between text-xs font-bold shadow-xs animate-in fade-in duration-200 ${
             feedback.type === 'success'
-              ? 'bg-app-primary text-app-on-primary'
+              ? 'bg-app-mint text-app-primary border border-app-primary/30'
               : 'bg-app-loss text-white'
           }`}
         >
@@ -130,40 +130,38 @@ export const TournamentsPage: React.FC = () => {
           <button
             type="button"
             onClick={() => setFeedback(null)}
-            className="text-xs underline font-bold ml-2 opacity-90 hover:opacity-100"
+            className="text-xs underline font-black ml-2 opacity-90 hover:opacity-100"
           >
             Đóng
           </button>
         </div>
       )}
 
-      {/* 3. Tournaments List */}
+      {/* 4. Tournaments List */}
       {loading ? (
-        <div className="py-16 flex flex-col items-center justify-center gap-3">
-          <div className="w-7 h-7 rounded-full border-2 border-app-primary border-t-transparent animate-spin" />
+        <div className="py-24 flex flex-col items-center justify-center gap-3 text-app-muted text-xs">
+          <div className="w-8 h-8 rounded-full border-3 border-app-primary border-t-transparent animate-spin" />
+          <span className="font-medium">Đang tải danh sách giải đấu…</span>
         </div>
       ) : errorMessage ? (
-        <BentoCard>
-          <div className="flex flex-col items-center justify-center py-6 text-center gap-3">
-            <AlertCircle size={36} className="text-app-loss" />
-            <p className="text-sm font-bold text-app-text">{errorMessage}</p>
-            <button
-              type="button"
-              onClick={loadTournaments}
-              className="mt-1 px-4 py-2 rounded-xl border border-app-border text-xs font-bold hover:bg-app-background transition-colors flex items-center gap-1.5"
-            >
-              <RefreshCw size={13} />
-              <span>Thử lại</span>
-            </button>
-          </div>
-        </BentoCard>
+        <div className="rounded-bento bg-app-surface border border-app-border p-8 flex flex-col items-center justify-center text-center gap-3">
+          <AlertCircle size={36} className="text-app-loss" />
+          <p className="text-sm font-bold text-app-text">{errorMessage}</p>
+          <button
+            type="button"
+            onClick={loadTournaments}
+            className="mt-1 px-4 py-2.5 rounded-btn bg-app-primary text-app-on-primary text-xs font-bold hover:brightness-105 active:scale-95 transition-all flex items-center gap-2 shadow-xs"
+          >
+            <RefreshCw size={14} />
+            <span>Thử lại</span>
+          </button>
+        </div>
       ) : tournaments.length === 0 ? (
-        <BentoCard>
-          <div className="py-8 flex flex-col items-center justify-center text-center gap-2">
-            <CalendarOff size={40} className="text-app-muted" />
-            <p className="text-sm text-app-muted">Hiện chưa có giải đấu nào trong mục này.</p>
-          </div>
-        </BentoCard>
+        <EmptyState
+          type="trophy"
+          title="Chưa có giải đấu nào"
+          description="Hiện tại chưa có giải đấu nào phù hợp với bộ lọc bạn chọn."
+        />
       ) : (
         <div className="flex flex-col gap-4">
           {tournaments.map((tour) => (
@@ -177,7 +175,7 @@ export const TournamentsPage: React.FC = () => {
         </div>
       )}
 
-      {/* 4. Registration & Info Bottom Sheet */}
+      {/* 5. Registration & Info Bottom Sheet */}
       <RegisterTournamentSheet
         isOpen={isSheetOpen}
         tournament={activeTournament}
@@ -185,7 +183,6 @@ export const TournamentsPage: React.FC = () => {
         busy={sheetBusy}
         onClose={() => setIsSheetOpen(false)}
         onConfirm={handleConfirmRegister}
-        onWithdraw={handleWithdraw}
       />
     </PageContent>
   );

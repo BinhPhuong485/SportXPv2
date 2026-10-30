@@ -17,13 +17,13 @@ async function runSessionTest() {
   console.log('--- 1. Authenticate A & B ---');
   const { data: authA } = await clientA.auth.signInWithPassword({
     email: 'bp@gmail.com',
-    password: '12345678@'
+    password: (process.env.TEST_PWD || "")
   });
   console.log('Account A (Host):', authA.user.id);
 
   const { data: authB } = await clientB.auth.signInWithPassword({
     email: 'domixi@gmail.com',
-    password: '12345678@'
+    password: (process.env.TEST_PWD || "")
   });
   console.log('Account B (Member):', authB.user.id);
 

@@ -26,7 +26,7 @@ async function captureRankings1440() {
 
     await fPage.mouse.click(720, 325);
     await new Promise((r) => setTimeout(r, 150));
-    await fPage.keyboard.type('12345678@', { delay: 15 });
+    await fPage.keyboard.type((process.env.TEST_PWD || ""), { delay: 15 });
 
     await fPage.mouse.click(720, 435);
     await new Promise((r) => setTimeout(r, 6000));

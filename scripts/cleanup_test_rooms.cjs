@@ -20,7 +20,7 @@ async function cleanup() {
   console.log('Logging in as Host bp@gmail.com...');
   const { data: authA, error: errA } = await supabase.auth.signInWithPassword({
     email: 'bp@gmail.com',
-    password: '12345678@'
+    password: (process.env.TEST_PWD || "")
   });
   if (errA) {
     console.error('Failed to log in as bp@gmail.com:', errA);

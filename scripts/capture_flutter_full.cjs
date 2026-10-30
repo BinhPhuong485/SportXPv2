@@ -21,7 +21,7 @@ async function run() {
     console.log('Focusing Password field...');
     await page.mouse.click(187, 405);
     await new Promise((r) => setTimeout(r, 500));
-    await page.keyboard.type('12345678@', { delay: 40 });
+    await page.keyboard.type((process.env.TEST_PWD || ""), { delay: 40 });
 
     console.log('Clicking ĐĂNG NHẬP button...');
     await page.mouse.click(187, 520);

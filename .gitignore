@@ -26,4 +26,6 @@ dist-ssr
 # Environment files
 .env
 .env*.local
+config/supabase.json
+*.secret
 

@@ -1,6 +1,8 @@
 import React from 'react';
-import { MapPin, Calendar, Activity, Award, Trophy, Users } from 'lucide-react';
+import { MapPin, Calendar, Activity, Award, Trophy, Users, CheckCircle2 } from 'lucide-react';
 import { BentoCard } from '../../../../shared/components/BentoCard';
+import { Badge } from '../../../../shared/components/Badge';
+import { Button } from '../../../../shared/components/Button';
 import {
   Tournament,
   getFormatLabel,
@@ -24,100 +26,105 @@ export const TournamentCard: React.FC<TournamentCardProps> = ({
   const isFull = tournament.currentSlots >= tournament.maxSlots;
 
   return (
-    <BentoCard>
-      <div className="flex flex-col gap-3">
+    <BentoCard doubleBezel className="transition-all hover:border-app-primary/40 group">
+      <div className="flex flex-col gap-3.5">
         {/* Title & Status Badge */}
         <div className="flex items-start justify-between gap-3">
-          <h3 className="text-base font-bold text-app-text leading-tight flex-1">
-            {tournament.title}
-          </h3>
-          <span
-            className={`px-2 py-1 rounded-[6px] text-[10px] font-extrabold uppercase shrink-0 ${
-              isRegistering
-                ? 'bg-app-primary/12 text-app-primary'
-                : 'bg-app-streak/12 text-app-streak'
-            }`}
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base font-black text-app-text leading-snug group-hover:text-app-primary transition-colors">
+              {tournament.title}
+            </h3>
+          </div>
+          <Badge
+            variant={isRegistering ? 'primary' : 'warning'}
+            className="shrink-0"
           >
             {isRegistering ? 'ĐANG NHẬN ĐĂNG KÝ' : 'ĐANG THI ĐẤU'}
-          </span>
+          </Badge>
         </div>
 
         {/* Venue & Time */}
-        <div className="flex flex-col gap-1 text-xs">
-          <div className="flex items-start gap-1.5 text-app-text">
-            <MapPin size={14} className="text-app-muted shrink-0 mt-0.5" />
-            <span className="font-semibold truncate">{tournament.venueName}</span>
+        <div className="flex flex-col gap-1.5 text-xs">
+          <div className="flex items-center gap-2 text-app-text">
+            <div className="w-5 h-5 rounded-full bg-app-primary/10 flex items-center justify-center shrink-0">
+              <MapPin size={12} className="text-app-primary" />
+            </div>
+            <span className="font-bold truncate">{tournament.venueName}</span>
           </div>
-          <div className="flex items-center gap-1.5 text-app-muted">
-            <Calendar size={14} className="shrink-0" />
-            <span>Khởi tranh: {formatDate(tournament.startDate)}</span>
+          <div className="flex items-center gap-2 text-app-muted">
+            <div className="w-5 h-5 rounded-full bg-app-surface flex items-center justify-center shrink-0 border border-app-border">
+              <Calendar size={12} className="text-app-muted" />
+            </div>
+            <span className="font-medium">Khởi tranh: {formatDate(tournament.startDate)}</span>
           </div>
         </div>
 
-        <div className="h-px bg-app-border my-1" />
+        <div className="h-px bg-app-border/60 my-0.5" />
 
-        {/* Spec Badges */}
-        <div className="flex flex-wrap gap-2 text-[11.5px]">
+        {/* Spec Badges Grid */}
+        <div className="flex flex-wrap gap-2 text-[11px]">
           {/* Format badge */}
-          <div className="px-2 py-1 rounded-[6px] bg-app-background border border-app-border text-app-text font-semibold flex items-center gap-1">
-            <Activity size={13} className="text-app-muted" />
+          <div className="px-2.5 py-1 rounded-badge bg-app-background border border-app-border text-app-text font-bold flex items-center gap-1.5 shadow-2xs">
+            <Activity size={12} className="text-app-primary" />
             <span>{getFormatLabel(tournament.format)}</span>
           </div>
 
           {/* Rank requirement badge */}
-          <div className="px-2 py-1 rounded-[6px] bg-app-background border border-app-border text-app-text font-semibold flex items-center gap-1">
-            <Award size={13} className="text-app-muted" />
+          <div className="px-2.5 py-1 rounded-badge bg-app-background border border-app-border text-app-text font-bold flex items-center gap-1.5 shadow-2xs">
+            <Award size={12} className="text-app-muted" />
             <span>Hạng: {getRankRequirement(tournament.minTier, tournament.maxTier)}</span>
           </div>
 
           {/* Prize pool badge (highlighted) */}
           {tournament.prizePool > 0 && (
-            <div className="px-2 py-1 rounded-[6px] bg-app-streak/12 border border-app-streak/30 text-app-streak font-semibold flex items-center gap-1">
+            <div className="px-2.5 py-1 rounded-badge bg-app-streak/15 border border-app-streak/30 text-app-streak font-black flex items-center gap-1.5 shadow-2xs">
               <Trophy size={13} className="text-app-streak" />
               <span>Thưởng: {formatPrizeCurrency(tournament.prizePool)}</span>
             </div>
           )}
 
           {/* Slots badge */}
-          <div className="px-2 py-1 rounded-[6px] bg-app-background border border-app-border text-app-text font-semibold flex items-center gap-1">
-            <Users size={13} className="text-app-muted" />
+          <div className="px-2.5 py-1 rounded-badge bg-app-background border border-app-border text-app-text font-bold flex items-center gap-1.5 shadow-2xs">
+            <Users size={12} className="text-app-muted" />
             <span>
-              Chỗ: {tournament.currentSlots}/{tournament.maxSlots}
+              Chỗ: <strong className="tabular-nums font-black text-app-text">{tournament.currentSlots}</strong>/{tournament.maxSlots}
             </span>
           </div>
         </div>
 
         {/* Action button */}
-        <div className="pt-2">
+        <div className="pt-1">
           {isRegistered ? (
             <button
               type="button"
               onClick={onRegister}
-              className="w-full h-11 rounded-[12px] bg-app-mint text-app-primary border border-app-primary/30 text-xs font-bold hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center gap-1.5"
+              className="w-full min-h-[48px] px-4 rounded-btn bg-app-mint text-app-primary border border-app-primary/30 text-xs font-black hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center gap-2 shadow-xs"
             >
-              <span>✓ ĐÃ ĐĂNG KÝ (XEM CHI TIẾT / RÚT LUI)</span>
+              <CheckCircle2 size={16} />
+              <span>ĐÃ ĐĂNG KÝ (XEM THÔNG TIN)</span>
             </button>
           ) : isFull ? (
             <button
               type="button"
               disabled
-              className="w-full h-11 rounded-[12px] bg-app-surface border border-app-border text-app-muted text-xs font-bold cursor-not-allowed opacity-75"
+              className="w-full min-h-[48px] px-4 rounded-btn bg-app-surface border border-app-border text-app-muted text-xs font-bold cursor-not-allowed opacity-60"
             >
               ĐÃ ĐỦ CHỖ ĐĂNG KÝ
             </button>
           ) : isRegistering ? (
-            <button
-              type="button"
+            <Button
+              variant="primary"
+              size="lg"
               onClick={onRegister}
-              className="w-full h-11 rounded-[12px] bg-app-primary text-app-on-primary text-xs font-bold uppercase tracking-wide hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center shadow-xs"
+              className="w-full uppercase tracking-wider text-xs font-black shadow-xs"
             >
               ĐĂNG KÝ THAM GIA
-            </button>
+            </Button>
           ) : (
             <button
               type="button"
               onClick={onRegister}
-              className="w-full h-11 rounded-[12px] bg-app-surface border border-app-border text-app-muted text-xs font-bold hover:bg-app-background transition-all"
+              className="w-full min-h-[48px] px-4 rounded-btn bg-app-surface border border-app-border text-app-text text-xs font-bold hover:bg-app-background active:scale-[0.99] transition-all"
             >
               XEM BẢNG ĐẤU & KẾT QUẢ
             </button>

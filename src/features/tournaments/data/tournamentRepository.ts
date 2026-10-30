@@ -91,19 +91,6 @@ export class TournamentRepository {
     if (error) throw error;
   }
 
-  async withdrawTournament(tournamentId: string): Promise<void> {
-    if (!supabase) throw new Error('Chưa kết nối Supabase.');
-    const { data: authData } = await supabase.auth.getUser();
-    const user = authData?.user;
-    if (!user) throw new Error('Vui lòng đăng nhập.');
-
-    const { error } = await supabase
-      .from('tournament_participants')
-      .delete()
-      .match({ tournament_id: tournamentId, user_id: user.id });
-    if (error) throw error;
-  }
-
   async getMyRegistrations(): Promise<string[]> {
     if (!supabase) return [];
     const { data: authData } = await supabase.auth.getUser();

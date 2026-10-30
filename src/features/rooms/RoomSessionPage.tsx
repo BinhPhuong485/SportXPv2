@@ -52,7 +52,7 @@ export const RoomSessionPage: React.FC = () => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [room, setRoom] = useState<ManagedRoomData | null>(null);
-  const [session, setSession] = useState<SessionData>({
+  const [session] = useState<SessionData>({
     matches: [],
     attendance: {},
     audit: [],
@@ -82,38 +82,12 @@ export const RoomSessionPage: React.FC = () => {
   // Expand audit trail
   const [auditExpanded, setAuditExpanded] = useState(false);
 
-  // Summary dialog state for completed session
-  const [showSummaryDialog, setShowSummaryDialog] = useState(false);
-
   const loadData = useCallback(async () => {
     if (!roomId) return;
     try {
       setError(null);
-      const [roomData, sessionData] = await Promise.all([
-        managedRoomRepository.get(roomId),
-        managedRoomRepository.session(roomId),
-      ]);
+      const roomData = await managedRoomRepository.get(roomId);
       setRoom(roomData);
-
-      const rawAttendance = (sessionData.attendance || {}) as Record<string, unknown>;
-      const typedAttendance: Record<string, AttendanceRecord> = {};
-      for (const [k, v] of Object.entries(rawAttendance)) {
-        if (v && typeof v === 'object') {
-          const rec = v as Record<string, unknown>;
-          typedAttendance[k] = {
-            outcome: (rec.outcome as 'PRESENT' | 'ABSENT') || 'PRESENT',
-            status: (rec.status as 'RECORDED' | 'DISPUTED' | 'RESOLVED') || 'RECORDED',
-            reason: rec.reason ? String(rec.reason) : undefined,
-            version: Number(rec.version || 0),
-          };
-        }
-      }
-
-      setSession({
-        matches: (sessionData.matches || []) as MatchItem[],
-        attendance: typedAttendance,
-        audit: (sessionData.audit || []) as Array<{ action: string; actor_id: string; at: string }>,
-      });
     } catch (e) {
       setError(roomFailure(e));
     } finally {
@@ -308,15 +282,6 @@ export const RoomSessionPage: React.FC = () => {
           <p className="text-[11px] text-app-muted leading-relaxed">
             Kết thúc buổi không tự xác nhận trận hoặc điểm danh. Trận chờ/tranh chấp vẫn cần xử lý. Elo và Trust thật giữ nguyên.
           </p>
-          {room.status === 'COMPLETED' && (
-            <button
-              type="button"
-              onClick={() => setShowSummaryDialog(true)}
-              className="mt-1 w-full h-9 rounded-xl border border-app-primary text-app-primary text-xs font-bold hover:bg-app-primary/10 transition-colors flex items-center justify-center gap-1.5"
-            >
-              <span>Xem tổng kết buổi chơi</span>
-            </button>
-          )}
         </section>
 
         {busy && (
@@ -862,51 +827,6 @@ export const RoomSessionPage: React.FC = () => {
                 </button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
-
-      {/* SUMMARY DIALOG FOR FINISHED STATE */}
-      {showSummaryDialog && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
-          onClick={() => setShowSummaryDialog(false)}
-        >
-          <div
-            className="w-full max-w-sm bg-app-surface rounded-[24px] p-5 border border-app-border shadow-2xl flex flex-col gap-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-app-border/40 pb-2.5">
-              <h3 className="text-sm font-extrabold text-app-text">Tổng kết buổi chơi</h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-app-primary/15 text-app-primary uppercase">
-                {room.statusLabel}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-center">
-              <div className="p-3 rounded-2xl bg-app-background border border-app-border">
-                <span className="text-[10px] font-bold text-app-muted uppercase">Tổng set đấu</span>
-                <p className="text-xl font-black text-app-primary mt-1">{session.matches.length}</p>
-              </div>
-              <div className="p-3 rounded-2xl bg-app-background border border-app-border">
-                <span className="text-[10px] font-bold text-app-muted uppercase">Điểm danh</span>
-                <p className="text-xl font-black text-app-streak mt-1">
-                  {Object.values(session.attendance).filter((a) => a.outcome === 'PRESENT').length} có mặt
-                </p>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-app-muted leading-relaxed">
-              Kết thúc buổi không tự xác nhận trận hoặc điểm danh. Trận chờ/tranh chấp vẫn cần xử lý. Elo và Trust thật giữ nguyên.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setShowSummaryDialog(false)}
-              className="w-full h-11 rounded-[12px] bg-app-primary text-app-on-primary font-bold text-xs uppercase hover:brightness-105 transition-all"
-            >
-              Đóng
-            </button>
           </div>
         </div>
       )}

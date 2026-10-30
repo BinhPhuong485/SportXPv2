@@ -35,6 +35,11 @@ const lightTokens = {
   loss: '#BE123C',
   streak: '#946200',
   mint: '#DDF2E3',
+  eventHosting: '#176344',
+  eventJoined: '#0D7A68',
+  eventWaitlist: '#B45309',
+  eventTournament: '#6D28D9',
+  eventCancelled: '#BE123C',
 };
 
 const darkTokens = {
@@ -48,6 +53,11 @@ const darkTokens = {
   loss: '#EF4444',
   streak: '#F5A623',
   mint: '#0D2E1C',
+  eventHosting: '#00D665',
+  eventJoined: '#00C2CB',
+  eventWaitlist: '#F59E0B',
+  eventTournament: '#A78BFA',
+  eventCancelled: '#EF4444',
 };
 
 console.log('=== LIGHT THEME CONTRAST RATIOS ===');

@@ -24,47 +24,6 @@ export interface RoomNotice {
   read?: boolean;
 }
 
-export interface MatchItem {
-  id: string;
-  author_id?: string;
-  team_a: string[];
-  team_b: string[];
-  score: string;
-  winner: 'A' | 'B';
-  status: 'PENDING' | 'CONFIRMED' | 'DISPUTED' | 'VOIDED';
-  version: number;
-  reason?: string;
-}
-
-export interface AttendanceRecord {
-  outcome: 'PRESENT' | 'ABSENT';
-  status: 'RECORDED' | 'DISPUTED' | 'RESOLVED';
-  reason?: string;
-  version: number;
-}
-
-export interface SessionData {
-  matches: MatchItem[];
-  attendance: Record<string, AttendanceRecord>;
-  booking_status?: string;
-  audit: Array<{ action: string; actor_id: string; at: string }>;
-}
-
-// In-memory fallback session store matching Flutter's MockRoomRepository._sessions
-const sessionMemoryStore: Record<string, SessionData> = {};
-
-function getOrCreateSession(roomId: string): SessionData {
-  if (!sessionMemoryStore[roomId]) {
-    sessionMemoryStore[roomId] = {
-      matches: [],
-      attendance: {},
-      booking_status: 'CONFIRMED',
-      audit: [],
-    };
-  }
-  return sessionMemoryStore[roomId];
-}
-
 export function roomFailure(error: unknown): string {
   if (!error) return 'Đã có lỗi xảy ra.';
   const err = error as { message?: string; code?: string };
@@ -126,164 +85,14 @@ export class ManagedRoomRepository {
 
   async execute(command: RoomCommand): Promise<string> {
     if (!supabase) throw new Error('Chưa cấu hình Supabase.');
-
-    // Attempt live Supabase RPC first
-    try {
-      const { data, error } = await supabase.rpc('room_command_v2', {
-        p_request_id: command.requestId,
-        p_action: command.action,
-        p_room_id: command.roomId,
-        p_payload: command.payload || {},
-      });
-      if (error) throw error;
-      return String(data || '');
-    } catch (err: unknown) {
-      const errMsg = (err as { message?: string })?.message || String(err);
-
-      // Narrow fallback for session actions if backend lacks Phase 2B SQL (returns INVALID_ACTION)
-      const sessionActions = [
-        'match_create',
-        'match_edit',
-        'match_confirm',
-        'match_dispute',
-        'match_void',
-        'attendance_mark',
-        'attendance_dispute',
-        'attendance_resolve',
-      ];
-
-      if (sessionActions.includes(command.action) && (errMsg.includes('INVALID_ACTION') || errMsg.includes('PGRST202') || errMsg.includes('42883'))) {
-        return this.executeSessionFallback(command);
-      }
-
-      throw err;
-    }
-  }
-
-  private executeSessionFallback(command: RoomCommand): string {
-    const roomId = command.roomId || 'default';
-    const s = getOrCreateSession(roomId);
-    const p = command.payload || {};
-
-    const actorId = 'actor';
-
-    if (command.action === 'match_create') {
-      const matchId = `match-${Date.now()}`;
-      s.matches.push({
-        id: matchId,
-        author_id: actorId,
-        team_a: (p.team_a as string[]) || [],
-        team_b: (p.team_b as string[]) || [],
-        score: String(p.score || '21-19'),
-        winner: (p.winner as 'A' | 'B') || 'A',
-        status: 'PENDING',
-        version: 1,
-      });
-      s.audit.push({
-        action: 'match_create',
-        actor_id: actorId,
-        at: new Date().toISOString(),
-      });
-      return matchId;
-    }
-
-    if (command.action === 'match_edit') {
-      const m = s.matches.find((x) => x.id === p.match_id);
-      if (m) {
-        m.team_a = (p.team_a as string[]) || m.team_a;
-        m.team_b = (p.team_b as string[]) || m.team_b;
-        m.score = String(p.score || m.score);
-        m.winner = (p.winner as 'A' | 'B') || m.winner;
-        m.status = 'PENDING';
-        m.version += 1;
-        s.audit.push({
-          action: 'match_edit',
-          actor_id: actorId,
-          at: new Date().toISOString(),
-        });
-      }
-      return 'ok';
-    }
-
-    if (command.action === 'match_confirm') {
-      const m = s.matches.find((x) => x.id === p.match_id);
-      if (m) {
-        m.status = 'CONFIRMED';
-        m.version += 1;
-        s.audit.push({
-          action: 'match_confirm',
-          actor_id: actorId,
-          at: new Date().toISOString(),
-        });
-      }
-      return 'ok';
-    }
-
-    if (command.action === 'match_dispute' || command.action === 'match_void') {
-      const m = s.matches.find((x) => x.id === p.match_id);
-      if (m) {
-        m.status = command.action === 'match_void' ? 'VOIDED' : 'DISPUTED';
-        m.reason = String(p.reason || '');
-        m.version += 1;
-        s.audit.push({
-          action: command.action,
-          actor_id: actorId,
-          at: new Date().toISOString(),
-        });
-      }
-      return 'ok';
-    }
-
-    if (command.action === 'attendance_mark') {
-      const playerId = String(p.player_id);
-      const oldRec = s.attendance[playerId];
-      s.attendance[playerId] = {
-        outcome: (p.outcome as 'PRESENT' | 'ABSENT') || 'PRESENT',
-        status: 'RECORDED',
-        reason: String(p.reason || ''),
-        version: (oldRec?.version || 0) + 1,
-      };
-      s.audit.push({
-        action: 'attendance_mark',
-        actor_id: actorId,
-        at: new Date().toISOString(),
-      });
-      return 'ok';
-    }
-
-    if (command.action === 'attendance_dispute') {
-      const playerId = String(p.player_id);
-      const oldRec = s.attendance[playerId];
-      if (oldRec) {
-        oldRec.status = 'DISPUTED';
-        oldRec.reason = String(p.reason || '');
-        oldRec.version += 1;
-        s.audit.push({
-          action: 'attendance_dispute',
-          actor_id: actorId,
-          at: new Date().toISOString(),
-        });
-      }
-      return 'ok';
-    }
-
-    if (command.action === 'attendance_resolve') {
-      const playerId = String(p.player_id);
-      const oldRec = s.attendance[playerId];
-      if (oldRec) {
-        oldRec.status = 'RESOLVED';
-        oldRec.outcome = (p.outcome as 'PRESENT' | 'ABSENT') || 'PRESENT';
-        oldRec.version += 1;
-        s.audit.push({
-          action: 'attendance_resolve',
-          actor_id: actorId,
-          at: new Date().toISOString(),
-        });
-      }
-      return 'ok';
-    }
-
-    return 'ok';
+    const { data, error } = await supabase.rpc('room_command_v2', {
+      p_request_id: command.requestId,
+      p_action: command.action,
+      p_room_id: command.roomId,
+      p_payload: command.payload || {},
+    });
+    if (error) throw error;
+    return String(data || '');
   }
 
   async courts(): Promise<Court[]> {
@@ -309,10 +118,6 @@ export class ManagedRoomRepository {
       p_through_id: through,
     });
     if (error) throw error;
-  }
-
-  async session(roomId: string): Promise<SessionData> {
-    return getOrCreateSession(roomId);
   }
 }
 

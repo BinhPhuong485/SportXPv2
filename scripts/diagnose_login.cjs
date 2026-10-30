@@ -50,7 +50,7 @@ async function main() {
 
   // Click login button or check form
   await page.type('input[type="email"]', 'bp@gmail.com');
-  await page.type('input[type="password"]', '12345678@');
+  await page.type('input[type="password"]', (process.env.TEST_PWD || ""));
 
   const clicked = await page.evaluate(() => {
     const btns = Array.from(document.querySelectorAll('button'));
