@@ -30,25 +30,25 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/54 transition-opacity animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200">
       {/* Backdrop click */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Sheet panel */}
       <div
-        className={`relative w-full ${maxWidth} max-h-[90vh] bg-app-surface border-t sm:border border-app-border rounded-t-[24px] sm:rounded-b-[24px] p-6 pb-8 overflow-y-auto z-10 shadow-2xl flex flex-col`}
+        className={`relative w-full ${maxWidth} max-h-[90vh] bg-app-surface border-t sm:border border-app-border rounded-t-bento sm:rounded-b-bento p-6 pb-8 overflow-y-auto z-10 shadow-2xl flex flex-col animate-in slide-in-from-bottom duration-300 ease-out`}
       >
         {/* Drag handle */}
-        <div className="w-10 h-1 bg-app-border rounded-full mx-auto mb-4" />
+        <div className="w-10 h-1 bg-app-border rounded-full mx-auto mb-4 shrink-0" />
 
         {title && (
-          <div className="flex items-center justify-between pb-3 mb-2 border-b border-app-border/40">
-            <h3 className="text-sm font-bold tracking-wider text-app-muted uppercase">
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-app-border/40">
+            <h3 className="text-xs font-black tracking-widest text-app-muted uppercase">
               {title}
             </h3>
             <button
               onClick={onClose}
-              className="p-1 rounded-full text-app-muted hover:text-app-text transition-colors"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-app-muted hover:text-app-text hover:bg-app-background transition-colors"
             >
               <X size={18} />
             </button>
@@ -60,4 +60,3 @@ export const ModalSheet: React.FC<ModalSheetProps> = ({
     </div>
   );
 };
-
