@@ -14,3 +14,4 @@ export const Skeleton: React.FC<SkeletonProps> = ({ className = '', circle = fal
     />
   );
 };
+

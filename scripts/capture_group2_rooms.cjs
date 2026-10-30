@@ -101,3 +101,4 @@ run().catch((err) => {
   console.error('Group 2 capture error:', err);
   process.exit(1);
 });
+

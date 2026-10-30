@@ -88,3 +88,4 @@ run().catch((err) => {
   console.error('Palette Capture Error:', err);
   process.exit(1);
 });
+
