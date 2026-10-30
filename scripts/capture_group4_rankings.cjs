@@ -27,14 +27,14 @@ async function run() {
 
     // Light theme
     await page.evaluate(() => document.documentElement.removeAttribute('data-theme'));
-    await new Promise((r) => setTimeout(r, 400));
+    await new Promise((r) => setTimeout(r, 500));
     const lightPath = path.join(parityDir, `${name}-${viewport.width}px-react.png`);
     await page.screenshot({ path: lightPath });
     console.log(`Saved ${path.basename(lightPath)}`);
 
     // Dark theme
     await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
-    await new Promise((r) => setTimeout(r, 400));
+    await new Promise((r) => setTimeout(r, 500));
     const darkPath = path.join(parityDir, `${name}-${viewport.width}px-react-dark.png`);
     await page.screenshot({ path: darkPath });
     console.log(`Saved ${path.basename(darkPath)}`);
@@ -55,19 +55,14 @@ async function run() {
   await page.type('input[type="email"]', 'bp@gmail.com');
   await page.type('input[type="password"]', password);
 
-  await page.evaluate(() => {
-    const btns = Array.from(document.querySelectorAll('button'));
-    const loginBtn = btns.find((b) => b.innerText.includes('Đăng nhập') || b.innerText.includes('TIẾP TỤC'));
-    if (loginBtn) loginBtn.click();
-  });
-
-  await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 10000 }).catch(() => {});
-  await new Promise((r) => setTimeout(r, 1500));
+  // Click submit button
+  await page.click('button[type="submit"]');
+  await new Promise((r) => setTimeout(r, 3500));
 
   // Navigate to Rankings
   console.log('Navigating to Rankings...');
   await page.goto('http://localhost:5174/#/rankings', { waitUntil: 'networkidle0' });
-  await new Promise((r) => setTimeout(r, 1500));
+  await new Promise((r) => setTimeout(r, 2500));
 
   // 1. Mobile 375x812
   console.log('Capturing Rankings main screen 375px...');
@@ -83,36 +78,27 @@ async function run() {
   // 3. Court Picker Sheet
   console.log('Opening Court Picker Sheet...');
   await page.evaluate(() => {
-    const courtBtn = document.querySelector('button[type="button"]');
-    // find the court selector button
-    const btns = Array.from(document.querySelectorAll('button'));
-    const picker = btns.find(b => b.innerText.includes('tay vợt đang tranh tài') || b.innerText.includes('Sân'));
+    const btns = Array.from(document.querySelectorAll('button, [role="button"]'));
+    const picker = btns.find((b) => b.innerText.includes('tay vợt') || b.innerText.includes('Sân'));
     if (picker) picker.click();
   });
-  await new Promise((r) => setTimeout(r, 500));
+  await new Promise((r) => setTimeout(r, 600));
   await captureDualTheme('rankings-court-picker', { width: 375, height: 812 });
 
   // Close Court Picker
   await page.evaluate(() => {
-    const closeBtn = document.querySelector('button:has(svg)');
-    // Click outside or press close
     const backdrop = document.querySelector('.backdrop-blur-xs');
     if (backdrop) backdrop.click();
   });
-  await new Promise((r) => setTimeout(r, 400));
+  await new Promise((r) => setTimeout(r, 500));
 
   // 4. Player Detail Modal
   console.log('Opening Player Detail Modal...');
   await page.evaluate(() => {
-    // Click podium rank 1 or first rank row
-    const podiumP1 = document.querySelector('.grid-cols-3 > div:nth-child(2)');
-    if (podiumP1) podiumP1.click();
-    else {
-      const row = document.querySelector('[role="button"]');
-      if (row) row.click();
-    }
+    const rows = Array.from(document.querySelectorAll('div[class*="cursor-pointer"]'));
+    if (rows.length > 0) rows[0].click();
   });
-  await new Promise((r) => setTimeout(r, 500));
+  await new Promise((r) => setTimeout(r, 600));
   await captureDualTheme('rankings-player-detail', { width: 375, height: 812 });
 
   await browser.close();
@@ -123,4 +109,3 @@ run().catch((err) => {
   console.error(err);
   process.exit(1);
 });
-
