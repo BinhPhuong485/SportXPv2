@@ -1,8 +1,9 @@
 import React from 'react';
-import { Zap, CircleDot } from 'lucide-react';
+import { Zap, CircleDot, X, Award, Flame, ShieldCheck } from 'lucide-react';
 import { PlayerProfile } from '../../../../core/types/database.types';
 import { rankTierFromElo } from '../../domain/rankTier';
 import { getPlayerInitials } from '../../data/leaderboardRepository';
+import { Button } from '../../../../shared/components/Button';
 
 interface PlayerDetailModalProps {
   player: PlayerProfile;
@@ -25,74 +26,95 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[720px] bg-app-surface rounded-t-[20px] border-t border-app-border p-6 pb-8 flex flex-col gap-5 shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-[720px] bg-app-surface rounded-t-bento border-t border-app-border p-6 pb-8 flex flex-col gap-5 shadow-2xl max-h-[90vh] overflow-y-auto animate-in slide-in-from-bottom duration-300 ease-out"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle bar */}
         <div className="w-10 h-1 bg-app-border rounded-full mx-auto" />
 
-        {/* Profile Header */}
-        <div className="flex items-center gap-4">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-black tracking-widest text-app-muted uppercase">
+            HỒ SƠ TAY VỢT
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-full flex items-center justify-center text-app-muted hover:text-app-text hover:bg-app-background transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Profile Card */}
+        <div className="flex items-center gap-4 p-4 rounded-bento bg-app-background/60 border border-app-border">
           <div
-            className={`w-14 h-14 rounded-full bg-app-background flex items-center justify-center border-2 shrink-0 ${
-              isCurrentUser ? 'border-app-primary' : 'border-app-border'
+            className={`w-16 h-16 rounded-full flex items-center justify-center shrink-0 ${
+              isCurrentUser
+                ? 'bg-app-mint text-app-primary ring-4 ring-app-primary/30 font-black'
+                : 'bg-app-surface text-app-text border-2 border-app-border font-bold'
             }`}
           >
-            <span
-              className={`text-xl font-bold ${
-                isCurrentUser ? 'text-app-primary' : 'text-app-text'
-              }`}
-            >
+            <span className="text-xl uppercase">
               {initials}
             </span>
           </div>
 
           <div className="flex-1 flex flex-col min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-xl font-extrabold text-app-text truncate">
+              <span className="text-lg font-black text-app-text truncate">
                 {player.displayName}
               </span>
               {isCurrentUser && (
-                <span className="px-1.5 py-0.5 rounded bg-app-primary text-app-on-primary text-[10px] font-extrabold tracking-wider shrink-0">
+                <span className="px-1.5 py-0.5 rounded-badge bg-app-primary text-app-on-primary text-[10px] font-black tracking-wider uppercase shrink-0">
                   BẠN
                 </span>
               )}
             </div>
-            <span className="text-xs text-app-muted mt-1">
-              Hạng #{rank} · {tier.label} ({tier.group})
-            </span>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs font-bold text-app-primary">
+                Hạng #{rank}
+              </span>
+              <span className="text-xs text-app-muted">•</span>
+              <span className="text-xs text-app-muted">
+                {tier.label} ({tier.group})
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Metrics Row */}
         <div className="grid grid-cols-3 gap-3">
-          <div className="p-3 bg-app-background rounded-xl border border-app-border flex flex-col items-center">
-            <span className="text-[10px] font-bold text-app-muted tracking-wider uppercase">
-              ĐIỂM ELO
-            </span>
-            <span className="text-lg font-extrabold text-app-text tabular-nums mt-1">
+          <div className="p-3.5 bg-app-background/60 rounded-btn border border-app-border flex flex-col items-center">
+            <div className="flex items-center gap-1 text-[10px] font-black text-app-muted tracking-wider uppercase">
+              <Award size={12} className="text-app-primary" />
+              <span>ĐIỂM ELO</span>
+            </div>
+            <span className="text-xl font-black text-app-text tabular-nums mt-1">
               {elo}
             </span>
           </div>
 
-          <div className="p-3 bg-app-background rounded-xl border border-app-border flex flex-col items-center">
-            <span className="text-[10px] font-bold text-app-muted tracking-wider uppercase">
-              CHUỖI THẮNG
-            </span>
-            <span className="text-lg font-extrabold text-app-streak tabular-nums mt-1">
-              {player.winStreak} 🔥
+          <div className="p-3.5 bg-app-background/60 rounded-btn border border-app-border flex flex-col items-center">
+            <div className="flex items-center gap-1 text-[10px] font-black text-app-muted tracking-wider uppercase">
+              <Flame size={12} className="text-app-streak" />
+              <span>CHUỖI THẮNG</span>
+            </div>
+            <span className="text-xl font-black text-app-streak tabular-nums mt-1">
+              {player.winStreak}
             </span>
           </div>
 
-          <div className="p-3 bg-app-background rounded-xl border border-app-border flex flex-col items-center">
-            <span className="text-[10px] font-bold text-app-muted tracking-wider uppercase">
-              UY TÍN
-            </span>
-            <span className="text-lg font-extrabold text-app-primary tabular-nums mt-1">
+          <div className="p-3.5 bg-app-background/60 rounded-btn border border-app-border flex flex-col items-center">
+            <div className="flex items-center gap-1 text-[10px] font-black text-app-muted tracking-wider uppercase">
+              <ShieldCheck size={12} className="text-app-primary" />
+              <span>UY TÍN</span>
+            </div>
+            <span className="text-xl font-black text-app-primary tabular-nums mt-1">
               {player.trustScore}%
             </span>
           </div>
@@ -100,28 +122,31 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
 
         {/* Home Court Info */}
         {player.homeCourtName && (
-          <div className="w-full px-3.5 py-2.5 rounded-xl bg-app-background border border-app-border flex items-center gap-2">
-            <CircleDot size={16} className="text-app-primary shrink-0" />
-            <span className="text-xs text-app-muted shrink-0">Sân hoạt động chính:</span>
-            <span className="text-xs font-semibold text-app-text truncate">
-              {player.homeCourtName}
-            </span>
+          <div className="w-full px-4 py-3 rounded-btn bg-app-background/60 border border-app-border flex items-center gap-3">
+            <CircleDot size={18} className="text-app-primary shrink-0" />
+            <div className="flex flex-col min-w-0">
+              <span className="text-[11px] text-app-muted">Sân hoạt động chính</span>
+              <span className="text-xs font-bold text-app-text truncate">
+                {player.homeCourtName}
+              </span>
+            </div>
           </div>
         )}
 
         {/* Action Button */}
         {!isCurrentUser && (
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="lg"
             onClick={() => {
               onInvite(player.displayName);
               onClose();
             }}
-            className="w-full h-12 rounded-[14px] bg-app-primary text-app-on-primary font-bold text-sm tracking-wide flex items-center justify-center gap-2 hover:brightness-105 active:scale-[0.99] transition-all shadow-xs mt-2"
+            icon={<Zap size={18} fill="currentColor" />}
+            className="w-full mt-2"
           >
-            <Zap size={16} fill="currentColor" />
-            <span>Mời giao lưu / Thách đấu</span>
-          </button>
+            Mời giao lưu / Thách đấu
+          </Button>
         )}
       </div>
     </div>

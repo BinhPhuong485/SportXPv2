@@ -9,8 +9,6 @@ import {
   ChevronDown,
   ChevronUp,
   Bell,
-  SearchX,
-  History,
   Activity,
   ArrowRight,
   AlertCircle,
