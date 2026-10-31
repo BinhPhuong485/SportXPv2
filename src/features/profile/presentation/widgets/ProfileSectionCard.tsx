@@ -55,3 +55,4 @@ export const ProfileSectionCard: React.FC<ProfileSectionCardProps> = ({
     </div>
   );
 };
+

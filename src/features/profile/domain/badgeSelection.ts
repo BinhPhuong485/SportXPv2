@@ -86,3 +86,4 @@ export function resolveEquippedBadges(params: {
     isCustomSelection: false,
   };
 }
+
