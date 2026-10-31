@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { PageContent } from '../../../../shared/components/PageContent';
 import { PlayerProfile, MatchDiaryItem } from '../../domain/playerProfile';
 import { CalendarEvent } from '../../../calendar/domain/calendarEvent';
@@ -7,17 +7,17 @@ import {
   computeEloHistoryPoints,
   computeClientAchievements,
 } from '../../domain/profileStats';
+import { resolveEquippedBadges } from '../../domain/badgeSelection';
 
 import { AthleteHeaderCard } from '../widgets/AthleteHeaderCard';
+import { PerformanceMetricsCard } from '../widgets/PerformanceMetricsCard';
 import { StatsGrid } from '../widgets/StatsGrid';
 import { RecentFormDots } from '../widgets/RecentFormDots';
 import { EloHistoryChart } from '../widgets/EloHistoryChart';
-import { AchievementsSection } from '../widgets/AchievementsSection';
 import { ProfileUpcomingSection } from '../widgets/ProfileUpcomingSection';
-import { ReminderSettingsCard } from '../../../reminders/presentation/widgets/ReminderSettingsCard';
-import { PerformanceMetricsCard } from '../widgets/PerformanceMetricsCard';
 import { MatchDiarySection } from '../widgets/MatchDiarySection';
-import { HealthSyncCard } from '../widgets/HealthSyncCard';
+import { ReminderSettingsCard } from '../../../reminders/presentation/widgets/ReminderSettingsCard';
+import { BadgeSelectorSheet } from '../widgets/BadgeSelectorSheet';
 
 // DEV-ONLY FIXTURES (Tree-shaken in production builds)
 const FIXTURE_PROFILE: PlayerProfile = {
@@ -178,6 +178,14 @@ export const DevProfilePreviewPage: React.FC = () => {
     tournamentsRegisteredCount: 1,
   });
 
+  const [customBadgeIds, setCustomBadgeIds] = useState<string[] | null>(null);
+  const [isBadgeSheetOpen, setIsBadgeSheetOpen] = useState(false);
+
+  const { equipped: equippedBadges } = resolveEquippedBadges({
+    achievements,
+    storedBadgeIds: customBadgeIds,
+  });
+
   return (
     <div className="min-h-screen bg-app-background text-app-text">
       {/* Dev preview banner */}
@@ -189,6 +197,8 @@ export const DevProfilePreviewPage: React.FC = () => {
         {/* 1. Athlete Hero */}
         <AthleteHeaderCard
           player={FIXTURE_PROFILE}
+          equippedBadges={equippedBadges}
+          onOpenBadges={() => setIsBadgeSheetOpen(true)}
           homeCourtRankOverride={{
             rank: 3,
             totalPlayers: 48,
@@ -203,19 +213,19 @@ export const DevProfilePreviewPage: React.FC = () => {
           }}
         />
 
-        {/* 2. Stats Grid */}
+        {/* 2. Win Streak & Trust Score Card (Performance Metrics) */}
+        <PerformanceMetricsCard player={FIXTURE_PROFILE} />
+
+        {/* 3. Stats Grid */}
         <StatsGrid stats={stats} sourceNote="Dữ liệu mẫu preview 10 trận" />
 
-        {/* 3. Recent Form */}
+        {/* 4. Recent Form */}
         <RecentFormDots form={stats.recentForm} />
 
-        {/* 4. Elo History Chart */}
+        {/* 5. Elo History Chart */}
         <EloHistoryChart points={eloPoints} />
 
-        {/* 5. Achievements Section */}
-        <AchievementsSection achievements={achievements} />
-
-        {/* 6. Upcoming Block */}
+        {/* 6. Upcoming Block ("Sắp tới") */}
         <ProfileUpcomingSection
           events={FIXTURE_EVENTS}
           roomsHostedCount={3}
@@ -223,18 +233,21 @@ export const DevProfilePreviewPage: React.FC = () => {
           tournamentsCount={1}
         />
 
-        {/* 7. Reminder Settings */}
-        <ReminderSettingsCard />
-
-        {/* 8. Performance Metrics */}
-        <PerformanceMetricsCard player={FIXTURE_PROFILE} />
-
-        {/* 9. Match Diary */}
+        {/* 7. Match Diary ("Hoạt động") */}
         <MatchDiarySection matches={FIXTURE_MATCHES} loading={false} />
 
-        {/* 10. Health Connect */}
-        <HealthSyncCard />
+        {/* 8. Reminder Settings */}
+        <ReminderSettingsCard />
       </PageContent>
+
+      {/* Badge Selector Sheet */}
+      <BadgeSelectorSheet
+        isOpen={isBadgeSheetOpen}
+        achievements={achievements}
+        equippedBadgeIds={equippedBadges.map((b) => b.id)}
+        onClose={() => setIsBadgeSheetOpen(false)}
+        onSave={(newIds) => setCustomBadgeIds(newIds)}
+      />
     </div>
   );
 };

@@ -39,7 +39,17 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
         })
         .catch(() => setLoadingCourts(false));
     }
-  }, [isOpen, profile, loadCourts]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 

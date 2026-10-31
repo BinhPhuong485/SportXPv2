@@ -1,7 +1,7 @@
 import React from 'react';
 import { Flame, ShieldCheck } from 'lucide-react';
-import { BentoCard } from '../../../../shared/components/BentoCard';
 import { PlayerProfile, getTrustStatusText } from '../../domain/playerProfile';
+import { ProfileSectionCard } from './ProfileSectionCard';
 
 interface PerformanceMetricsCardProps {
   player: PlayerProfile;
@@ -12,12 +12,17 @@ export const PerformanceMetricsCard: React.FC<PerformanceMetricsCardProps> = ({ 
   const trustText = getTrustStatusText(player.trustScore, hasMatchHistory);
 
   return (
-    <BentoCard doubleBezel>
+    <ProfileSectionCard
+      id="profile-performance-card"
+      icon={<Flame size={16} />}
+      title="CHỈ SỐ THI ĐẤU"
+      subtitle="Chuỗi thắng liên tiếp & Điểm tin cậy thể thao"
+    >
       <div className="grid grid-cols-2 gap-4 divide-x divide-app-border/60">
         {/* Cột 1: Chuỗi thắng */}
         <div className="flex flex-col pr-2">
           <div className="flex items-center gap-1.5 text-app-streak">
-            <Flame size={16} className="shrink-0" />
+            <Flame size={15} className="shrink-0" />
             <span className="text-[11px] font-black tracking-wider uppercase">
               CHUỖI THẮNG
             </span>
@@ -31,7 +36,7 @@ export const PerformanceMetricsCard: React.FC<PerformanceMetricsCardProps> = ({ 
         {/* Cột 2: Điểm uy tín */}
         <div className="flex flex-col pl-4">
           <div className="flex items-center gap-1.5 text-app-primary">
-            <ShieldCheck size={16} className="shrink-0" />
+            <ShieldCheck size={15} className="shrink-0" />
             <span className="text-[11px] font-black tracking-wider uppercase">
               ĐIỂM UY TÍN
             </span>
@@ -44,6 +49,6 @@ export const PerformanceMetricsCard: React.FC<PerformanceMetricsCardProps> = ({ 
           </p>
         </div>
       </div>
-    </BentoCard>
+    </ProfileSectionCard>
   );
 };

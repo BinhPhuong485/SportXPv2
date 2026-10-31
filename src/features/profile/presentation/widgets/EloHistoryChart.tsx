@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { TrendingUp, Sparkles } from 'lucide-react';
-import { BentoCard } from '../../../../shared/components/BentoCard';
 import { EloPoint } from '../../domain/profileStats';
+import { ProfileSectionCard } from './ProfileSectionCard';
 
 interface EloHistoryChartProps {
   points: EloPoint[];
@@ -74,36 +74,26 @@ export const EloHistoryChart: React.FC<EloHistoryChartProps> = ({ points }) => {
     ? `Biểu đồ lịch sử Elo: điểm khởi đầu ${firstPoint.elo}, hiện tại ${lastPoint.elo}, thay đổi ròng ${netChange >= 0 ? '+' : ''}${netChange} Elo qua ${points.length - 1} trận đấu gần đây.`
     : 'Chưa đủ dữ liệu để vẽ đường biểu diễn lịch sử Elo.';
 
-  return (
-    <BentoCard doubleBezel className="flex flex-col gap-3">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-1 border-b border-app-border/40">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-app-primary/10 border border-app-primary/25 flex items-center justify-center text-app-primary">
-            <TrendingUp size={16} />
-          </div>
-          <div>
-            <h3 className="text-xs font-black uppercase tracking-wider text-app-text">
-              Diễn biến chỉ số Elo
-            </h3>
-            <p className="text-[11px] text-app-muted">
-              Đường dao động điểm qua từng trận đấu
-            </p>
-          </div>
-        </div>
+  const netBadge = hasEnoughData ? (
+    <span
+      className={`px-2 py-0.5 rounded-md text-[11px] font-black border ${
+        netChange >= 0
+          ? 'bg-app-mint text-app-primary border-app-primary/20'
+          : 'bg-app-loss/15 text-app-loss border-app-loss/20'
+      }`}
+    >
+      {netChange >= 0 ? `+${netChange} Elo` : `${netChange} Elo`}
+    </span>
+  ) : null;
 
-        {hasEnoughData && (
-          <span
-            className={`px-2 py-0.5 rounded-md text-[11px] font-black border ${
-              netChange >= 0
-                ? 'bg-app-mint text-app-primary border-app-primary/20'
-                : 'bg-app-loss/15 text-app-loss border-app-loss/20'
-            }`}
-          >
-            {netChange >= 0 ? `+${netChange} Elo` : `${netChange} Elo`}
-          </span>
-        )}
-      </div>
+  return (
+    <ProfileSectionCard
+      id="profile-elo-chart-card"
+      icon={<TrendingUp size={16} />}
+      title="DIỄN BIẾN CHỈ SỐ ELO"
+      subtitle="Đường dao động điểm qua từng trận đấu"
+      action={netBadge}
+    >
 
       {!hasEnoughData ? (
         /* Graceful State for Fewer Than 2 Points */
@@ -254,6 +244,6 @@ export const EloHistoryChart: React.FC<EloHistoryChartProps> = ({ points }) => {
           )}
         </div>
       )}
-    </BentoCard>
+    </ProfileSectionCard>
   );
 };

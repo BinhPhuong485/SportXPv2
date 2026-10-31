@@ -1,8 +1,8 @@
 import React from 'react';
 import { Calendar, Crown, Users, Trophy, ChevronRight, Clock, MapPin } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BentoCard } from '../../../../shared/components/BentoCard';
 import { CalendarEvent } from '../../../calendar/domain/calendarEvent';
+import { ProfileSectionCard } from './ProfileSectionCard';
 
 interface ProfileUpcomingSectionProps {
   events: CalendarEvent[];
@@ -26,32 +26,24 @@ export const ProfileUpcomingSection: React.FC<ProfileUpcomingSectionProps> = ({
     .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime())
     .slice(0, 2);
 
-  return (
-    <BentoCard doubleBezel className="flex flex-col gap-3.5">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-1 border-b border-app-border/40">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-app-primary/10 border border-app-primary/25 flex items-center justify-center text-app-primary">
-            <Calendar size={16} />
-          </div>
-          <div>
-            <h3 className="text-xs font-black uppercase tracking-wider text-app-text">
-              Lịch sắp tới & Hoạt động
-            </h3>
-            <p className="text-[11px] text-app-muted">
-              Tổng hợp phòng chơi và giải đấu đã ghi danh
-            </p>
-          </div>
-        </div>
+  const viewAllLink = (
+    <Link
+      to="/calendar"
+      className="text-xs font-black text-app-primary hover:underline flex items-center gap-1"
+    >
+      <span>Xem tất cả</span>
+      <ChevronRight size={14} />
+    </Link>
+  );
 
-        <Link
-          to="/calendar"
-          className="text-xs font-black text-app-primary hover:underline flex items-center gap-1"
-        >
-          <span>Xem tất cả</span>
-          <ChevronRight size={14} />
-        </Link>
-      </div>
+  return (
+    <ProfileSectionCard
+      id="profile-upcoming-card"
+      icon={<Calendar size={16} />}
+      title="LỊCH SẮP TỚI & HOẠT ĐỘNG"
+      subtitle="Tổng hợp phòng chơi và giải đấu đã ghi danh"
+      action={viewAllLink}
+    >
 
       {/* Counts Strip */}
       <div className="grid grid-cols-3 gap-2">
@@ -141,6 +133,6 @@ export const ProfileUpcomingSection: React.FC<ProfileUpcomingSectionProps> = ({
           ))}
         </div>
       )}
-    </BentoCard>
+    </ProfileSectionCard>
   );
 };

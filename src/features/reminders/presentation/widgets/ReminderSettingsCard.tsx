@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Bell, BellRing, BellOff, Calendar, Check, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { BentoCard } from '../../../../shared/components/BentoCard';
 import { useAuthStore } from '../../../../shared/hooks/useAuth';
 import { reminderRepository } from '../../data/reminderRepository';
 import {
@@ -9,6 +8,7 @@ import {
   LEAD_TIME_OPTIONS,
   ReminderPreferences,
 } from '../../domain/reminderTypes';
+import { ProfileSectionCard } from '../../../profile/presentation/widgets/ProfileSectionCard';
 
 interface ReminderSettingsCardProps {
   onNotificationRequest?: () => Promise<boolean>;
@@ -48,14 +48,14 @@ export const ReminderSettingsCard: React.FC<ReminderSettingsCardProps> = ({
     }
     const updated = {
       ...prefs,
-      defaultLeadTimes: Array.from(current) as ReminderLeadTime[],
+      defaultLeadTimes: Array.from(current),
     };
     saveUpdated(updated);
   };
 
   const handleBrowserToggle = async () => {
     if (typeof Notification === 'undefined') {
-      alert('Trình duyệt không hỗ trợ Web Notification.');
+      alert('Trình duyệt hiện tại không hỗ trợ thông báo hệ thống.');
       return;
     }
 
@@ -80,39 +80,29 @@ export const ReminderSettingsCard: React.FC<ReminderSettingsCardProps> = ({
     }
   };
 
+  const masterToggle = (
+    <label className="relative inline-flex items-center cursor-pointer select-none">
+      <input
+        type="checkbox"
+        checked={prefs.enabled}
+        onChange={handleToggleMaster}
+        className="sr-only peer"
+        aria-label="Bật hoặc tắt tính năng nhắc lịch"
+      />
+      <div className="w-11 h-6 bg-app-border peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-app-primary shadow-inner" />
+    </label>
+  );
+
   return (
-    <BentoCard doubleBezel className="flex flex-col gap-4">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-1 border-b border-app-border/40">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-app-primary/10 border border-app-primary/25 flex items-center justify-center text-app-primary shadow-2xs">
-            <BellRing size={20} />
-          </div>
-          <div>
-            <h3 className="text-base font-black text-app-text">
-              Nhắc lịch thi đấu
-            </h3>
-            <p className="text-xs text-app-muted">
-              Quản lý thời điểm và phương thức nhận thông báo
-            </p>
-          </div>
-        </div>
-
-        {/* Master Toggle */}
-        <label className="relative inline-flex items-center cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={prefs.enabled}
-            onChange={handleToggleMaster}
-            className="sr-only peer"
-            aria-label="Bật hoặc tắt tính năng nhắc lịch"
-          />
-          <div className="w-12 h-6 bg-app-border peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-app-primary shadow-inner" />
-        </label>
-      </div>
-
+    <ProfileSectionCard
+      id="profile-reminders-card"
+      icon={<BellRing size={16} />}
+      title="CÀI ĐẶT NHẮC LỊCH"
+      subtitle="Nhận thông báo khi phòng chơi hoặc giải đấu sắp bắt đầu"
+      action={masterToggle}
+    >
       {prefs.enabled ? (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3.5">
           {/* Default Lead Times Selector */}
           <div>
             <span className="text-xs font-black uppercase tracking-wider text-app-muted block mb-2">
@@ -194,6 +184,6 @@ export const ReminderSettingsCard: React.FC<ReminderSettingsCardProps> = ({
           <span>Tính năng nhắc lịch đang tắt. Bạn sẽ không nhận thông báo pop-up về các buổi chơi sắp tới.</span>
         </div>
       )}
-    </BentoCard>
+    </ProfileSectionCard>
   );
 };

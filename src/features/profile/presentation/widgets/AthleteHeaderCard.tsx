@@ -10,17 +10,22 @@ import {
   isProfileCalibrated,
 } from '../../domain/playerProfile';
 import { leaderboardRepository, PlayerCourtRank } from '../../../rankings/data/leaderboardRepository';
-import { getTierRingStyle } from '../../domain/profileStats';
+import { getTierRingStyle, ClientAchievement } from '../../domain/profileStats';
+import { renderBadgeIcon } from './BadgeSelectorSheet';
 
 interface AthleteHeaderCardProps {
   player: PlayerProfile;
+  equippedBadges?: ClientAchievement[];
   onEdit?: () => void;
+  onOpenBadges?: () => void;
   homeCourtRankOverride?: PlayerCourtRank | null;
 }
 
 export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
   player,
+  equippedBadges = [],
   onEdit,
+  onOpenBadges,
   homeCourtRankOverride,
 }) => {
   const [courtRank, setCourtRank] = useState<PlayerCourtRank | null>(
@@ -86,8 +91,28 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
                 </span>
               </div>
 
+              {/* Equipped Badges Chips (up to 3) */}
+              <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                {equippedBadges && equippedBadges.length > 0 ? (
+                  equippedBadges.map((b) => (
+                    <div
+                      key={b.id}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-app-mint border border-app-primary/25 text-app-primary text-[10px] font-black select-none shadow-2xs"
+                      title={b.description}
+                    >
+                      {renderBadgeIcon(b.iconName, 11, 'text-app-primary')}
+                      <span className="truncate max-w-[120px]">{b.title}</span>
+                    </div>
+                  ))
+                ) : (
+                  <span className="text-[11px] font-semibold text-app-muted italic">
+                    Chơi trận đầu tiên để mở huy hiệu
+                  </span>
+                )}
+              </div>
+
               {/* Home Court & Leaderboard Rank */}
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-app-muted font-medium">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-app-muted font-medium mt-0.5">
                 <span className="flex items-center gap-1 truncate text-app-text font-bold">
                   <MapPin size={13} className="text-app-primary shrink-0" />
                   <span className="truncate">
@@ -112,17 +137,31 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
             </div>
           </div>
 
-          {onEdit && (
-            <button
-              type="button"
-              onClick={onEdit}
-              className="w-10 h-10 rounded-full border border-app-border bg-app-surface flex items-center justify-center text-app-muted hover:text-app-text hover:border-app-primary/40 active:scale-95 transition-all shrink-0 shadow-2xs"
-              title="Chỉnh sửa hồ sơ"
-              aria-label="Chỉnh sửa thông tin hồ sơ"
-            >
-              <Edit2 size={17} />
-            </button>
-          )}
+          {/* Action buttons (Huy hiệu & Chỉnh sửa) */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {onOpenBadges && (
+              <button
+                type="button"
+                onClick={onOpenBadges}
+                className="w-10 h-10 rounded-full border border-app-border bg-app-surface flex items-center justify-center text-app-muted hover:text-app-primary hover:border-app-primary/40 active:scale-95 transition-all shadow-2xs"
+                title="Huy hiệu vận động viên"
+                aria-label="Chọn huy hiệu hiển thị"
+              >
+                <Award size={18} />
+              </button>
+            )}
+            {onEdit && (
+              <button
+                type="button"
+                onClick={onEdit}
+                className="w-10 h-10 rounded-full border border-app-border bg-app-surface flex items-center justify-center text-app-muted hover:text-app-text hover:border-app-primary/40 active:scale-95 transition-all shadow-2xs"
+                title="Chỉnh sửa hồ sơ"
+                aria-label="Chỉnh sửa thông tin hồ sơ"
+              >
+                <Edit2 size={17} />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* 164x164 Circular Elo Gauge */}
