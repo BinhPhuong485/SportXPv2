@@ -6,16 +6,31 @@ import { Button } from '../../shared/components/Button';
 import { useAuthStore } from '../../shared/hooks/useAuth';
 import { PlayerProfile, MatchDiaryItem } from './domain/playerProfile';
 import { profileRepository } from './data/profileRepository';
+import { calendarRepository } from '../calendar/data/calendarRepository';
+import { CalendarEvent } from '../calendar/domain/calendarEvent';
+import {
+  computeProfileStats,
+  computeEloHistoryPoints,
+  computeClientAchievements,
+} from './domain/profileStats';
+
 import { AthleteHeaderCard } from './presentation/widgets/AthleteHeaderCard';
+import { StatsGrid } from './presentation/widgets/StatsGrid';
+import { RecentFormDots } from './presentation/widgets/RecentFormDots';
+import { EloHistoryChart } from './presentation/widgets/EloHistoryChart';
+import { AchievementsSection } from './presentation/widgets/AchievementsSection';
+import { ProfileUpcomingSection } from './presentation/widgets/ProfileUpcomingSection';
+import { ReminderSettingsCard } from '../reminders/presentation/widgets/ReminderSettingsCard';
 import { PerformanceMetricsCard } from './presentation/widgets/PerformanceMetricsCard';
-import { HealthSyncCard } from './presentation/widgets/HealthSyncCard';
 import { MatchDiarySection } from './presentation/widgets/MatchDiarySection';
+import { HealthSyncCard } from './presentation/widgets/HealthSyncCard';
 import { EditProfileSheet } from './presentation/widgets/EditProfileSheet';
 
 export const ProfilePage: React.FC = () => {
   const { user, signOut } = useAuthStore();
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [matches, setMatches] = useState<MatchDiaryItem[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -25,13 +40,18 @@ export const ProfilePage: React.FC = () => {
     if (!user) return;
     try {
       setLoading(true);
-      const data = await profileRepository.currentProfile();
-      setProfile(data);
+      const [profileData, eventsData] = await Promise.all([
+        profileRepository.currentProfile(),
+        calendarRepository.loadUserCalendarEvents(),
+      ]);
 
-      if (data?.displayName) {
+      setProfile(profileData);
+      setEvents(eventsData);
+
+      if (profileData?.displayName) {
         setMatchesLoading(true);
         profileRepository
-          .playerRecentMatches(data.displayName)
+          .playerRecentMatches(profileData.displayName)
           .then((list) => setMatches(list))
           .finally(() => setMatchesLoading(false));
       }
@@ -100,6 +120,19 @@ export const ProfilePage: React.FC = () => {
     );
   }
 
+  // Compute stats and charts from user-specific sources only
+  const stats = computeProfileStats(matches);
+  const eloHistoryPoints = computeEloHistoryPoints(matches, profile.eloRating ?? 750);
+  const roomsHosted = events.filter((e) => e.type === 'hosting').length;
+  const roomsJoined = events.filter((e) => e.type === 'joined' || e.type === 'hosting').length;
+  const tournamentsCount = events.filter((e) => e.type === 'tournament').length;
+  const achievements = computeClientAchievements({
+    stats,
+    eloRating: profile.eloRating ?? 750,
+    roomsHostedCount: roomsHosted,
+    tournamentsRegisteredCount: tournamentsCount,
+  });
+
   return (
     <PageContent>
       {/* Feedback banner */}
@@ -109,22 +142,45 @@ export const ProfilePage: React.FC = () => {
         </div>
       )}
 
-      {/* 1. ATHLETE IDENTITY HEADER (Circular Elo Meter, Rank Progress, Calibration) */}
+      {/* 1. ATHLETE IDENTITY HERO (Initials avatar with tier ring, Elo meter, Court rank, Member since) */}
       <AthleteHeaderCard
         player={profile}
         onEdit={() => setIsEditOpen(true)}
       />
 
-      {/* 2. PERFORMANCE METRICS CARD (Chuỗi thắng & Điểm uy tín) */}
+      {/* 2. STATS GRID (6 metrics, honestly labeled) */}
+      <StatsGrid stats={stats} sourceNote="Dựa trên 20 trận gần nhất" />
+
+      {/* 3. RECENT FORM (10 W/L dots) */}
+      <RecentFormDots form={stats.recentForm} />
+
+      {/* 4. ELO HISTORY CHART (Hand-built SVG line chart) */}
+      <EloHistoryChart points={eloHistoryPoints} />
+
+      {/* 5. ACHIEVEMENTS SECTION (Client-evaluated badges) */}
+      <AchievementsSection achievements={achievements} />
+
+      {/* 6. UPCOMING EVENTS & COUNTS BLOCK */}
+      <ProfileUpcomingSection
+        events={events}
+        roomsHostedCount={roomsHosted}
+        roomsJoinedCount={roomsJoined}
+        tournamentsCount={tournamentsCount}
+      />
+
+      {/* 7. REMINDERS SETTINGS CARD ("Nhắc lịch" card with offline notice & calendar link) */}
+      <ReminderSettingsCard />
+
+      {/* 8. PERFORMANCE METRICS CARD (Chuỗi thắng & Điểm uy tín - Flutter parity) */}
       <PerformanceMetricsCard player={profile} />
 
-      {/* 3. MATCH DIARY / LỊCH SỬ THI ĐẤU (Truy vấn match_results từ Supabase) */}
+      {/* 9. MATCH DIARY / LỊCH SỬ THI ĐẤU (Flutter parity) */}
       <MatchDiarySection matches={matches} loading={matchesLoading} />
 
-      {/* 4. HARDWARE & HEALTH CONNECT (HealthKit / Health Connect) */}
+      {/* 10. HARDWARE & HEALTH CONNECT (HealthKit / Health Connect) */}
       <HealthSyncCard />
 
-      {/* 5. ACTION BUTTONS: CẬP NHẬT & ĐĂNG XUẤT */}
+      {/* 11. ACTION BUTTONS: CẬP NHẬT & ĐĂNG XUẤT */}
       <div className="grid grid-cols-2 gap-3 pt-1">
         <Button
           variant="outline"
