@@ -32,6 +32,7 @@ import { RoomUiFormatters } from './presentation/widgets/roomUiFormatters';
 import { PageContent } from '../../shared/components/PageContent';
 import { BentoCard } from '../../shared/components/BentoCard';
 import { ModalSheet } from '../../shared/components/ModalSheet';
+import { EventReminderToggle } from '../reminders/presentation/widgets/EventReminderToggle';
 
 export const RoomDetailPage: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -289,6 +290,14 @@ export const RoomDetailPage: React.FC = () => {
                 {room.address && <span className="mt-0.5">{room.address}</span>}
               </div>
             </div>
+
+            {/* Per-event reminder toggle control */}
+            {room.status !== 'CANCELLED' && (
+              <div className="flex items-center justify-between gap-2 pt-2 border-t border-app-border/40 mt-1">
+                <span className="text-xs text-app-muted font-medium">Nhắc nhở trước giờ chơi:</span>
+                <EventReminderToggle eventId={`room-${room.id}`} isCancelled={room.status === 'CANCELLED'} />
+              </div>
+            )}
           </div>
         </BentoCard>
 
