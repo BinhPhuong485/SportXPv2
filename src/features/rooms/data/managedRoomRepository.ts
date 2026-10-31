@@ -1,5 +1,5 @@
 import { supabase } from '../../../core/config/supabase';
-import { ManagedRoomData, parseManagedRoom } from '../domain/managedRoom';
+import { ManagedRoomData, RoomMember, parseManagedRoom } from '../domain/managedRoom';
 
 export interface RoomCommand {
   requestId: string;
@@ -73,6 +73,85 @@ export class ManagedRoomRepository {
     return data.map((row) => parseManagedRoom(row as Record<string, unknown>));
   }
 
+  async enrichMembersWithProfiles(members: RoomMember[]): Promise<void> {
+    if (!supabase || members.length === 0) return;
+    try {
+      const publicIds = members
+        .map((m) => m.public_id)
+        .filter((id): id is string => Boolean(id));
+      const userIds = members
+        .map((m) => m.user_id || m.id)
+        .filter((id): id is string => Boolean(id));
+
+      const profileMap = new Map<
+        string,
+        {
+          id: string;
+          public_id?: string | null;
+          display_name?: string | null;
+          elo_rating?: number | null;
+          tier_name?: string | null;
+          avatar_url?: string | null;
+        }
+      >();
+
+      if (publicIds.length > 0) {
+        const { data: profs } = await supabase
+          .from('profiles')
+          .select('id, public_id, display_name, elo_rating, tier_name, avatar_url')
+          .in('public_id', publicIds);
+        if (profs) {
+          for (const p of profs) {
+            if (p.public_id) profileMap.set(p.public_id, p);
+            if (p.id) profileMap.set(p.id, p);
+          }
+        }
+      }
+
+      const missingUserIds = userIds.filter((id) => !profileMap.has(id));
+      if (missingUserIds.length > 0) {
+        const { data: profs } = await supabase
+          .from('profiles')
+          .select('id, public_id, display_name, elo_rating, tier_name, avatar_url')
+          .in('id', missingUserIds);
+        if (profs) {
+          for (const p of profs) {
+            if (p.public_id) profileMap.set(p.public_id, p);
+            if (p.id) profileMap.set(p.id, p);
+          }
+        }
+      }
+
+      for (const m of members) {
+        const p =
+          (m.public_id ? profileMap.get(m.public_id) : undefined) ||
+          (m.user_id ? profileMap.get(m.user_id) : undefined) ||
+          (m.id ? profileMap.get(m.id as string) : undefined);
+
+        if (p) {
+          if (p.display_name) {
+            m.display_name = p.display_name;
+            m.name = p.display_name;
+          }
+          if (p.elo_rating !== undefined && p.elo_rating !== null) {
+            m.elo_rating = p.elo_rating;
+          }
+          if (p.tier_name) {
+            m.tier_name = p.tier_name;
+          }
+          if (p.avatar_url) {
+            m.avatar_url = p.avatar_url;
+          }
+          if (p.id) {
+            m.user_id = p.id;
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Could not enrich room members with profiles:', err);
+    }
+  }
+
   async get(id: string): Promise<ManagedRoomData | null> {
     if (!supabase) return null;
     const { data, error } = await supabase.rpc('get_room_v2', {
@@ -80,7 +159,11 @@ export class ManagedRoomRepository {
     });
     if (error) throw error;
     if (!data) return null;
-    return parseManagedRoom(data as Record<string, unknown>);
+    const room = parseManagedRoom(data as Record<string, unknown>);
+    if (room.members.length > 0) {
+      await this.enrichMembersWithProfiles(room.members);
+    }
+    return room;
   }
 
   async execute(command: RoomCommand): Promise<string> {
