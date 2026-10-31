@@ -4,34 +4,62 @@ import { PageContent } from '../../shared/components/PageContent';
 import { BentoCard } from '../../shared/components/BentoCard';
 import { Button } from '../../shared/components/Button';
 import { useAuthStore } from '../../shared/hooks/useAuth';
-import { PlayerProfile, MatchDiaryItem } from './domain/playerProfile';
+import { MatchDiaryItem } from './domain/playerProfile';
 import { profileRepository } from './data/profileRepository';
+import { calendarRepository } from '../calendar/data/calendarRepository';
+import { CalendarEvent } from '../calendar/domain/calendarEvent';
+import {
+  computeProfileStats,
+  computeEloHistoryPoints,
+  computeClientAchievements,
+} from './domain/profileStats';
+import {
+  getStoredEquippedBadgeIds,
+  saveStoredEquippedBadgeIds,
+  resolveEquippedBadges,
+} from './domain/badgeSelection';
+
 import { AthleteHeaderCard } from './presentation/widgets/AthleteHeaderCard';
 import { PerformanceMetricsCard } from './presentation/widgets/PerformanceMetricsCard';
-import { HealthSyncCard } from './presentation/widgets/HealthSyncCard';
+import { StatsGrid } from './presentation/widgets/StatsGrid';
+import { RecentFormDots } from './presentation/widgets/RecentFormDots';
+import { EloHistoryChart } from './presentation/widgets/EloHistoryChart';
+import { ProfileUpcomingSection } from './presentation/widgets/ProfileUpcomingSection';
 import { MatchDiarySection } from './presentation/widgets/MatchDiarySection';
+import { ReminderSettingsCard } from '../reminders/presentation/widgets/ReminderSettingsCard';
 import { EditProfileSheet } from './presentation/widgets/EditProfileSheet';
+import { BadgeSelectorSheet } from './presentation/widgets/BadgeSelectorSheet';
 
 export const ProfilePage: React.FC = () => {
-  const { user, signOut } = useAuthStore();
-  const [profile, setProfile] = useState<PlayerProfile | null>(null);
+  const { user, profile, updateProfile, loadProfile, signOut } = useAuthStore();
   const [matches, setMatches] = useState<MatchDiaryItem[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isBadgeSheetOpen, setIsBadgeSheetOpen] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  // Custom user badge choices stored in localStorage
+  const [customBadgeIds, setCustomBadgeIds] = useState<string[] | null>(() =>
+    user?.id ? getStoredEquippedBadgeIds(user.id) : null
+  );
 
   const loadData = useCallback(async () => {
     if (!user) return;
     try {
       setLoading(true);
-      const data = await profileRepository.currentProfile();
-      setProfile(data);
+      const [profileData, eventsData] = await Promise.all([
+        loadProfile(),
+        calendarRepository.loadUserCalendarEvents(),
+      ]);
 
-      if (data?.displayName) {
+      setEvents(eventsData);
+
+      if (profileData?.displayName) {
         setMatchesLoading(true);
         profileRepository
-          .playerRecentMatches(data.displayName)
+          .playerRecentMatches(profileData.displayName)
           .then((list) => setMatches(list))
           .finally(() => setMatchesLoading(false));
       }
@@ -40,17 +68,37 @@ export const ProfilePage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, loadProfile]);
 
   useEffect(() => {
     loadData();
   }, [loadData]);
 
+  // Sync stored badges when user ID is available
+  useEffect(() => {
+    if (user?.id) {
+      setCustomBadgeIds(getStoredEquippedBadgeIds(user.id));
+    }
+  }, [user?.id]);
+
   const handleSaveProfile = async (displayName: string, homeCourtId: string | null) => {
-    await profileRepository.updateProfile({ displayName, homeCourtId });
+    await updateProfile({ displayName, homeCourtId });
     setFeedback('Đã cập nhật hồ sơ thành công.');
     setTimeout(() => setFeedback(null), 3000);
-    await loadData();
+    if (displayName) {
+      profileRepository.playerRecentMatches(displayName).then(setMatches);
+    }
+  };
+
+  const handleLoadCourts = useCallback(() => profileRepository.loadCourts(), []);
+
+  const handleSaveBadges = (newIds: string[]) => {
+    if (user?.id) {
+      saveStoredEquippedBadgeIds(user.id, newIds);
+    }
+    setCustomBadgeIds(newIds);
+    setFeedback('Đã cập nhật danh hiệu hiển thị.');
+    setTimeout(() => setFeedback(null), 3000);
   };
 
   if (loading && !profile) {
@@ -100,6 +148,24 @@ export const ProfilePage: React.FC = () => {
     );
   }
 
+  // Compute stats and achievements from user data
+  const stats = computeProfileStats(matches);
+  const eloHistoryPoints = computeEloHistoryPoints(matches, profile.eloRating ?? 750);
+  const roomsHosted = events.filter((e) => e.type === 'hosting').length;
+  const roomsJoined = events.filter((e) => e.type === 'joined' || e.type === 'hosting').length;
+  const tournamentsCount = events.filter((e) => e.type === 'tournament').length;
+  const achievements = computeClientAchievements({
+    stats,
+    eloRating: profile.eloRating ?? 750,
+    roomsHostedCount: roomsHosted,
+    tournamentsRegisteredCount: tournamentsCount,
+  });
+
+  const { equipped: equippedBadges } = resolveEquippedBadges({
+    achievements,
+    storedBadgeIds: customBadgeIds,
+  });
+
   return (
     <PageContent>
       {/* Feedback banner */}
@@ -109,22 +175,41 @@ export const ProfilePage: React.FC = () => {
         </div>
       )}
 
-      {/* 1. ATHLETE IDENTITY HEADER (Circular Elo Meter, Rank Progress, Calibration) */}
+      {/* 1. ATHLETE IDENTITY HERO (with up to 3 badge chips, tier ring, Elo gauge, court rank) */}
       <AthleteHeaderCard
         player={profile}
+        equippedBadges={equippedBadges}
         onEdit={() => setIsEditOpen(true)}
+        onOpenBadges={() => setIsBadgeSheetOpen(true)}
       />
 
-      {/* 2. PERFORMANCE METRICS CARD (Chuỗi thắng & Điểm uy tín) */}
+      {/* 2. WIN STREAK & TRUST SCORE CARD (Moved up directly below hero per Problem 2) */}
       <PerformanceMetricsCard player={profile} />
 
-      {/* 3. MATCH DIARY / LỊCH SỬ THI ĐẤU (Truy vấn match_results từ Supabase) */}
+      {/* 3. STATS GRID (6 metrics, honestly labeled) */}
+      <StatsGrid stats={stats} sourceNote="Dựa trên 20 trận gần nhất" />
+
+      {/* 4. RECENT FORM (10 W/L dots) */}
+      <RecentFormDots form={stats.recentForm} />
+
+      {/* 5. ELO HISTORY CHART (Hand-built SVG line chart) */}
+      <EloHistoryChart points={eloHistoryPoints} />
+
+      {/* 6. "SẮP TỚI" (Upcoming events and activity counts) */}
+      <ProfileUpcomingSection
+        events={events}
+        roomsHostedCount={roomsHosted}
+        roomsJoinedCount={roomsJoined}
+        tournamentsCount={tournamentsCount}
+      />
+
+      {/* 7. "HOẠT ĐỘNG" (Recent matches diary) */}
       <MatchDiarySection matches={matches} loading={matchesLoading} />
 
-      {/* 4. HARDWARE & HEALTH CONNECT (HealthKit / Health Connect) */}
-      <HealthSyncCard />
+      {/* 8. REMINDER SETTINGS ("Nhắc lịch" settings card) */}
+      <ReminderSettingsCard />
 
-      {/* 5. ACTION BUTTONS: CẬP NHẬT & ĐĂNG XUẤT */}
+      {/* 9. ACTIONS (Refresh & Sign out) */}
       <div className="grid grid-cols-2 gap-3 pt-1">
         <Button
           variant="outline"
@@ -150,9 +235,18 @@ export const ProfilePage: React.FC = () => {
       <EditProfileSheet
         isOpen={isEditOpen}
         profile={profile}
-        loadCourts={() => profileRepository.loadCourts()}
+        loadCourts={handleLoadCourts}
         onClose={() => setIsEditOpen(false)}
         onSave={handleSaveProfile}
+      />
+
+      {/* Badge Selector Bottom Sheet */}
+      <BadgeSelectorSheet
+        isOpen={isBadgeSheetOpen}
+        achievements={achievements}
+        equippedBadgeIds={equippedBadges.map((b) => b.id)}
+        onClose={() => setIsBadgeSheetOpen(false)}
+        onSave={handleSaveBadges}
       />
     </PageContent>
   );
