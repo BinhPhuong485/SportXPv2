@@ -86,7 +86,7 @@ export const DuolingoRankRow: React.FC<DuolingoRankRowProps> = ({
   return (
     <div
       onClick={onTap}
-      className={`w-full px-3.5 py-2.5 flex items-center cursor-pointer transition-colors ${getRowContainerStyle()} ${
+      className={`w-full px-3.5 md:px-5 py-2.5 md:py-3.5 flex items-center cursor-pointer transition-colors ${getRowContainerStyle()} ${
         showDivider ? 'border-b border-app-border/40' : ''
       }`}
     >

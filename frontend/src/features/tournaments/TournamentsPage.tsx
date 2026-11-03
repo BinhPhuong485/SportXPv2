@@ -163,7 +163,7 @@ export const TournamentsPage: React.FC = () => {
           description="Hiện tại chưa có giải đấu nào phù hợp với bộ lọc bạn chọn."
         />
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {tournaments.map((tour) => (
             <TournamentCard
               key={tour.id}

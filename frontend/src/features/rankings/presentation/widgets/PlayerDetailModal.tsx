@@ -25,11 +25,11 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in p-0 sm:p-4"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[720px] bg-app-surface rounded-t-[20px] border-t border-app-border p-6 pb-8 flex flex-col gap-5 shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="w-full max-w-[560px] bg-app-surface rounded-t-[20px] sm:rounded-2xl border border-app-border p-6 pb-8 flex flex-col gap-5 shadow-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Handle bar */}

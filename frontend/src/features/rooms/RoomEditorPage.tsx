@@ -321,7 +321,7 @@ export const RoomEditorPage: React.FC = () => {
     <div className="min-h-screen w-full bg-app-background flex flex-col antialiased text-app-text">
       {/* Top Navigation */}
       <header className="sticky top-0 z-30 w-full bg-app-surface/90 backdrop-blur-md border-b border-app-border">
-        <div className="w-full max-w-[720px] mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="w-full max-w-content md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate(-1)}
@@ -338,7 +338,7 @@ export const RoomEditorPage: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="w-full max-w-[720px] mx-auto px-4 py-4 flex flex-col gap-4">
+      <main className="w-full max-w-content md:max-w-4xl lg:max-w-5xl xl:max-w-6xl mx-auto px-4 md:px-6 py-4 md:py-6 flex flex-col gap-4">
         {/* Revision conflict warning when editing */}
         {isEditing && (
           <div className="p-3 rounded-xl bg-app-streak/10 border border-app-streak/40 flex items-start gap-2.5">
@@ -409,7 +409,11 @@ export const RoomEditorPage: React.FC = () => {
             </section>
           )}
 
-          {/* SECTION 2: GAME MODE SELECTOR (PUBLIC VS PRIVATE) */}
+          {/* Responsive 2-column layout on desktop, single column on mobile */}
+          <div className="w-full flex flex-col lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
+            {/* LEFT COLUMN: Mode + Arena & Time */}
+            <div className="flex flex-col gap-4">
+              {/* SECTION 2: GAME MODE SELECTOR (PUBLIC VS PRIVATE) */}
           <section className="bg-app-surface rounded-[20px] p-4 border border-app-border flex flex-col gap-3 shadow-xs">
             <div className="flex items-center gap-1.5 text-xs font-extrabold text-app-muted tracking-wider uppercase">
               <Shield size={15} className="text-app-primary" />
@@ -680,7 +684,10 @@ export const RoomEditorPage: React.FC = () => {
               />
             </div>
           </section>
+        </div>
 
+        {/* RIGHT COLUMN: Slots, Matchmaking, Economics, Policy, Submit */}
+        <div className="flex flex-col gap-4">
           {/* SECTION 4: SLOTS & HOST PARTICIPATION */}
           <section className="bg-app-surface rounded-[20px] p-4 border border-app-border flex flex-col gap-3.5 shadow-xs">
             <div className="flex items-center gap-1.5 text-xs font-extrabold text-app-muted tracking-wider uppercase">
@@ -1029,24 +1036,26 @@ export const RoomEditorPage: React.FC = () => {
             </div>
           )}
 
-          {/* SUBMIT BUTTON */}
-          <button
-            type="submit"
-            disabled={busy}
-            className="w-full py-4 px-6 rounded-btn bg-app-primary text-app-on-primary font-black text-base tracking-wide uppercase hover:brightness-105 active:scale-[0.99] disabled:opacity-50 transition-all shadow-md mt-4 flex items-center justify-center gap-2"
-          >
-            {busy ? (
-              <>
-                <RefreshCw size={18} className="animate-spin" />
-                <span>{isEditing ? 'ĐANG LƯU…' : 'ĐANG TẠO KÈO…'}</span>
-              </>
-            ) : (
-              <span>{isEditing ? 'LƯU BUỔI CHƠI' : 'TẠO KÈO'}</span>
-            )}
-          </button>
+            {/* SUBMIT BUTTON */}
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full py-4 px-6 rounded-btn bg-app-primary text-app-on-primary font-black text-base tracking-wide uppercase hover:brightness-105 active:scale-[0.99] disabled:opacity-50 transition-all shadow-md mt-4 flex items-center justify-center gap-2"
+            >
+              {busy ? (
+                <>
+                  <RefreshCw size={18} className="animate-spin" />
+                  <span>{isEditing ? 'ĐANG LƯU…' : 'ĐANG TẠO KÈO…'}</span>
+                </>
+              ) : (
+                <span>{isEditing ? 'LƯU BUỔI CHƠI' : 'TẠO KÈO'}</span>
+              )}
+            </button>
+          </div>
+        </div>
 
-          <div className="h-8" />
-        </form>
+        <div className="h-8" />
+      </form>
       </main>
     </div>
   );
