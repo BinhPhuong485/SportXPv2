@@ -17,9 +17,9 @@ export const MyFixedStandingBar: React.FC<MyFixedStandingBarProps> = ({
   return (
     <div
       onClick={onScrollToMyRank}
-      className="w-full bg-app-surface border-t border-app-border cursor-pointer hover:bg-app-background/40 transition-colors shadow-lg"
+      className="w-full bg-app-surface border-t border-app-border md:border md:rounded-2xl md:shadow-xl md:backdrop-blur-md md:bg-app-surface/95 cursor-pointer hover:bg-app-background/40 transition-all"
     >
-      <div className="max-w-[720px] md:max-w-3xl lg:max-w-4xl xl:max-w-5xl mx-auto px-5 md:px-6 py-3 flex items-center justify-between gap-3">
+      <div className="w-full px-5 md:px-6 py-3 flex items-center justify-between gap-3">
         {/* Left: Rank # */}
         <span className="text-[23px] font-extrabold text-app-primary tabular-nums shrink-0">
           #{rankSummary.rank}

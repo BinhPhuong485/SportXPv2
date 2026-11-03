@@ -389,12 +389,14 @@ export const LeaderboardPage: React.FC = () => {
 
       {/* Fixed Sticky MyStandingBar at Bottom */}
       {userCourtRank && currentUserProfile && (
-        <div className="sticky bottom-0 z-30">
-          <MyFixedStandingBar
-            userProfile={currentUserProfile}
-            rankSummary={userCourtRank}
-            onScrollToMyRank={handleScrollToMyRank}
-          />
+        <div className="sticky bottom-0 md:bottom-28 z-30 w-full pointer-events-none">
+          <div className="max-w-[720px] md:max-w-3xl lg:max-w-4xl xl:max-w-5xl w-full mx-auto px-0 md:px-6 pointer-events-auto">
+            <MyFixedStandingBar
+              userProfile={currentUserProfile}
+              rankSummary={userCourtRank}
+              onScrollToMyRank={handleScrollToMyRank}
+            />
+          </div>
         </div>
       )}
 
