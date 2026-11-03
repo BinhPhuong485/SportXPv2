@@ -2,4 +2,8 @@ AGENTS.md
 .idea/
 .vscode/
 *.log
+node_modules/
+dist/
+.env
+.env*.local
 

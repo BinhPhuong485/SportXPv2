@@ -249,7 +249,7 @@ export const RoomDetailPage: React.FC = () => {
         )}
 
         {/* 1. STATUS & TITLE CARD WITH DOUBLE-BEZEL DEPTH */}
-        <BentoCard highlighted={room.status === 'IN_PROGRESS'} doubleBezel courtPattern>
+        <BentoCard highlighted={room.status === 'IN_PROGRESS'} doubleBezel courtPattern overflowVisible>
           <div className="flex flex-col gap-3">
             <div className="flex items-center justify-between gap-2">
               <span className="px-2.5 py-1 rounded-md bg-app-primary/12 text-app-primary text-xs font-extrabold tracking-wider border border-app-primary/30">
@@ -396,43 +396,56 @@ export const RoomDetailPage: React.FC = () => {
             </div>
 
             <div className="flex flex-col divide-y divide-app-border/40">
-              {registeredMembers.map((member, idx) => (
-                <div
-                  key={member.user_id || idx}
-                  className="py-2.5 flex items-center justify-between text-xs"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-app-background border border-app-border flex items-center justify-center font-bold text-app-text shrink-0">
-                      {(member.display_name || 'V').charAt(0).toUpperCase()}
+              {registeredMembers.map((member, idx) => {
+                const name = member.display_name || member.name || 'Người chơi';
+                const initial = name.charAt(0).toUpperCase() || 'P';
+                return (
+                  <div
+                    key={member.user_id || member.id || member.public_id || idx}
+                    className="py-2.5 flex items-center justify-between text-xs"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                      <div className="w-8 h-8 rounded-full bg-app-background border border-app-border flex items-center justify-center font-bold text-app-text shrink-0 overflow-hidden">
+                        {member.avatar_url ? (
+                          <img
+                            src={member.avatar_url}
+                            alt={name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          initial
+                        )}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-bold text-app-text truncate">
+                          {name}
+                        </span>
+                        <span className="text-[11px] text-app-muted truncate">
+                          {member.elo_rating != null ? `${member.elo_rating} Elo` : 'Chưa có Elo'}
+                          {member.tier_name ? ` · ${member.tier_name}` : ''}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="font-bold text-app-text">
-                        {member.display_name || 'Vận động viên'}
-                      </span>
-                      <span className="text-[11px] text-app-muted">
-                        {member.elo_rating || 750} Elo · {member.tier_name || 'TB'}
-                      </span>
-                    </div>
-                  </div>
 
-                  <div className="flex items-center gap-2">
-                    {member.is_host ? (
-                      <span className="px-2 py-0.5 rounded-full bg-app-primary/15 text-app-primary text-[10px] font-bold">
-                        Host
-                      </span>
-                    ) : member.status === 'RECONFIRM' ? (
-                      <span className="px-2 py-0.5 rounded-full bg-app-loss/15 text-app-loss text-[10px] font-bold">
-                        Chờ xác nhận lại
-                      </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded-full bg-app-mint text-app-primary text-[10px] font-bold flex items-center gap-1">
-                        <CheckCircle2 size={11} />
-                        <span>Chính thức</span>
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {member.is_host ? (
+                        <span className="px-2 py-0.5 rounded-full bg-app-primary/15 text-app-primary text-[10px] font-bold">
+                          Host
+                        </span>
+                      ) : member.status === 'RECONFIRM' ? (
+                        <span className="px-2 py-0.5 rounded-full bg-app-loss/15 text-app-loss text-[10px] font-bold">
+                          Chờ xác nhận lại
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-full bg-app-mint text-app-primary text-[10px] font-bold flex items-center gap-1">
+                          <CheckCircle2 size={11} />
+                          <span>Chính thức</span>
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </BentoCard>
@@ -449,25 +462,43 @@ export const RoomDetailPage: React.FC = () => {
               </div>
 
               <div className="flex flex-col divide-y divide-app-border/40">
-                {waitlistMembers.map((member, idx) => (
-                  <div
-                    key={member.user_id || idx}
-                    className="py-2.5 flex items-center justify-between text-xs"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-app-background border border-app-border flex items-center justify-center font-bold text-app-muted shrink-0">
-                        {(member.display_name || 'V').charAt(0).toUpperCase()}
+                {waitlistMembers.map((member, idx) => {
+                  const name = member.display_name || member.name || 'Người chơi';
+                  const initial = name.charAt(0).toUpperCase() || 'P';
+                  return (
+                    <div
+                      key={member.user_id || member.id || member.public_id || idx}
+                      className="py-2.5 flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                        <div className="w-8 h-8 rounded-full bg-app-background border border-app-border flex items-center justify-center font-bold text-app-muted shrink-0 overflow-hidden">
+                          {member.avatar_url ? (
+                            <img
+                              src={member.avatar_url}
+                              alt={name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            initial
+                          )}
+                        </div>
+                        <div className="flex flex-col min-w-0">
+                          <span className="font-semibold text-app-text truncate">
+                            {name}
+                          </span>
+                          <span className="text-[11px] text-app-muted truncate">
+                            {member.elo_rating != null ? `${member.elo_rating} Elo` : 'Chưa có Elo'}
+                            {member.tier_name ? ` · ${member.tier_name}` : ''}
+                          </span>
+                        </div>
                       </div>
-                      <span className="font-semibold text-app-text">
-                        {member.display_name || 'Vận động viên'}
+
+                      <span className="px-2 py-0.5 rounded-full bg-app-streak/15 text-app-streak text-[10px] font-bold shrink-0">
+                        Thứ {idx + 1}
                       </span>
                     </div>
-
-                    <span className="px-2 py-0.5 rounded-full bg-app-streak/15 text-app-streak text-[10px] font-bold">
-                      Thứ {idx + 1}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </BentoCard>
