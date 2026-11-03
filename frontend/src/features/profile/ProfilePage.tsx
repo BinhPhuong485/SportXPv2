@@ -242,23 +242,30 @@ export const ProfilePage: React.FC = () => {
         {actionsSection}
       </div>
 
-      {/* DESKTOP DASHBOARD VIEW (>= 1024px): Responsive 2-column Bento Grid */}
-      <div className="hidden lg:grid lg:grid-cols-12 lg:gap-6 lg:items-start">
-        {/* Left Column (5 cols): Athlete Identity, Upcoming, Performance, Reminders & Actions */}
-        <div className="lg:col-span-5 flex flex-col gap-5 lg:sticky lg:top-20">
+      {/* DESKTOP HERO DASHBOARD VIEW (>= 1024px): Full-width Hero Banner + Responsive 2-column Grid */}
+      <div className="hidden lg:flex lg:flex-col lg:gap-6">
+        {/* Full-width Widescreen Athlete Hero Banner */}
+        <div className="w-full">
           {heroSection}
-          {upcomingSection}
-          {performanceSection}
-          {reminderSettingsSection}
-          {actionsSection}
         </div>
 
-        {/* Right Column (7 cols): Performance Stats, Form, Elo Chart & Activity */}
-        <div className="lg:col-span-7 flex flex-col gap-5">
-          {statsSection}
-          {recentFormSection}
-          {eloChartSection}
-          {diarySection}
+        {/* 2-Column Responsive Dashboard Grid */}
+        <div className="grid grid-cols-12 gap-6 items-start">
+          {/* Left Column (5 cols): Upcoming, Performance, Reminders & Actions */}
+          <div className="col-span-5 flex flex-col gap-5 sticky top-20">
+            {upcomingSection}
+            {performanceSection}
+            {reminderSettingsSection}
+            {actionsSection}
+          </div>
+
+          {/* Right Column (7 cols): Performance Stats, Form, Elo Chart & Match Diary */}
+          <div className="col-span-7 flex flex-col gap-5">
+            {statsSection}
+            {recentFormSection}
+            {eloChartSection}
+            {diarySection}
+          </div>
         </div>
       </div>
 

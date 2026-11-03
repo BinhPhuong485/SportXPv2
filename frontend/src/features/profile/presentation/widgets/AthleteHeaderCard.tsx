@@ -59,7 +59,8 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
       {/* Background Subtle Gradient Overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-app-primary/[0.04] via-transparent to-transparent pointer-events-none" />
 
-      <div className="relative flex flex-col gap-4">
+      {/* MOBILE VIEW (< 1024px): Exact single column vertical sequence preserved 100% */}
+      <div className="lg:hidden relative flex flex-col gap-4">
         {/* Header row: Avatar (initials with tier ring), Name, Home court, Rank, Edit button */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3.5 min-w-0">
@@ -232,6 +233,176 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
               </p>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* DESKTOP HERO VIEW (>= 1024px): Widescreen Hero Layout */}
+      <div className="hidden lg:flex lg:items-center lg:justify-between lg:gap-8 relative py-2 px-1">
+        {/* Left: Avatar, Athlete Details, Badges & Court */}
+        <div className="flex items-center gap-5 min-w-0 flex-1">
+          {/* Avatar with Tier Ring */}
+          <div className="relative shrink-0">
+            <div
+              className={`w-20 h-20 rounded-full bg-app-surface border-3 ${tierStyle.ringColor} ring-4 ring-offset-2 ring-offset-app-surface flex items-center justify-center text-2xl font-black uppercase shadow-lg select-none`}
+            >
+              <span>{getInitials(player.displayName)}</span>
+            </div>
+            {player.isIdentityVerified && (
+              <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-app-surface flex items-center justify-center shadow-xs">
+                <CheckCircle2 size={18} className="text-app-primary" />
+              </div>
+            )}
+          </div>
+
+          {/* Details */}
+          <div className="min-w-0 flex flex-col gap-2">
+            <div className="flex items-center gap-3">
+              <h2 className="text-2xl font-extrabold text-app-text leading-tight truncate">
+                {player.displayName}
+              </h2>
+              <span
+                className={`px-2.5 py-0.5 rounded-md text-[11px] font-black uppercase border tracking-wider shrink-0 ${tierStyle.badgeBg} ${tierStyle.badgeText}`}
+              >
+                {player.tierName || 'Nhập môn'}
+              </span>
+            </div>
+
+            {/* Equipped Badges Chips (up to 3) */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {equippedBadges && equippedBadges.length > 0 ? (
+                equippedBadges.map((b) => (
+                  <div
+                    key={b.id}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-app-mint border border-app-primary/25 text-app-primary text-xs font-black select-none shadow-2xs"
+                    title={b.description}
+                  >
+                    {renderBadgeIcon(b.iconName, 13, 'text-app-primary')}
+                    <span className="truncate max-w-[140px]">{b.title}</span>
+                  </div>
+                ))
+              ) : (
+                <span className="text-xs font-semibold text-app-muted italic">
+                  Chơi trận đầu tiên để mở huy hiệu
+                </span>
+              )}
+            </div>
+
+            {/* Home Court & Leaderboard Rank & Member Since */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-app-muted font-medium">
+              <span className="flex items-center gap-1.5 truncate text-app-text font-bold">
+                <MapPin size={14} className="text-app-primary shrink-0" />
+                <span className="truncate">
+                  {player.homeCourtName || 'Chưa đăng ký sân nhà'}
+                </span>
+              </span>
+              {courtRank && (
+                <span className="flex items-center gap-1 text-app-streak font-extrabold text-xs shrink-0">
+                  <Award size={13} />
+                  <span>Hạng #{courtRank.rank}/{courtRank.totalPlayers}</span>
+                </span>
+              )}
+              {player.createdAt && (
+                <div className="flex items-center gap-1 text-xs text-app-muted/80">
+                  <Calendar size={12} className="shrink-0" />
+                  <span>Gia nhập {formatMemberSince(player.createdAt)}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Center / Right: Progress Info Box */}
+        <div className="flex flex-col gap-2 max-w-xs shrink-0">
+          {!calibrated ? (
+            <div className="w-full px-4 py-3 rounded-btn bg-app-mint/50 border border-app-primary/20 flex flex-col">
+              <p className="text-xs font-black text-app-primary">
+                {placementCompleted}/5 trận phân hạng
+              </p>
+              <p className="text-[11px] text-app-muted mt-1 font-medium leading-relaxed">
+                Điểm tạm tính · Hoàn tất 5 trận để kích hoạt bảng xếp hạng chính thức.
+              </p>
+            </div>
+          ) : (
+            <div className="w-full px-4 py-3 rounded-btn bg-app-mint/50 border border-app-primary/20 flex flex-col">
+              <p className="text-xs font-black text-app-primary">
+                {next.pointsNeeded > 0
+                  ? `Còn ${next.pointsNeeded} Elo để thăng hạng ${next.nextTier}`
+                  : next.nextTier}
+              </p>
+              <p className="text-[11px] text-app-muted mt-1 font-medium leading-relaxed">
+                {next.pointsNeeded > 0
+                  ? `Mục tiêu kế tiếp: mốc ${next.targetElo} Elo`
+                  : 'Bạn đã đạt bậc xếp hạng cao nhất hiện tại'}
+              </p>
+            </div>
+          )}
+
+          {/* Action buttons (Huy hiệu & Chỉnh sửa) */}
+          <div className="flex items-center gap-2 pt-1">
+            {onOpenBadges && (
+              <button
+                type="button"
+                onClick={onOpenBadges}
+                className="flex-1 h-9 px-3 rounded-xl border border-app-border bg-app-surface flex items-center justify-center gap-1.5 text-xs font-bold text-app-muted hover:text-app-primary hover:border-app-primary/40 active:scale-95 transition-all shadow-2xs"
+                title="Huy hiệu vận động viên"
+              >
+                <Award size={15} />
+                <span>Huy hiệu</span>
+              </button>
+            )}
+            {onEdit && (
+              <button
+                type="button"
+                onClick={onEdit}
+                className="flex-1 h-9 px-3 rounded-xl border border-app-border bg-app-surface flex items-center justify-center gap-1.5 text-xs font-bold text-app-muted hover:text-app-text hover:border-app-primary/40 active:scale-95 transition-all shadow-2xs"
+                title="Chỉnh sửa hồ sơ"
+              >
+                <Edit2 size={14} />
+                <span>Chỉnh sửa</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Right: 164x164 Circular Elo Gauge */}
+        <div className="relative w-[164px] h-[164px] shrink-0 flex items-center justify-center">
+          <svg
+            className="w-full h-full -rotate-90 drop-shadow-sm"
+            viewBox="0 0 164 164"
+            role="img"
+            aria-label={`Chỉ số Elo hiện tại: ${player.eloRating ?? 750}`}
+          >
+            <circle
+              cx="82"
+              cy="82"
+              r="72"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="9"
+              className="text-app-border/80"
+            />
+            <circle
+              cx="82"
+              cy="82"
+              r="72"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="9"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              strokeLinecap="round"
+              className="text-app-primary transition-all duration-700 ease-out"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+            <span className="text-[44px] font-black leading-none tracking-tight text-app-primary tabular-nums">
+              {player.eloRating ?? '—'}
+            </span>
+            <span className="text-[11px] font-bold text-app-muted mt-2 tracking-wide uppercase flex items-center gap-1">
+              <Sparkles size={11} className="text-app-streak" />
+              {calibrated ? player.tierName : 'Đang phân hạng'}
+            </span>
+          </div>
         </div>
       </div>
     </BentoCard>

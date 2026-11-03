@@ -194,50 +194,100 @@ export const DevProfilePreviewPage: React.FC = () => {
       </div>
 
       <PageContent>
-        {/* 1. Athlete Hero */}
-        <AthleteHeaderCard
-          player={FIXTURE_PROFILE}
-          equippedBadges={equippedBadges}
-          onOpenBadges={() => setIsBadgeSheetOpen(true)}
-          homeCourtRankOverride={{
-            rank: 3,
-            totalPlayers: 48,
-            courtName: 'Sân Cầu Lông Bình Triệu',
-            courtId: 'court-binhtrieu',
-            pointsToNextRank: 24,
-            nextPlayerName: 'Võ Minh Quân',
-            isPodium: true,
-            tier: null,
-            elo: 885,
-            rankDelta: 2,
-          }}
-        />
+        {/* MOBILE VIEW (< 1024px): Exact single column sequence */}
+        <div className="flex flex-col gap-4 lg:hidden">
+          {/* 1. Athlete Hero */}
+          <AthleteHeaderCard
+            player={FIXTURE_PROFILE}
+            equippedBadges={equippedBadges}
+            onOpenBadges={() => setIsBadgeSheetOpen(true)}
+            homeCourtRankOverride={{
+              rank: 3,
+              totalPlayers: 48,
+              courtName: 'Sân Cầu Lông Bình Triệu',
+              courtId: 'court-binhtrieu',
+              pointsToNextRank: 24,
+              nextPlayerName: 'Võ Minh Quân',
+              isPodium: true,
+              tier: null,
+              elo: 885,
+              rankDelta: 2,
+            }}
+          />
 
-        {/* 2. Upcoming Block ("Sắp tới" - moved directly below user hero) */}
-        <ProfileUpcomingSection
-          events={FIXTURE_EVENTS}
-          roomsHostedCount={3}
-          roomsJoinedCount={8}
-          tournamentsCount={1}
-        />
+          {/* 2. Upcoming Block ("Sắp tới") */}
+          <ProfileUpcomingSection
+            events={FIXTURE_EVENTS}
+            roomsHostedCount={3}
+            roomsJoinedCount={8}
+            tournamentsCount={1}
+          />
 
-        {/* 3. Win Streak & Trust Score Card (Performance Metrics) */}
-        <PerformanceMetricsCard player={FIXTURE_PROFILE} />
+          {/* 3. Win Streak & Trust Score Card (Performance Metrics) */}
+          <PerformanceMetricsCard player={FIXTURE_PROFILE} />
 
-        {/* 4. Stats Grid */}
-        <StatsGrid stats={stats} sourceNote="Dữ liệu mẫu preview 10 trận" />
+          {/* 4. Stats Grid */}
+          <StatsGrid stats={stats} sourceNote="Dữ liệu mẫu preview 10 trận" />
 
-        {/* 5. Recent Form */}
-        <RecentFormDots form={stats.recentForm} />
+          {/* 5. Recent Form */}
+          <RecentFormDots form={stats.recentForm} />
 
-        {/* 6. Elo History Chart */}
-        <EloHistoryChart points={eloPoints} />
+          {/* 6. Elo History Chart */}
+          <EloHistoryChart points={eloPoints} />
 
-        {/* 7. Match Diary ("Hoạt động") */}
-        <MatchDiarySection matches={FIXTURE_MATCHES} loading={false} />
+          {/* 7. Match Diary ("Hoạt động") */}
+          <MatchDiarySection matches={FIXTURE_MATCHES} loading={false} />
 
-        {/* 8. Reminder Settings */}
-        <ReminderSettingsCard />
+          {/* 8. Reminder Settings */}
+          <ReminderSettingsCard />
+        </div>
+
+        {/* DESKTOP HERO VIEW (>= 1024px): Widescreen Hero Layout + 2-Column Grid */}
+        <div className="hidden lg:flex lg:flex-col lg:gap-6">
+          {/* Full-width Widescreen Athlete Hero Banner */}
+          <div className="w-full">
+            <AthleteHeaderCard
+              player={FIXTURE_PROFILE}
+              equippedBadges={equippedBadges}
+              onOpenBadges={() => setIsBadgeSheetOpen(true)}
+              homeCourtRankOverride={{
+                rank: 3,
+                totalPlayers: 48,
+                courtName: 'Sân Cầu Lông Bình Triệu',
+                courtId: 'court-binhtrieu',
+                pointsToNextRank: 24,
+                nextPlayerName: 'Võ Minh Quân',
+                isPodium: true,
+                tier: null,
+                elo: 885,
+                rankDelta: 2,
+              }}
+            />
+          </div>
+
+          {/* 2-Column Dashboard Grid */}
+          <div className="grid grid-cols-12 gap-6 items-start">
+            {/* Left Column (5 cols): Upcoming, Performance, Reminders */}
+            <div className="col-span-5 flex flex-col gap-5 sticky top-20">
+              <ProfileUpcomingSection
+                events={FIXTURE_EVENTS}
+                roomsHostedCount={3}
+                roomsJoinedCount={8}
+                tournamentsCount={1}
+              />
+              <PerformanceMetricsCard player={FIXTURE_PROFILE} />
+              <ReminderSettingsCard />
+            </div>
+
+            {/* Right Column (7 cols): Performance Stats, Form, Elo Chart & Activity */}
+            <div className="col-span-7 flex flex-col gap-5">
+              <StatsGrid stats={stats} sourceNote="Dữ liệu mẫu preview 10 trận" />
+              <RecentFormDots form={stats.recentForm} />
+              <EloHistoryChart points={eloPoints} />
+              <MatchDiarySection matches={FIXTURE_MATCHES} loading={false} />
+            </div>
+          </div>
+        </div>
       </PageContent>
 
       {/* Badge Selector Sheet */}
