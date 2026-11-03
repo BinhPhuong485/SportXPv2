@@ -165,11 +165,173 @@ export const RoomDetailPage: React.FC = () => {
   const now = new Date();
   const isPastCancelBy = now > room.cancelBy;
 
+  const renderDesktopActionCard = () => {
+    if (!room) return null;
+    return (
+      <BentoCard highlighted={room.status === 'OPEN' || room.myStatus === 'RECONFIRM'}>
+        <div className="flex flex-col gap-3.5">
+          <div className="flex items-center justify-between border-b border-app-border/40 pb-2.5">
+            <span className="text-[11px] font-black uppercase text-app-muted tracking-wider">
+              Thao tác buổi chơi
+            </span>
+            <span className="px-2 py-0.5 rounded-full text-[11px] font-black tracking-wide bg-app-primary/15 text-app-primary">
+              {room.myStatus === 'REGISTERED'
+                ? 'Đã tham gia'
+                : room.myStatus === 'WAITLIST'
+                ? 'Danh sách chờ'
+                : room.myStatus === 'RECONFIRM'
+                ? 'Cần xác nhận lại'
+                : room.isHost
+                ? 'Host'
+                : 'Khách'}
+            </span>
+          </div>
+
+          {room.myStatus === 'RECONFIRM' ? (
+            <div className="flex flex-col gap-2.5">
+              <p className="text-xs text-app-loss font-semibold">
+                Điều kiện buổi chơi đã thay đổi. Vui lòng xác nhận bạn vẫn tham gia.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setShowLeaveDialog(true)}
+                  className="flex-1 h-11 rounded-[12px] border border-app-loss text-app-loss font-bold text-xs hover:bg-app-loss/10 transition-all"
+                >
+                  TỪ CHỐI
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() =>
+                    executeAction('reconfirm', {
+                      expected_revision: room.revision,
+                    })
+                  }
+                  className="flex-1 h-11 rounded-[12px] bg-app-primary text-app-on-primary font-bold text-xs hover:brightness-105 transition-all shadow-xs"
+                >
+                  ĐỒNG Ý
+                </button>
+              </div>
+            </div>
+          ) : ['IN_PROGRESS', 'COMPLETED'].includes(room.status) ? (
+            room.isHost && room.status === 'IN_PROGRESS' ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => executeAction('finish')}
+                className="w-full h-11 rounded-[12px] border border-app-border text-app-muted hover:text-app-text font-bold text-xs transition-all"
+              >
+                KẾT THÚC BUỔI CHƠI
+              </button>
+            ) : (
+              <p className="text-xs text-app-muted text-center py-1">
+                {room.status === 'IN_PROGRESS' ? 'Buổi chơi đang diễn ra' : 'Buổi chơi đã kết thúc'}
+              </p>
+            )
+          ) : room.isHost && room.status === 'DRAFT' ? (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setShowCancelDialog(true)}
+                className="h-11 px-4 rounded-[12px] border border-app-loss text-app-loss font-bold text-xs hover:bg-app-loss/10 transition-all"
+              >
+                HỦY
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => executeAction('publish')}
+                className="flex-1 h-11 rounded-[12px] bg-app-primary text-app-on-primary font-bold text-xs flex items-center justify-center gap-1.5 hover:brightness-105 transition-all shadow-xs"
+              >
+                MỞ ĐĂNG KÝ
+              </button>
+            </div>
+          ) : room.isHost && ['OPEN', 'FULL'].includes(room.status) ? (
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => executeAction('start')}
+                className="w-full h-11 rounded-[12px] bg-app-primary text-app-on-primary font-bold text-xs flex items-center justify-center gap-1.5 hover:brightness-105 transition-all shadow-xs"
+              >
+                <Play size={16} fill="currentColor" />
+                <span>BẮT ĐẦU BUỔI CHƠI</span>
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setShowCancelDialog(true)}
+                className="w-full h-10 rounded-[12px] border border-app-loss/60 text-app-loss font-bold text-xs hover:bg-app-loss/10 transition-all"
+              >
+                HỦY BUỔI CHƠI
+              </button>
+            </div>
+          ) : room.myStatus === 'REGISTERED' || room.myStatus === 'WAITLIST' ? (
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col text-xs text-app-muted gap-0.5">
+                <span>Hạn hủy miễn phạt:</span>
+                <span className="font-bold text-app-text">{RoomUiFormatters.deadline(room.cancelBy)}</span>
+              </div>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setShowLeaveDialog(true)}
+                className="w-full h-11 rounded-[12px] border border-app-loss text-app-loss font-bold text-xs hover:bg-app-loss/10 transition-all flex items-center justify-center gap-1.5"
+              >
+                <LogOut size={15} />
+                <span>HỦY ĐĂNG KÝ</span>
+              </button>
+            </div>
+          ) : room.canRegister ? (
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-app-muted font-medium">Chi phí:</span>
+                <span className="text-base font-black text-app-primary tabular-nums">
+                  {RoomUiFormatters.currency(room.fee)}
+                </span>
+              </div>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() =>
+                  executeAction(availableSlots > 0 ? 'join' : 'waitlist', {
+                    expected_revision: room.revision,
+                    ...(room.visibility === 'PRIVATE' ? { room_code: room.roomCode } : {}),
+                  })
+                }
+                className={`w-full h-11 rounded-[12px] font-black text-xs tracking-wider uppercase transition-all shadow-xs active:scale-[0.99] ${
+                  availableSlots > 0
+                    ? 'bg-app-primary text-app-on-primary hover:brightness-105'
+                    : 'bg-app-streak text-white hover:brightness-105'
+                }`}
+              >
+                {busy ? (
+                  <span>ĐANG XỬ LÝ…</span>
+                ) : availableSlots > 0 ? (
+                  'ĐĂNG KÝ THAM GIA'
+                ) : (
+                  'VÀO DANH SÁCH CHỜ'
+                )}
+              </button>
+            </div>
+          ) : (
+            <div className="w-full text-center py-2 text-xs font-semibold text-app-muted">
+              Buổi chơi đã đóng đăng ký.
+            </div>
+          )}
+        </div>
+      </BentoCard>
+    );
+  };
+
   return (
     <div className="min-h-screen w-full bg-app-background flex flex-col select-none antialiased">
       {/* Top Header */}
       <header className="sticky top-0 z-30 w-full bg-app-surface/95 backdrop-blur-md border-b border-app-border">
-        <div className="w-full max-w-content mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="w-full max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <button
               onClick={() => navigate(-1)}
@@ -248,267 +410,281 @@ export const RoomDetailPage: React.FC = () => {
           </div>
         )}
 
-        {/* 1. STATUS & TITLE CARD WITH DOUBLE-BEZEL DEPTH */}
-        <BentoCard highlighted={room.status === 'IN_PROGRESS'} doubleBezel courtPattern overflowVisible>
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-2">
-              <span className="px-2.5 py-1 rounded-md bg-app-primary/12 text-app-primary text-xs font-extrabold tracking-wider border border-app-primary/30">
-                {room.statusLabel.toUpperCase()}
-              </span>
-
-              {/* Room Code Badge */}
-              <button
-                type="button"
-                onClick={handleCopyCode}
-                className="px-2.5 py-1 rounded-md bg-app-background border border-app-border text-xs font-mono font-bold text-app-text flex items-center gap-1.5 hover:border-app-primary transition-colors"
-                title="Sao chép mã phòng"
-              >
-                <span>{room.roomCode}</span>
-                <Copy size={13} className="text-app-muted" />
-              </button>
-            </div>
-
-            <h1 className="text-2xl font-extrabold text-app-text tracking-tight leading-snug">
-              {room.title}
-            </h1>
-
-            <div className="flex items-start gap-2 text-sm font-semibold text-app-text pt-1">
-              <Clock size={18} className="text-app-primary shrink-0 mt-0.5" />
-              <span className="tabular-nums">
-                {RoomUiFormatters.dateRange(room.startsAt, room.endsAt)}
-              </span>
-            </div>
-
-            <div className="flex items-start gap-2 text-xs text-app-muted">
-              <MapPin size={18} className="text-app-muted shrink-0 mt-0.5" />
-              <div className="flex flex-col">
-                <span className="font-bold text-app-text">
-                  {room.courtLabel
-                    ? `${room.courtName} · ${room.courtLabel}`
-                    : room.courtName}
-                </span>
-                {room.address && <span className="mt-0.5">{room.address}</span>}
-              </div>
-            </div>
-
-            {/* Per-event reminder toggle control */}
-            {room.status !== 'CANCELLED' && (
-              <div className="flex items-center justify-between gap-2 pt-2 border-t border-app-border/40 mt-1">
-                <span className="text-xs text-app-muted font-medium">Nhắc nhở trước giờ chơi:</span>
-                <EventReminderToggle eventId={`room-${room.id}`} isCancelled={room.status === 'CANCELLED'} />
-              </div>
-            )}
-          </div>
-        </BentoCard>
-
-        {/* 2. SPECIFICATIONS GRID */}
-        <BentoCard>
-          <div className="grid grid-cols-2 gap-4">
-            {/* Phí tham gia */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[11px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
-                <DollarSign size={13} />
-                <span>MỨC PHÍ</span>
-              </span>
-              <span className="text-base font-extrabold text-app-primary tabular-nums">
-                {RoomUiFormatters.currency(room.fee)}
-                <span className="text-xs font-normal text-app-muted ml-1">/người</span>
-              </span>
-            </div>
-
-            {/* Chỗ trống */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[11px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
-                <Users size={13} />
-                <span>SỐ CHỖ</span>
-              </span>
-              <span className="text-base font-extrabold text-app-text tabular-nums">
-                {room.reserved}/{room.capacity}
-                <span className="text-xs font-semibold text-app-primary ml-1.5">
-                  ({availableSlots > 0 ? `Còn ${availableSlots}` : 'Đủ'})
-                </span>
-              </span>
-            </div>
-
-            {/* Trình độ Elo */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[11px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
-                <Award size={13} />
-                <span>TRÌNH ĐỘ</span>
-              </span>
-              <span className="text-xs font-bold text-app-text">
-                {RoomUiFormatters.skillRange(room.minElo, room.maxElo)}
-              </span>
-            </div>
-
-            {/* Hạn hủy miễn phạt */}
-            <div className="flex flex-col gap-1">
-              <span className="text-[11px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
-                <Shield size={13} />
-                <span>HẠN HỦY</span>
-              </span>
-              <span className="text-xs font-semibold text-app-text">
-                {RoomUiFormatters.deadline(room.cancelBy)}
-              </span>
-            </div>
-          </div>
-
-          {/* Ghi chú thêm nếu có */}
-          {room.notes && (
-            <div className="mt-4 pt-3 border-t border-app-border/40 text-xs text-app-muted leading-relaxed">
-              <strong className="text-app-text font-bold">Ghi chú:</strong> {room.notes}
-            </div>
-          )}
-        </BentoCard>
-
-        {/* 3. HOST CARD */}
-        <BentoCard>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-full bg-app-mint text-app-primary flex items-center justify-center font-bold text-base shrink-0">
-                {room.hostName.charAt(0).toUpperCase() || 'H'}
-              </div>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-bold text-app-text">
-                    {room.hostName}
+        {/* Main Content Layout (Responsive 2-column grid on desktop, single column on mobile) */}
+        <div className="w-full flex flex-col lg:grid lg:grid-cols-12 lg:gap-6 lg:items-start">
+          {/* LEFT COLUMN: Main details, specifications, host */}
+          <div className="flex flex-col gap-4 md:gap-5 lg:col-span-7 xl:col-span-8">
+            {/* 1. STATUS & TITLE CARD WITH DOUBLE-BEZEL DEPTH */}
+            <BentoCard highlighted={room.status === 'IN_PROGRESS'} doubleBezel courtPattern overflowVisible>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="px-2.5 py-1 rounded-md bg-app-primary/12 text-app-primary text-xs font-extrabold tracking-wider border border-app-primary/30">
+                    {room.statusLabel.toUpperCase()}
                   </span>
-                  <span className="px-1.5 py-0.2 rounded-sm bg-app-primary text-app-on-primary text-[9px] font-extrabold uppercase">
-                    HOST
+
+                  {/* Room Code Badge */}
+                  <button
+                    type="button"
+                    onClick={handleCopyCode}
+                    className="px-2.5 py-1 rounded-md bg-app-background border border-app-border text-xs font-mono font-bold text-app-text flex items-center gap-1.5 hover:border-app-primary transition-colors"
+                    title="Sao chép mã phòng"
+                  >
+                    <span>{room.roomCode}</span>
+                    <Copy size={13} className="text-app-muted" />
+                  </button>
+                </div>
+
+                <h1 className="text-2xl font-extrabold text-app-text tracking-tight leading-snug">
+                  {room.title}
+                </h1>
+
+                <div className="flex items-start gap-2 text-sm font-semibold text-app-text pt-1">
+                  <Clock size={18} className="text-app-primary shrink-0 mt-0.5" />
+                  <span className="tabular-nums">
+                    {RoomUiFormatters.dateRange(room.startsAt, room.endsAt)}
                   </span>
                 </div>
-                <span className="text-xs text-app-muted mt-0.5">
-                  Chủ trì buổi chơi này
-                </span>
-              </div>
-            </div>
-          </div>
-        </BentoCard>
 
-        {/* 4. ROSTER (DANH SÁCH THÀNH VIÊN) */}
-        <BentoCard>
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between border-b border-app-border/40 pb-2">
-              <h3 className="text-xs font-extrabold text-app-text tracking-wider uppercase flex items-center gap-1.5">
-                <Users size={14} className="text-app-primary" />
-                <span>DANH SÁCH THAM GIA ({registeredMembers.length}/{room.capacity})</span>
-              </h3>
-            </div>
-
-            <div className="flex flex-col divide-y divide-app-border/40">
-              {registeredMembers.map((member, idx) => {
-                const name = member.display_name || member.name || 'Người chơi';
-                const initial = name.charAt(0).toUpperCase() || 'P';
-                return (
-                  <div
-                    key={member.user_id || member.id || member.public_id || idx}
-                    className="py-2.5 flex items-center justify-between text-xs"
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                      <div className="w-8 h-8 rounded-full bg-app-background border border-app-border flex items-center justify-center font-bold text-app-text shrink-0 overflow-hidden">
-                        {member.avatar_url ? (
-                          <img
-                            src={member.avatar_url}
-                            alt={name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          initial
-                        )}
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="font-bold text-app-text truncate">
-                          {name}
-                        </span>
-                        <span className="text-[11px] text-app-muted truncate">
-                          {member.elo_rating != null ? `${member.elo_rating} Elo` : 'Chưa có Elo'}
-                          {member.tier_name ? ` · ${member.tier_name}` : ''}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0">
-                      {member.is_host ? (
-                        <span className="px-2 py-0.5 rounded-full bg-app-primary/15 text-app-primary text-[10px] font-bold">
-                          Host
-                        </span>
-                      ) : member.status === 'RECONFIRM' ? (
-                        <span className="px-2 py-0.5 rounded-full bg-app-loss/15 text-app-loss text-[10px] font-bold">
-                          Chờ xác nhận lại
-                        </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded-full bg-app-mint text-app-primary text-[10px] font-bold flex items-center gap-1">
-                          <CheckCircle2 size={11} />
-                          <span>Chính thức</span>
-                        </span>
-                      )}
-                    </div>
+                <div className="flex items-start gap-2 text-xs text-app-muted">
+                  <MapPin size={18} className="text-app-muted shrink-0 mt-0.5" />
+                  <div className="flex flex-col">
+                    <span className="font-bold text-app-text">
+                      {room.courtLabel
+                        ? `${room.courtName} · ${room.courtLabel}`
+                        : room.courtName}
+                    </span>
+                    {room.address && <span className="mt-0.5">{room.address}</span>}
                   </div>
-                );
-              })}
-            </div>
-          </div>
-        </BentoCard>
+                </div>
 
-        {/* 5. WAITLIST (DANH SÁCH CHỜ) NẾU CÓ */}
-        {waitlistMembers.length > 0 && (
-          <BentoCard>
-            <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between border-b border-app-border/40 pb-2">
-                <h3 className="text-xs font-extrabold text-app-streak tracking-wider uppercase flex items-center gap-1.5">
-                  <Clock size={14} />
-                  <span>DANH SÁCH CHỜ ({waitlistMembers.length})</span>
-                </h3>
+                {/* Per-event reminder toggle control */}
+                {room.status !== 'CANCELLED' && (
+                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-app-border/40 mt-1">
+                    <span className="text-xs text-app-muted font-medium">Nhắc nhở trước giờ chơi:</span>
+                    <EventReminderToggle eventId={`room-${room.id}`} isCancelled={room.status === 'CANCELLED'} />
+                  </div>
+                )}
+              </div>
+            </BentoCard>
+
+            {/* 2. SPECIFICATIONS GRID */}
+            <BentoCard>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {/* Phí tham gia */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[11px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
+                    <DollarSign size={13} />
+                    <span>MỨC PHÍ</span>
+                  </span>
+                  <span className="text-base font-extrabold text-app-primary tabular-nums">
+                    {RoomUiFormatters.currency(room.fee)}
+                    <span className="text-xs font-normal text-app-muted ml-1">/người</span>
+                  </span>
+                </div>
+
+                {/* Chỗ trống */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[11px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
+                    <Users size={13} />
+                    <span>SỐ CHỖ</span>
+                  </span>
+                  <span className="text-base font-extrabold text-app-text tabular-nums">
+                    {room.reserved}/{room.capacity}
+                    <span className="text-xs font-semibold text-app-primary ml-1.5">
+                      ({availableSlots > 0 ? `Còn ${availableSlots}` : 'Đủ'})
+                    </span>
+                  </span>
+                </div>
+
+                {/* Trình độ Elo */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[11px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
+                    <Award size={13} />
+                    <span>TRÌNH ĐỘ</span>
+                  </span>
+                  <span className="text-xs font-bold text-app-text">
+                    {RoomUiFormatters.skillRange(room.minElo, room.maxElo)}
+                  </span>
+                </div>
+
+                {/* Hạn hủy miễn phạt */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-[11px] font-bold text-app-muted uppercase tracking-wider flex items-center gap-1">
+                    <Shield size={13} />
+                    <span>HẠN HỦY</span>
+                  </span>
+                  <span className="text-xs font-semibold text-app-text">
+                    {RoomUiFormatters.deadline(room.cancelBy)}
+                  </span>
+                </div>
               </div>
 
-              <div className="flex flex-col divide-y divide-app-border/40">
-                {waitlistMembers.map((member, idx) => {
-                  const name = member.display_name || member.name || 'Người chơi';
-                  const initial = name.charAt(0).toUpperCase() || 'P';
-                  return (
-                    <div
-                      key={member.user_id || member.id || member.public_id || idx}
-                      className="py-2.5 flex items-center justify-between text-xs"
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                        <div className="w-8 h-8 rounded-full bg-app-background border border-app-border flex items-center justify-center font-bold text-app-muted shrink-0 overflow-hidden">
-                          {member.avatar_url ? (
-                            <img
-                              src={member.avatar_url}
-                              alt={name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            initial
-                          )}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                          <span className="font-semibold text-app-text truncate">
-                            {name}
-                          </span>
-                          <span className="text-[11px] text-app-muted truncate">
-                            {member.elo_rating != null ? `${member.elo_rating} Elo` : 'Chưa có Elo'}
-                            {member.tier_name ? ` · ${member.tier_name}` : ''}
-                          </span>
-                        </div>
-                      </div>
+              {/* Ghi chú thêm nếu có */}
+              {room.notes && (
+                <div className="mt-4 pt-3 border-t border-app-border/40 text-xs text-app-muted leading-relaxed">
+                  <strong className="text-app-text font-bold">Ghi chú:</strong> {room.notes}
+                </div>
+              )}
+            </BentoCard>
 
-                      <span className="px-2 py-0.5 rounded-full bg-app-streak/15 text-app-streak text-[10px] font-bold shrink-0">
-                        Thứ {idx + 1}
+            {/* 3. HOST CARD */}
+            <BentoCard>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-full bg-app-mint text-app-primary flex items-center justify-center font-bold text-base shrink-0">
+                    {room.hostName.charAt(0).toUpperCase() || 'H'}
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-bold text-app-text">
+                        {room.hostName}
+                      </span>
+                      <span className="px-1.5 py-0.2 rounded-sm bg-app-primary text-app-on-primary text-[9px] font-extrabold uppercase">
+                        HOST
                       </span>
                     </div>
-                  );
-                })}
+                    <span className="text-xs text-app-muted mt-0.5">
+                      Chủ trì buổi chơi này
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </BentoCard>
-        )}
+            </BentoCard>
+          </div>
 
-        <div className="h-20" />
+          {/* RIGHT COLUMN: Desktop action card, roster, waitlist */}
+          <div className="flex flex-col gap-4 md:gap-5 lg:col-span-5 xl:col-span-4 lg:sticky lg:top-20">
+            {/* Desktop Action Card (only visible on lg: and up) */}
+            <div className="hidden lg:block">
+              {renderDesktopActionCard()}
+            </div>
+
+            {/* 4. ROSTER (DANH SÁCH THÀNH VIÊN) */}
+            <BentoCard>
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between border-b border-app-border/40 pb-2">
+                  <h3 className="text-xs font-extrabold text-app-text tracking-wider uppercase flex items-center gap-1.5">
+                    <Users size={14} className="text-app-primary" />
+                    <span>DANH SÁCH THAM GIA ({registeredMembers.length}/{room.capacity})</span>
+                  </h3>
+                </div>
+
+                <div className="flex flex-col divide-y divide-app-border/40">
+                  {registeredMembers.map((member, idx) => {
+                    const name = member.display_name || member.name || 'Người chơi';
+                    const initial = name.charAt(0).toUpperCase() || 'P';
+                    return (
+                      <div
+                        key={member.user_id || member.id || member.public_id || idx}
+                        className="py-2.5 flex items-center justify-between text-xs"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                          <div className="w-8 h-8 rounded-full bg-app-background border border-app-border flex items-center justify-center font-bold text-app-text shrink-0 overflow-hidden">
+                            {member.avatar_url ? (
+                              <img
+                                src={member.avatar_url}
+                                alt={name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              initial
+                            )}
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-bold text-app-text truncate">
+                              {name}
+                            </span>
+                            <span className="text-[11px] text-app-muted truncate">
+                              {member.elo_rating != null ? `${member.elo_rating} Elo` : 'Chưa có Elo'}
+                              {member.tier_name ? ` · ${member.tier_name}` : ''}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                          {member.is_host ? (
+                            <span className="px-2 py-0.5 rounded-full bg-app-primary/15 text-app-primary text-[10px] font-bold">
+                              Host
+                            </span>
+                          ) : member.status === 'RECONFIRM' ? (
+                            <span className="px-2 py-0.5 rounded-full bg-app-loss/15 text-app-loss text-[10px] font-bold">
+                              Chờ xác nhận lại
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full bg-app-mint text-app-primary text-[10px] font-bold flex items-center gap-1">
+                              <CheckCircle2 size={11} />
+                              <span>Chính thức</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </BentoCard>
+
+            {/* 5. WAITLIST (DANH SÁCH CHỜ) NẾU CÓ */}
+            {waitlistMembers.length > 0 && (
+              <BentoCard>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center justify-between border-b border-app-border/40 pb-2">
+                    <h3 className="text-xs font-extrabold text-app-streak tracking-wider uppercase flex items-center gap-1.5">
+                      <Clock size={14} />
+                      <span>DANH SÁCH CHỜ ({waitlistMembers.length})</span>
+                    </h3>
+                  </div>
+
+                  <div className="flex flex-col divide-y divide-app-border/40">
+                    {waitlistMembers.map((member, idx) => {
+                      const name = member.display_name || member.name || 'Người chơi';
+                      const initial = name.charAt(0).toUpperCase() || 'P';
+                      return (
+                        <div
+                          key={member.user_id || member.id || member.public_id || idx}
+                          className="py-2.5 flex items-center justify-between text-xs"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                            <div className="w-8 h-8 rounded-full bg-app-background border border-app-border flex items-center justify-center font-bold text-app-muted shrink-0 overflow-hidden">
+                              {member.avatar_url ? (
+                                <img
+                                  src={member.avatar_url}
+                                  alt={name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                initial
+                              )}
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="font-semibold text-app-text truncate">
+                                {name}
+                              </span>
+                              <span className="text-[11px] text-app-muted truncate">
+                                {member.elo_rating != null ? `${member.elo_rating} Elo` : 'Chưa có Elo'}
+                                {member.tier_name ? ` · ${member.tier_name}` : ''}
+                              </span>
+                            </div>
+                          </div>
+
+                          <span className="px-2 py-0.5 rounded-full bg-app-streak/15 text-app-streak text-[10px] font-bold shrink-0">
+                            Thứ {idx + 1}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </BentoCard>
+            )}
+          </div>
+        </div>
+
+        <div className="h-20 lg:hidden" />
       </PageContent>
 
-      {/* 6. BOTTOM STICKY ACTION BAR */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-app-surface/95 backdrop-blur-md border-t border-app-border p-3 sm:px-6">
+      {/* 6. BOTTOM STICKY ACTION BAR (Visible on mobile/tablet, hidden on desktop) */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-app-surface/95 backdrop-blur-md border-t border-app-border p-3 sm:px-6 lg:hidden">
         <div className="w-full max-w-content mx-auto flex items-center justify-between gap-3">
           {/* Case 1: Needs Reconfirm */}
           {room.myStatus === 'RECONFIRM' ? (

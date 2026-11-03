@@ -158,20 +158,26 @@ export const LeaderboardPage: React.FC = () => {
       {/* Main Scroll Content */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto px-4 py-3 pb-24 max-w-[720px] w-full mx-auto flex flex-col gap-4"
+        className="flex-1 overflow-y-auto px-4 md:px-6 py-3 md:py-8 pb-28 max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl w-full mx-auto flex flex-col gap-4 md:gap-5"
       >
         {/* Top Header */}
         <div className="flex items-center justify-between pt-1">
-          <h1 className="text-2xl font-extrabold tracking-tight text-app-text">
-            Bảng xếp hạng
-          </h1>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-app-text">
+              Bảng xếp hạng
+            </h1>
+            <p className="text-xs md:text-sm text-app-muted mt-1 hidden sm:block">
+              Bảng phong thần và theo dõi thứ hạng Elo theo từng cụm sân
+            </p>
+          </div>
           <button
             type="button"
             onClick={loadCourtsAndData}
             title="Cập nhật bảng xếp hạng"
-            className="w-10 h-10 rounded-full flex items-center justify-center text-app-muted hover:text-app-text hover:bg-app-surface/60 active:scale-95 transition-all"
+            className="h-9 md:h-10 px-3 md:px-3.5 rounded-xl border border-app-border bg-app-surface text-app-text hover:border-app-primary/40 font-bold text-xs flex items-center gap-2 shadow-xs transition-all active:scale-95"
           >
-            <RefreshCw size={19} className={loading ? 'animate-spin text-app-primary' : ''} />
+            <RefreshCw size={16} className={loading ? 'animate-spin text-app-primary' : 'text-app-muted'} />
+            <span className="hidden sm:inline">Cập nhật</span>
           </button>
         </div>
 
@@ -219,12 +225,17 @@ export const LeaderboardPage: React.FC = () => {
           <>
             {/* Top 3 Podium */}
             {hasPodium && (
-              <div className="flex flex-col gap-3 mt-1">
-                <span className="text-xs font-bold text-app-muted px-1">
-                  Top tay vợt tại sân
-                </span>
+              <div className="flex flex-col gap-3 mt-1 bg-app-surface border border-app-border rounded-2xl p-3.5 md:p-6 shadow-xs">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-xs md:text-sm font-bold text-app-muted uppercase tracking-wider">
+                    Top tay vợt tại sân
+                  </span>
+                  <span className="text-xs text-app-primary font-bold hidden sm:inline">
+                    Vinh danh Top 3
+                  </span>
+                </div>
 
-                <div className="grid grid-cols-3 items-end gap-2 pt-2 pb-1">
+                <div className="grid grid-cols-3 items-end gap-2 md:gap-6 pt-2 pb-1 max-w-2xl mx-auto w-full">
                   {/* Rank #2 (Left) */}
                   {allPlayers[1] ? (
                     <div
@@ -327,29 +338,34 @@ export const LeaderboardPage: React.FC = () => {
             )}
 
             {/* Segmented Button View Mode */}
-            <div className="w-full p-1 bg-app-surface rounded-[14px] border border-app-border grid grid-cols-2 gap-1 shadow-xs">
-              <button
-                type="button"
-                onClick={() => setViewMode('all')}
-                className={`py-2 rounded-xl text-xs font-bold transition-all text-center ${
-                  viewMode === 'all'
-                    ? 'bg-app-primary text-app-on-primary shadow-xs'
-                    : 'text-app-muted hover:text-app-text'
-                }`}
-              >
-                Tất cả
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('nearMe')}
-                className={`py-2 rounded-xl text-xs font-bold transition-all text-center ${
-                  viewMode === 'nearMe'
-                    ? 'bg-app-primary text-app-on-primary shadow-xs'
-                    : 'text-app-muted hover:text-app-text'
-                }`}
-              >
-                Quanh bạn (±5)
-              </button>
+            <div className="w-full flex items-center justify-between gap-3">
+              <div className="w-full sm:w-auto p-1 bg-app-surface rounded-[14px] border border-app-border grid grid-cols-2 sm:flex gap-1 shadow-xs">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('all')}
+                  className={`px-4 sm:px-6 py-2 rounded-xl text-xs font-bold transition-all text-center ${
+                    viewMode === 'all'
+                      ? 'bg-app-primary text-app-on-primary shadow-xs'
+                      : 'text-app-muted hover:text-app-text'
+                  }`}
+                >
+                  Tất cả ({allPlayers.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('nearMe')}
+                  className={`px-4 sm:px-6 py-2 rounded-xl text-xs font-bold transition-all text-center ${
+                    viewMode === 'nearMe'
+                      ? 'bg-app-primary text-app-on-primary shadow-xs'
+                      : 'text-app-muted hover:text-app-text'
+                  }`}
+                >
+                  Quanh bạn (±5)
+                </button>
+              </div>
+              <span className="text-xs text-app-muted font-semibold hidden sm:inline">
+                Hiển thị {listPlayers.length} / {allPlayers.length} tay vợt
+              </span>
             </div>
 
             {/* Ranked List Section */}
@@ -389,12 +405,14 @@ export const LeaderboardPage: React.FC = () => {
 
       {/* Fixed Sticky MyStandingBar at Bottom */}
       {userCourtRank && currentUserProfile && (
-        <div className="sticky bottom-0 z-30">
-          <MyFixedStandingBar
-            userProfile={currentUserProfile}
-            rankSummary={userCourtRank}
-            onScrollToMyRank={handleScrollToMyRank}
-          />
+        <div className="sticky bottom-0 md:bottom-28 z-30 w-full pointer-events-none">
+          <div className="max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl w-full mx-auto px-0 md:px-6 pointer-events-auto">
+            <MyFixedStandingBar
+              userProfile={currentUserProfile}
+              rankSummary={userCourtRank}
+              onScrollToMyRank={handleScrollToMyRank}
+            />
+          </div>
         </div>
       )}
 

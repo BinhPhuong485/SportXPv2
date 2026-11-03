@@ -44,8 +44,8 @@ export const BottomNav: React.FC = () => {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-app-surface border-t border-app-border transition-colors">
-      <div className="w-full max-w-content mx-auto h-20 flex items-center justify-around px-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-app-surface border-t border-app-border transition-colors md:bottom-6 md:left-1/2 md:-translate-x-1/2 md:w-auto md:min-w-[440px] md:max-w-lg md:rounded-full md:border md:border-app-border md:shadow-2xl md:backdrop-blur-md md:bg-app-surface/95 md:px-3 md:h-16 md:py-0">
+      <div className="w-full max-w-content mx-auto h-20 md:h-16 flex items-center justify-around px-2 md:px-4 md:gap-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (

@@ -12,6 +12,7 @@ import {
   Activity,
   ArrowRight,
   AlertCircle,
+  Plus,
 } from 'lucide-react';
 import {
   ManagedRoomData,
@@ -203,28 +204,35 @@ export const ManagedRoomsPage: React.FC = () => {
 
   return (
     <div className="w-full flex flex-col bg-app-background min-h-[calc(100vh-56px)] select-none">
-      {/* 1. TOP BAR: KÈO ĐẤU + KHU VỰC + NHẬP MÃ + TẢI LẠI */}
-      <div className="w-full max-w-content mx-auto px-4 pt-3 pb-2 flex items-center justify-between">
+      {/* 1. TOP BAR: KÈO ĐẤU + KHU VỰC + ACTIONS */}
+      <div className="w-full max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 pt-3 md:pt-6 pb-2 md:pb-4 flex items-center justify-between gap-4">
         <div
           onClick={() => setIsFilterOpen(true)}
-          className="flex flex-col cursor-pointer select-none py-1"
+          className="flex flex-col cursor-pointer select-none py-1 group"
         >
-          <h1 className="text-2xl font-extrabold text-app-text tracking-tight leading-tight">
-            Kèo đấu
-          </h1>
-          <span className="text-xs text-app-muted flex items-center gap-1 font-medium mt-0.5 hover:text-app-primary transition-colors">
-            {currentArea} ▾
-          </span>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl md:text-3xl font-black text-app-text tracking-tight leading-tight">
+              Kèo đấu
+            </h1>
+            <span className="px-2.5 py-1 rounded-lg bg-app-mint text-app-primary text-xs font-bold border border-app-primary/30 flex items-center gap-1 group-hover:border-app-primary transition-colors">
+              <span>{currentArea}</span>
+              <ChevronDown size={14} />
+            </span>
+          </div>
+          <p className="hidden md:block text-xs text-app-muted mt-1 font-medium">
+            Khám phá và tham gia các buổi chơi cầu lông giao lưu, ghép cặp theo trình độ Elo
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 md:gap-3">
           <button
             type="button"
             onClick={() => navigate('/calendar')}
             title="Lịch thi đấu"
-            className="w-9 h-9 rounded-xl border border-app-border bg-app-surface text-app-primary flex items-center justify-center hover:border-app-primary/50 transition-colors shadow-2xs active:scale-95"
+            className="h-9 md:h-10 px-3 md:px-3.5 rounded-xl border border-app-border bg-app-surface text-app-text text-xs font-bold flex items-center gap-2 hover:border-app-primary/50 transition-colors shadow-2xs active:scale-95"
           >
-            <Calendar size={17} />
+            <Calendar size={16} className="text-app-primary" />
+            <span className="hidden sm:inline">Lịch thi đấu</span>
           </button>
 
           <button
@@ -234,9 +242,9 @@ export const ManagedRoomsPage: React.FC = () => {
               setJoinCodeError(null);
               setIsJoinCodeOpen(true);
             }}
-            className="h-9 px-3 rounded-xl border border-app-border bg-app-surface text-app-text text-xs font-bold flex items-center gap-1.5 hover:border-app-primary/50 transition-colors shadow-2xs active:scale-95"
+            className="h-9 md:h-10 px-3 md:px-3.5 rounded-xl border border-app-border bg-app-surface text-app-text text-xs font-bold flex items-center gap-2 hover:border-app-primary/50 transition-colors shadow-2xs active:scale-95"
           >
-            <Hash size={15} className="text-app-primary" />
+            <Hash size={16} className="text-app-primary" />
             <span>Nhập mã</span>
           </button>
 
@@ -244,167 +252,165 @@ export const ManagedRoomsPage: React.FC = () => {
             type="button"
             disabled={loading}
             onClick={() => load(true)}
-            title="Tải lại"
-            className="w-9 h-9 rounded-xl border border-app-border bg-app-surface text-app-muted hover:text-app-text flex items-center justify-center transition-colors shadow-2xs active:scale-95 disabled:opacity-50"
+            title="Tải lại danh sách"
+            className="w-9 h-9 md:w-10 md:h-10 rounded-xl border border-app-border bg-app-surface text-app-muted hover:text-app-text flex items-center justify-center transition-colors shadow-2xs active:scale-95 disabled:opacity-50"
           >
             <RotateCw
               size={17}
               className={loading ? 'animate-spin text-app-primary' : ''}
             />
           </button>
+
+          {/* Desktop Primary Create Room CTA Button */}
+          <button
+            type="button"
+            onClick={() => navigate('/rooms/new')}
+            className="hidden md:flex h-10 px-4 rounded-xl bg-app-primary text-app-on-primary text-xs font-black tracking-wider uppercase items-center gap-2 hover:brightness-105 active:scale-95 shadow-xs transition-all"
+          >
+            <Plus size={16} strokeWidth={2.5} />
+            <span>TẠO KÈO MỚI</span>
+          </button>
         </div>
       </div>
 
-      <div className="w-full max-w-content mx-auto px-4 flex flex-col gap-3">
-        {/* 2. SCOPE TABS: TÌM KÈO | BUỔI CỦA TÔI */}
-        <div className="p-1 bg-app-surface rounded-[14px] border border-app-border flex">
-          <button
-            type="button"
-            onClick={() => setMainTab('discover')}
-            className={`flex-1 py-2 text-[13px] font-bold rounded-[10px] transition-all flex items-center justify-center gap-1.5 ${
-              mainTab === 'discover'
-                ? 'bg-app-mint border border-app-primary text-app-text font-extrabold shadow-2xs'
-                : 'text-app-muted hover:text-app-text'
-            }`}
-          >
-            <Activity
-              size={15}
-              className={
-                mainTab === 'discover' ? 'text-app-primary' : 'text-app-muted'
-              }
-            />
-            <span>Tìm kèo</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setMainTab('mine')}
-            className={`flex-1 py-2 text-[13px] font-bold rounded-[10px] transition-all flex items-center justify-center gap-1.5 ${
-              mainTab === 'mine'
-                ? 'bg-app-mint border border-app-primary text-app-text font-extrabold shadow-2xs'
-                : 'text-app-muted hover:text-app-text'
-            }`}
-          >
-            <Calendar
-              size={15}
-              className={
-                mainTab === 'mine' ? 'text-app-primary' : 'text-app-muted'
-              }
-            />
-            <span>Buổi của tôi</span>
-          </button>
-        </div>
-
-        {/* 3. AUXILIARY: QUICK FILTER BAR (discover) OR SUB-TABS (mine) */}
-        {mainTab === 'discover' ? (
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
-            {/* 1. Ngày chơi chip */}
+      <div className="w-full max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 flex flex-col gap-3 md:gap-4">
+        {/* 2. TOOLBAR: SCOPE TABS + QUICK FILTERS */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-1.5 md:p-2 bg-app-surface/60 rounded-2xl border border-app-border/70 backdrop-blur-xs">
+          {/* Scope Tabs */}
+          <div className="p-1 bg-app-surface rounded-[12px] border border-app-border flex w-full md:w-auto md:min-w-[280px]">
             <button
               type="button"
-              onClick={() => setIsFilterOpen(true)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 shrink-0 transition-all ${
-                filter.date !== null
-                  ? 'bg-app-surface border-app-primary text-app-primary font-bold'
-                  : 'bg-app-surface border-app-border text-app-text'
+              onClick={() => setMainTab('discover')}
+              className={`flex-1 md:px-5 py-2 text-xs md:text-[13px] font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 ${
+                mainTab === 'discover'
+                  ? 'bg-app-mint border border-app-primary/40 text-app-primary font-black shadow-2xs'
+                  : 'text-app-muted hover:text-app-text'
+              }`}
+            >
+              <Activity
+                size={15}
+                className={mainTab === 'discover' ? 'text-app-primary' : 'text-app-muted'}
+              />
+              <span>Tìm kèo</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setMainTab('mine')}
+              className={`flex-1 md:px-5 py-2 text-xs md:text-[13px] font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 ${
+                mainTab === 'mine'
+                  ? 'bg-app-mint border border-app-primary/40 text-app-primary font-black shadow-2xs'
+                  : 'text-app-muted hover:text-app-text'
               }`}
             >
               <Calendar
-                size={13}
-                className={
-                  filter.date !== null ? 'text-app-primary' : 'text-app-muted'
-                }
+                size={15}
+                className={mainTab === 'mine' ? 'text-app-primary' : 'text-app-muted'}
               />
-              <span>
-                {filter.date === null
-                  ? 'Ngày chơi'
-                  : `${filter.date.getDate()}/${filter.date.getMonth() + 1}`}
-              </span>
+              <span>Buổi của tôi</span>
             </button>
+          </div>
 
-            {/* 2. Trình độ chip */}
-            <button
-              type="button"
-              onClick={() => setIsFilterOpen(true)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 shrink-0 transition-all ${
-                filter.skill !== null
-                  ? 'bg-app-surface border-app-primary text-app-primary font-bold'
-                  : 'bg-app-surface border-app-border text-app-text'
-              }`}
-            >
-              <Award
-                size={14}
-                className={
-                  filter.skill !== null ? 'text-app-primary' : 'text-app-muted'
-                }
-              />
-              <span>
-                {filter.skill === null ? 'Trình độ' : `${filter.skill} Elo`}
-              </span>
-            </button>
+          {/* Quick Filters (discover mode) */}
+          {mainTab === 'discover' ? (
+            <div className="flex items-center gap-2 overflow-x-auto md:overflow-visible no-scrollbar py-0.5 md:flex-wrap">
+              {/* Ngày chơi chip */}
+              <button
+                type="button"
+                onClick={() => setIsFilterOpen(true)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 shrink-0 transition-all ${
+                  filter.date !== null
+                    ? 'bg-app-mint border-app-primary/40 text-app-primary font-bold shadow-2xs'
+                    : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
+                }`}
+              >
+                <Calendar
+                  size={13}
+                  className={filter.date !== null ? 'text-app-primary' : 'text-app-muted'}
+                />
+                <span>
+                  {filter.date === null
+                    ? 'Ngày chơi'
+                    : `${filter.date.getDate()}/${filter.date.getMonth() + 1}`}
+                </span>
+              </button>
 
-            {/* 3. Bộ lọc chip */}
-            <button
-              type="button"
-              onClick={() => setIsFilterOpen(true)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 shrink-0 transition-all ${
-                activeFilterCount > 0
-                  ? 'bg-app-surface border-app-primary text-app-primary font-bold'
-                  : 'bg-app-surface border-app-border text-app-text'
-              }`}
-            >
-              <SlidersHorizontal
-                size={13}
-                className={
-                  activeFilterCount > 0 ? 'text-app-primary' : 'text-app-muted'
-                }
-              />
-              <span>
-                {activeFilterCount > 0
-                  ? `Bộ lọc (${activeFilterCount})`
-                  : 'Bộ lọc'}
-              </span>
-            </button>
+              {/* Trình độ chip */}
+              <button
+                type="button"
+                onClick={() => setIsFilterOpen(true)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 shrink-0 transition-all ${
+                  filter.skill !== null
+                    ? 'bg-app-mint border-app-primary/40 text-app-primary font-bold shadow-2xs'
+                    : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
+                }`}
+              >
+                <Award
+                  size={14}
+                  className={filter.skill !== null ? 'text-app-primary' : 'text-app-muted'}
+                />
+                <span>
+                  {filter.skill === null ? 'Trình độ Elo' : `${filter.skill} Elo`}
+                </span>
+              </button>
 
-            {/* 4. Còn chỗ chip */}
-            <button
-              type="button"
-              onClick={() => {
-                setFilter((prev) => {
-                  const updated = new RoomFilterState(prev);
-                  updated.availableOnly = !prev.availableOnly;
-                  return updated;
-                });
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border shrink-0 transition-all ${
-                filter.availableOnly
-                  ? 'bg-app-mint border-app-primary text-app-primary font-bold'
-                  : 'bg-app-surface border-app-border text-app-text'
-              }`}
-            >
-              Còn chỗ
-            </button>
-
-            {/* 5. Xóa lọc button */}
-            {filter.hasActiveFilter && (
+              {/* Còn chỗ chip */}
               <button
                 type="button"
                 onClick={() => {
-                  const fresh = new RoomFilterState();
-                  setFilter(fresh);
+                  setFilter((prev) => {
+                    const updated = new RoomFilterState(prev);
+                    updated.availableOnly = !prev.availableOnly;
+                    return updated;
+                  });
                 }}
-                className="text-xs text-app-loss font-semibold px-2 py-1 hover:underline shrink-0"
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border shrink-0 transition-all ${
+                  filter.availableOnly
+                    ? 'bg-app-mint border-app-primary/40 text-app-primary font-bold shadow-2xs'
+                    : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
+                }`}
               >
-                Xóa lọc
+                <span>Chỉ hiện phòng còn chỗ</span>
               </button>
-            )}
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            <UpcomingRoomsStrip events={calendarEvents} />
-            <div className="flex justify-center gap-2 py-1">
+
+              {/* Bộ lọc chi tiết chip */}
+              <button
+                type="button"
+                onClick={() => setIsFilterOpen(true)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 shrink-0 transition-all ${
+                  activeFilterCount > 0
+                    ? 'bg-app-primary text-app-on-primary border-app-primary font-bold shadow-xs'
+                    : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
+                }`}
+              >
+                <SlidersHorizontal size={13} />
+                <span>
+                  {activeFilterCount > 0
+                    ? `Bộ lọc (${activeFilterCount})`
+                    : 'Bộ lọc nâng cao'}
+                </span>
+              </button>
+
+              {/* Xóa lọc */}
+              {filter.hasActiveFilter && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const fresh = new RoomFilterState();
+                    setFilter(fresh);
+                  }}
+                  className="text-xs text-app-loss font-bold px-2 py-1 hover:underline shrink-0"
+                >
+                  Xóa lọc
+                </button>
+              )}
+            </div>
+          ) : (
+            /* Sub-tabs for Buổi của tôi */
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => setMineSubTab('mine')}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
                   mineSubTab === 'mine'
                     ? 'bg-app-primary text-app-on-primary border-app-primary shadow-xs'
                     : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
@@ -415,7 +421,7 @@ export const ManagedRoomsPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setMineSubTab('history')}
-                className={`px-4 py-1.5 rounded-full text-xs font-bold border transition-all ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
                   mineSubTab === 'history'
                     ? 'bg-app-primary text-app-on-primary border-app-primary shadow-xs'
                     : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
@@ -424,6 +430,13 @@ export const ManagedRoomsPage: React.FC = () => {
                 Lịch sử
               </button>
             </div>
+          )}
+        </div>
+
+        {/* Buổi của tôi: Upcoming strip */}
+        {mainTab === 'mine' && (
+          <div className="w-full">
+            <UpcomingRoomsStrip events={calendarEvents} />
           </div>
         )}
 
@@ -523,7 +536,7 @@ export const ManagedRoomsPage: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-app-primary animate-pulse" />
               <span>BUỔI ĐANG DIỄN RA ({ongoingRooms.length})</span>
             </div>
-            <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {ongoingRooms.map((room) => (
                 <RoomCard
                   key={room.id}
@@ -545,7 +558,7 @@ export const ManagedRoomsPage: React.FC = () => {
         )}
 
         {/* 7. ROOMS LIST */}
-        <div className="flex flex-col gap-3 pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 pb-8">
           {displayRooms.map((room) => (
             <RoomCard
               key={room.id}
@@ -556,7 +569,7 @@ export const ManagedRoomsPage: React.FC = () => {
 
           {/* Loading Indicator */}
           {loading && (
-            <div className="py-8 flex flex-col items-center justify-center gap-2">
+            <div className="py-8 flex flex-col items-center justify-center gap-2 col-span-full">
               <div className="w-6 h-6 border-2 border-app-primary border-t-transparent rounded-full animate-spin" />
               <span className="text-xs text-app-muted">Đang tải buổi chơi…</span>
             </div>
@@ -564,7 +577,7 @@ export const ManagedRoomsPage: React.FC = () => {
 
           {/* Empty State */}
           {!loading && items.length === 0 && !error && (
-            <div className="py-8 px-4">
+            <div className="py-8 px-4 col-span-full">
               <EmptyState
                 type="shuttlecock"
                 title={
@@ -602,7 +615,7 @@ export const ManagedRoomsPage: React.FC = () => {
 
           {/* Load More Button */}
           {!loading && more && !error && items.length > 0 && (
-            <div className="pt-2 pb-6 flex justify-center">
+            <div className="pt-2 pb-6 flex justify-center col-span-full">
               <button
                 type="button"
                 onClick={() => load(false)}
