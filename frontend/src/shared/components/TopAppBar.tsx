@@ -28,7 +28,7 @@ export const TopAppBar: React.FC = () => {
       )}
 
       <header className="sticky top-0 z-40 w-full bg-header-gradient text-white border-b border-app-border/20 shadow-xs">
-        <div className="w-full max-w-content mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="w-full max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
           {/* Brand Logo & Title */}
           <div className="flex items-center gap-2">
             <span className="text-[18px] font-black tracking-[0.15em] text-white select-none">

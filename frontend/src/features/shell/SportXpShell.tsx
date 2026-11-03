@@ -22,7 +22,7 @@ export const SportXpShell: React.FC = () => {
 
       {/* Floating Action Button for Rooms Tab */}
       {isRoomsTab && (
-        <div className="fixed bottom-24 right-4 sm:right-[max(1rem,calc((100vw-720px)/2+1rem))] z-30 animate-fade-in">
+        <div className="fixed bottom-24 md:bottom-28 right-4 sm:right-6 lg:right-8 xl:right-12 z-30 animate-fade-in">
           <button
             type="button"
             onClick={() => navigate('/rooms/new')}

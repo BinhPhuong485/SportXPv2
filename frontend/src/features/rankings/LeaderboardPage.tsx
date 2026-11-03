@@ -158,7 +158,7 @@ export const LeaderboardPage: React.FC = () => {
       {/* Main Scroll Content */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto px-4 py-3 pb-24 max-w-[720px] w-full mx-auto flex flex-col gap-4"
+        className="flex-1 overflow-y-auto px-4 md:px-6 py-3 md:py-6 pb-24 max-w-[720px] md:max-w-3xl lg:max-w-4xl xl:max-w-5xl w-full mx-auto flex flex-col gap-4"
       >
         {/* Top Header */}
         <div className="flex items-center justify-between pt-1">

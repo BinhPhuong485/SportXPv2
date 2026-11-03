@@ -523,7 +523,7 @@ export const ManagedRoomsPage: React.FC = () => {
               <span className="w-2 h-2 rounded-full bg-app-primary animate-pulse" />
               <span>BUỔI ĐANG DIỄN RA ({ongoingRooms.length})</span>
             </div>
-            <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {ongoingRooms.map((room) => (
                 <RoomCard
                   key={room.id}
@@ -545,7 +545,7 @@ export const ManagedRoomsPage: React.FC = () => {
         )}
 
         {/* 7. ROOMS LIST */}
-        <div className="flex flex-col gap-3 pb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 pb-8">
           {displayRooms.map((room) => (
             <RoomCard
               key={room.id}
@@ -556,7 +556,7 @@ export const ManagedRoomsPage: React.FC = () => {
 
           {/* Loading Indicator */}
           {loading && (
-            <div className="py-8 flex flex-col items-center justify-center gap-2">
+            <div className="py-8 flex flex-col items-center justify-center gap-2 col-span-full">
               <div className="w-6 h-6 border-2 border-app-primary border-t-transparent rounded-full animate-spin" />
               <span className="text-xs text-app-muted">Đang tải buổi chơi…</span>
             </div>
@@ -564,7 +564,7 @@ export const ManagedRoomsPage: React.FC = () => {
 
           {/* Empty State */}
           {!loading && items.length === 0 && !error && (
-            <div className="py-8 px-4">
+            <div className="py-8 px-4 col-span-full">
               <EmptyState
                 type="shuttlecock"
                 title={
@@ -602,7 +602,7 @@ export const ManagedRoomsPage: React.FC = () => {
 
           {/* Load More Button */}
           {!loading && more && !error && items.length > 0 && (
-            <div className="pt-2 pb-6 flex justify-center">
+            <div className="pt-2 pb-6 flex justify-center col-span-full">
               <button
                 type="button"
                 onClick={() => load(false)}
