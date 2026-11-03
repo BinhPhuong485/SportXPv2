@@ -232,11 +232,11 @@ export const ProfilePage: React.FC = () => {
       {/* MOBILE / TABLET VIEW (< 1024px): Exact single column vertical sequence */}
       <div className="flex flex-col gap-4 lg:hidden">
         {heroSection}
+        {upcomingSection}
         {performanceSection}
         {statsSection}
         {recentFormSection}
         {eloChartSection}
-        {upcomingSection}
         {diarySection}
         {reminderSettingsSection}
         {actionsSection}
@@ -244,9 +244,10 @@ export const ProfilePage: React.FC = () => {
 
       {/* DESKTOP DASHBOARD VIEW (>= 1024px): Responsive 2-column Bento Grid */}
       <div className="hidden lg:grid lg:grid-cols-12 lg:gap-6 lg:items-start">
-        {/* Left Column (5 cols): Athlete Identity, Performance, Reminders & Actions */}
+        {/* Left Column (5 cols): Athlete Identity, Upcoming, Performance, Reminders & Actions */}
         <div className="lg:col-span-5 flex flex-col gap-5 lg:sticky lg:top-20">
           {heroSection}
+          {upcomingSection}
           {performanceSection}
           {reminderSettingsSection}
           {actionsSection}
@@ -257,7 +258,6 @@ export const ProfilePage: React.FC = () => {
           {statsSection}
           {recentFormSection}
           {eloChartSection}
-          {upcomingSection}
           {diarySection}
         </div>
       </div>

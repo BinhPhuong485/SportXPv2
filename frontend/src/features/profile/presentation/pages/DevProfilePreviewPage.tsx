@@ -213,25 +213,25 @@ export const DevProfilePreviewPage: React.FC = () => {
           }}
         />
 
-        {/* 2. Win Streak & Trust Score Card (Performance Metrics) */}
-        <PerformanceMetricsCard player={FIXTURE_PROFILE} />
-
-        {/* 3. Stats Grid */}
-        <StatsGrid stats={stats} sourceNote="Dữ liệu mẫu preview 10 trận" />
-
-        {/* 4. Recent Form */}
-        <RecentFormDots form={stats.recentForm} />
-
-        {/* 5. Elo History Chart */}
-        <EloHistoryChart points={eloPoints} />
-
-        {/* 6. Upcoming Block ("Sắp tới") */}
+        {/* 2. Upcoming Block ("Sắp tới" - moved directly below user hero) */}
         <ProfileUpcomingSection
           events={FIXTURE_EVENTS}
           roomsHostedCount={3}
           roomsJoinedCount={8}
           tournamentsCount={1}
         />
+
+        {/* 3. Win Streak & Trust Score Card (Performance Metrics) */}
+        <PerformanceMetricsCard player={FIXTURE_PROFILE} />
+
+        {/* 4. Stats Grid */}
+        <StatsGrid stats={stats} sourceNote="Dữ liệu mẫu preview 10 trận" />
+
+        {/* 5. Recent Form */}
+        <RecentFormDots form={stats.recentForm} />
+
+        {/* 6. Elo History Chart */}
+        <EloHistoryChart points={eloPoints} />
 
         {/* 7. Match Diary ("Hoạt động") */}
         <MatchDiarySection matches={FIXTURE_MATCHES} loading={false} />
