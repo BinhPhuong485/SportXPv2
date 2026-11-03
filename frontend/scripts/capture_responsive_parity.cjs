@@ -92,6 +92,33 @@ async function run() {
     await page.screenshot({ path: path.join(parityDir, 'room-detail-responsive-1440px.png'), fullPage: false });
     console.log('Saved room-detail-responsive-1440px.png');
 
+    // 7. ProfilePage at 1440px (Desktop 2-column Dashboard)
+    await page.goto('http://localhost:5173/?noSplash=true#/profile', { waitUntil: 'networkidle0' });
+    await page.waitForFunction(() => document.body.innerText.includes('CHUỖI THẮNG') || document.body.innerText.includes('THỐNG KÊ PHONG ĐỘ'), { timeout: 15000 });
+    await new Promise(r => setTimeout(r, 800));
+    await page.screenshot({ path: path.join(parityDir, 'profile-responsive-1440px.png'), fullPage: false });
+    console.log('Saved profile-responsive-1440px.png');
+
+    // 8. ProfilePage at 375px (Mobile 1-column Stack)
+    await page.setViewport({ width: 375, height: 812 });
+    await new Promise(r => setTimeout(r, 600));
+    await page.screenshot({ path: path.join(parityDir, 'profile-responsive-375px.png'), fullPage: false });
+    console.log('Saved profile-responsive-375px.png');
+
+    // 9. RoomEditorPage at 1440px (Desktop 2-column Form)
+    await page.setViewport({ width: 1440, height: 900 });
+    await page.goto('http://localhost:5173/?noSplash=true#/rooms/new', { waitUntil: 'networkidle0' });
+    await page.waitForFunction(() => document.body.innerText.includes('SÂN ĐẤU & THỜI GIAN'), { timeout: 15000 });
+    await new Promise(r => setTimeout(r, 800));
+    await page.screenshot({ path: path.join(parityDir, 'room-editor-responsive-1440px.png'), fullPage: false });
+    console.log('Saved room-editor-responsive-1440px.png');
+
+    // 10. RoomEditorPage at 375px (Mobile 1-column Form)
+    await page.setViewport({ width: 375, height: 812 });
+    await new Promise(r => setTimeout(r, 600));
+    await page.screenshot({ path: path.join(parityDir, 'room-editor-responsive-375px.png'), fullPage: false });
+    console.log('Saved room-editor-responsive-375px.png');
+
     console.log('All responsive screenshots captured successfully!');
   } catch (err) {
     console.error('Error during capture:', err);
