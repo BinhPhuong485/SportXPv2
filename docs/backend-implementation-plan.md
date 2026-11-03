@@ -1,0 +1,392 @@
+# Đặc Tả Kiến Trúc & Kế Hoạch Triển Khai Backend Modular Monolith (Spring Boot 3) — SportXPv2
+
+> Cập nhật: 03/11/2026 — **v2.1 PATCHED** (vá 6 Critical Flaws sau Senior Tech Lead Review).
+> Tài liệu thiết kế kỹ thuật toàn diện cho dịch vụ Backend (thư mục `backend/`) xây dựng theo kiến trúc **Modular Monolith (Package by Feature)** bằng **Java 17/21 + Spring Boot 3.x**, kết nối cơ sở dữ liệu **Supabase PostgreSQL**.
+
+---
+
+## 1. Mục tiêu & Định vị Công nghệ cho `backend/`
+
+*   **Ngôn ngữ & Runtime:** Java 17 hoặc 21 (LTS).
+*   **Framework cốt lõi:** **Spring Boot 3.x**
+*   **Mô hình Kiến trúc:** **Modular Monolith (Package by Feature)** — Chia gói theo từng miền nghiệp vụ (Domain Bounded Contexts) để tăng tính gắn kết (Cohesion), che giấu logic nội bộ (Encapsulation) và dễ dàng bảo trì.
+*   **Package Root:** `exe.sportxp.backend`
+*   **Các Starter & Thư viện Chính:**
+    *   `spring-boot-starter-web`: Xây dựng RESTful API.
+    *   `spring-boot-starter-data-jpa`: Tương tác với PostgreSQL qua Hibernate / JPA.
+    *   `spring-boot-starter-security` & `spring-boot-starter-oauth2-resource-server`: Xác thực Supabase JWT Bearer token tự động qua OIDC / JWKS.
+    *   `spring-boot-starter-validation`: Xác thực dữ liệu đầu vào (Jakarta Validation).
+    *   `spring-boot-starter-cache` + `com.github.ben-manes.caffeine:caffeine`: Cache Leaderboard có TTL. *(MỚI)*
+    *   `org.postgresql:postgresql`: PostgreSQL JDBC Driver.
+    *   `org.projectlombok:lombok`: Tối ưu mã nguồn boilerplate.
+
+---
+
+## 2. Cấu trúc Khung Thư Mục Modular Monolith trong `backend/`
+
+Dự án được phân chia thành các Module độc lập bên trong `backend/src/main/java/exe/sportxp/backend/`:
+
+```
+backend/
+├── pom.xml
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── exe/
+│   │   │       └── sportxp/
+│   │   │           └── backend/
+│   │   │               ├── BackendApplication.java
+│   │   │               │
+│   │   │               ├── core/                           # 0. HẠ TẦNG DÙNG CHUNG
+│   │   │               │   ├── config/                     # SecurityConfig, CorsConfig, CacheConfig [MỚI]
+│   │   │               │   ├── security/                   # JwtDecoder, UserPrincipal, SecurityUtils
+│   │   │               │   ├── exception/                  # GlobalExceptionHandler, BusinessException, ErrorCode
+│   │   │               │   ├── scheduler/                  # WaitlistExpiryScheduler [MỚI], MatchAutoConfirmScheduler [MỚI]
+│   │   │               │   └── util/                       # CodeGenerator (sinh mã phòng), DateUtils
+│   │   │               │
+│   │   │               ├── room/                           # 1. MODULE KÈO ĐẤU (FLOW A & FLOW B)
+│   │   │               │   ├── controller/                 # RoomController
+│   │   │               │   ├── service/                    # RoomService, RoomServiceImpl
+│   │   │               │   ├── repository/                 # MatchRoomRepository, RoomMemberRepository
+│   │   │               │   ├── domain/                     # MatchRoom, RoomMember, RoomType, RoomStatus, MemberStatus
+│   │   │               │   └── dto/                        # CreateRoomRequest, RoomDetailResponse...
+│   │   │               │
+│   │   │               ├── match/                          # 2. MODULE TRẬN ĐẤU & BỘ MÁY ELO
+│   │   │               │   ├── controller/                 # MatchController
+│   │   │               │   ├── service/                    # MatchService, EloEngine
+│   │   │               │   ├── repository/                 # SessionMatchRepository
+│   │   │               │   ├── domain/                     # SessionMatch, MatchStatus, MatchType
+│   │   │               │   └── dto/                        # SubmitScoreRequest, MatchConfirmRequest...
+│   │   │               │
+│   │   │               ├── post/                           # 3. MODULE BẢN TIN TRANG CHỦ & REVIEW SÂN
+│   │   │               │   ├── controller/                 # PostController
+│   │   │               │   ├── service/                    # PostService
+│   │   │               │   ├── repository/                 # PostRepository, PostLikeRepository, PostCommentRepository
+│   │   │               │   ├── domain/                     # Post, PostLike, PostComment, PostType
+│   │   │               │   └── dto/                        # CreatePostRequest, PostResponse...
+│   │   │               │
+│   │   │               ├── ranking/                        # 4. MODULE BẢNG XẾP HẠNG ĐA CHIỀU
+│   │   │               │   ├── controller/                 # LeaderboardController
+│   │   │               │   ├── service/                    # LeaderboardService
+│   │   │               │   ├── repository/                 # (Truy vấn tối ưu từ profiles & courts)
+│   │   │               │   ├── domain/                     # RankTier (Enum 20 bậc)
+│   │   │               │   └── dto/                        # LeaderboardResponse, PlayerRankDto...
+│   │   │               │
+│   │   │               ├── profile/                        # 5. MODULE HỒ SƠ & BẠN BÈ
+│   │   │               │   ├── controller/                 # ProfileController
+│   │   │               │   ├── service/                    # ProfileService
+│   │   │               │   ├── repository/                 # ProfileRepository, FriendshipRepository
+│   │   │               │   ├── domain/                     # Profile, Friendship
+│   │   │               │   └── dto/                        # ProfileResponse, UpdateProfileRequest...
+│   │   │               │
+│   │   │               └── court/                          # 6. MODULE CỤM SÂN CẦU LÔNG
+│   │   │                   ├── controller/                 # CourtController
+│   │   │                   ├── service/                    # CourtService
+│   │   │                   ├── repository/                 # CourtRepository
+│   │   │                   ├── domain/                     # Court
+│   │   │                   └── dto/                        # CourtResponse...
+│   │   │
+│   │   └── resources/
+│   │       ├── application.yaml                            # Cấu hình Datasource, JPA, Supabase JWKS
+│   │       └── application-prod.yaml
+│   └── test/
+```
+
+---
+
+## 3. Cấu hình Bảo Mật & Xác thực JWT với Supabase
+
+Client (React Web trong `frontend/`) đăng nhập qua Supabase Auth và gửi Bearer Token qua Header:
+`Authorization: Bearer <supabase_access_token>`.
+
+### Cấu hình `application.yaml` *(đã vá Fix #3 — Connection Pool)*:
+
+```yaml
+server:
+  port: 8080
+
+spring:
+  application:
+    name: sportxp-backend
+
+  datasource:
+    # ✅ FIX #3: Đổi sang cổng 6543 — Supavisor/PgBouncer Transaction Pooler
+    # Cổng 5432 là Direct Connection: mỗi query chịu latency Internet + pool cạn nhanh
+    # Cổng 6543 dùng PgBouncer: nhiều request share chung ít TCP connection thực → không bị nghẽn
+    url: jdbc:postgresql://yjcqaxszvmpnlmypxjqq.supabase.co:6543/postgres?sslmode=require&prepareThreshold=0
+    username: postgres
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 20      # Tăng lên 20 (PgBouncer handle multiplexing phía DB)
+      minimum-idle: 5
+      connection-timeout: 30000  # 30s — tránh thread treo khi pool cạn
+      idle-timeout: 600000       # 10 phút — trả connection về pool khi rảnh
+      max-lifetime: 1800000      # 30 phút — rotate tránh connection bị stale
+      keepalive-time: 60000      # 1 phút — ping giữ connection sống qua firewall
+      pool-name: SportXP-HikariPool
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        # prepareThreshold=0 trong URL đã tắt server-side prepared statement
+        # — bắt buộc khi dùng PgBouncer Transaction Mode
+    show-sql: false
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://yjcqaxszvmpnlmypxjqq.supabase.co/auth/v1
+
+  # ✅ FIX #6: Bật Spring Cache cho Leaderboard
+  cache:
+    type: caffeine
+```
+
+---
+
+## 4. Đặc Tả Chi Tiết Nghiệp Vụ Từng Feature Module
+
+### 4.1 Module Kèo Đấu (`room/`)
+
+*   **Định vị cốt lõi:** Quản lý **Flow A: Sảnh Tuyển Người Công Khai / Lấp Slot Buổi Chơi (`PUBLIC_RECRUIT`)**.
+    - Đây là công cụ kết nối các hội nhóm phong trào đang thiếu chân.
+    - Mặc định **`is_rated = false` (Unrated)**, không gắn bộ máy tính điểm Elo vào phòng này để tránh áp lực trình độ cho người tham gia vãng lai.
+    - Người tham gia chỉ cần xem: *Sân nào, Mấy giờ, Số slot trống, Dải trình độ tham khảo (TB, Khá...), Phí dự kiến*.
+    - Tích hợp sẵn `zalo_group_link` do Host đính kèm để thành viên bấm 1 nút mở ngay app Zalo trao đổi trực tiếp.
+    - **Lưu ý:** Module Room không quản lý các trận đấu tính Elo lồng bên trong. Ai muốn thách đấu tính rank sẽ qua Module Match (Flow B).
+
+*   **Quản lý Slot & Waitlist FIFO *(đã vá Fix #1)*:**
+
+    > **Thiết kế cũ (SAI):** Khi người rời phòng → người đầu Waitlist tự động nhảy lên `REGISTERED`.
+    >
+    > **Vấn đề:** User A đang ngủ hoặc bận việc, hệ thống vẫn ghi `REGISTERED` → buổi chơi thiếu người thực tế (Ghost Joiner).
+
+    - **Thiết kế mới (ĐÚNG):** Khi phòng đầy, người đăng ký sau vào `WAITLIST`.
+    - Khi có slot trống, người đầu Waitlist được chuyển sang **`INVITED`** (không phải thẳng `REGISTERED`).
+    - Người được `INVITED` có **15 phút** để bấm `POST /api/rooms/{id}/claim-slot` xác nhận.
+    - Nếu hết 15 phút không xác nhận → tự động nhường slot cho người tiếp theo trong Waitlist.
+
+    **Vòng đời trạng thái `MemberStatus`:**
+    ```
+    [Đăng ký] ──(slot còn)──► REGISTERED
+                └──(phòng đầy)──► WAITLIST ──(slot trống, được chọn)──► INVITED
+                                                                              │── (bấm claim đúng hạn) ──► REGISTERED
+                                                                              └── (hết 15 phút) ──────► WAITLIST (nhường slot)
+    REGISTERED / WAITLIST ──(bấm rời phòng)──► CANCELLED
+    ```
+
+    **`MemberStatus` enum (cập nhật):**
+    ```java
+    // room/domain/MemberStatus.java
+    public enum MemberStatus {
+        REGISTERED,  // Thành viên chính thức có slot
+        WAITLIST,    // Đang xếp hàng chờ
+        INVITED,     // Được mời nhận slot, đang chờ xác nhận (TTL 15 phút)
+        RECONFIRM,   // Chờ xác nhận lại khi Host thay đổi lịch
+        CANCELLED    // Đã rời / bị hủy
+    }
+    ```
+
+    **Thêm cột `invited_at` vào bảng `room_members`:**
+    ```sql
+    ALTER TABLE room_members
+        ADD COLUMN invited_at TIMESTAMPTZ NULL;
+    ```
+
+*   **Chống Race Condition khi Join *(Fix #1 — Pessimistic Lock)*:**
+
+    > **Vấn đề:** 2 user bấm Join cùng 1 mili-giây, cả 2 thread đọc DB thấy `registeredCount < maxSlots` → cả 2 đều được `REGISTERED`. Phòng 4 người thành 5 người (Overselling).
+
+    Dùng `SELECT ... FOR UPDATE` (Pessimistic Write Lock) trên bảng `match_rooms` khi join/leave:
+    ```java
+    // room/repository/MatchRoomRepository.java
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT r FROM MatchRoom r WHERE r.id = :id")
+    Optional<MatchRoom> findByIdForUpdate(@Param("id") UUID id);
+    ```
+    Toàn bộ logic join/leave **bắt buộc** chạy bên trong `@Transactional` để lock có hiệu lực.
+
+*   **Scheduler xử lý TTL Invitation *(Fix #1)*:**
+
+    File mới: `core/scheduler/WaitlistExpiryScheduler.java` — chạy mỗi 5 phút, tìm các bản ghi `INVITED` quá 15 phút rồi nhường slot cho người tiếp theo trong Waitlist.
+
+---
+
+### 4.2 Module Trận Đấu & Bộ Máy Elo (`match/`) — Flow B: Kèo So Vợt Độc Lập
+
+*   **Định vị cốt lõi:** Quản lý **Flow B: Kèo So Vợt Leo Rank Tính Điểm Elo (1v1 & 2v2)**.
+    - Hoạt động độc lập, không bị ràng buộc lồng trong vòng đời của Room tuyển quân.
+    - Hai người (1v1) hoặc bốn người (2v2) tạo trận trực tiếp qua Mã mời 6 ký tự (`join_code`) hoặc quét QR trên điện thoại.
+    - Hỗ trợ tùy chọn **Chế độ Đấu tập (Casual Toggle)**: Cho phép chuyển sang Unrated trước khi đánh nếu chỉ giao lưu khởi động.
+
+*   **Ai được nhập kết quả? *(Participant Guard)*:**
+    - Chỉ người **trực tiếp tham gia trận đấu** (có tên trong `teamAPlayerIds` hoặc `teamBPlayerIds`) mới được gọi `POST /matches`.
+
+*   **Đồng thuận 2 chiều (Mutual Consent) & Chống gian lận:**
+    - Đơn (1v1): Cả 2 VĐV cùng bấm xác nhận tỉ số.
+    - Đôi (2v2): Ít nhất 1 đại diện bên A **và** 1 đại diện bên B bấm xác nhận.
+    - Nếu có khiếu nại → Chuyển thành `disputed`, khóa điểm Elo.
+    - **Auto-confirm Timeout:** Mỗi trận có `confirmed_deadline = created_at + 24 giờ`. Nếu sau 24h đối thủ không bấm xác nhận hay khiếu nại → hệ thống tự động chuyển `pending → confirmed` và tính Elo.
+
+*   **Bộ máy tính Elo (`EloEngine`) & Phân bổ 1v1 / 2v2:**
+    - **Đánh Đơn (1v1):** `Elo_TeamA = Elo_PlayerA`, `Elo_TeamB = Elo_PlayerB`.
+    - **Đánh Đôi (2v2):** `Elo_TeamA = (Elo_A1 + Elo_A2) / 2`, `Elo_TeamB = (Elo_B1 + Elo_B2) / 2`.
+    - **Cơ chế Phân bổ Đồng đội (Flat Team Distribution):** Cả 2 thành viên đội thắng cùng nhận `+Delta_Elo`, cả 2 thành viên đội thua cùng bị trừ `-Delta_Elo`.
+    - **Áp trần đối đầu H2H (Head-to-Head Cap):** Tối đa 2 trận tính điểm/ngày giữa cùng một cặp đối thủ. Từ trận thứ 3 trở đi tự động Unrated.
+    - **Hệ số K động (Adaptive K):**
+      - K = 10: Bạn bè quen hoặc đã thi đấu cùng nhau trong 30 ngày qua (biến động nhỏ, triệt tiêu động cơ cày điểm chéo).
+      - K = 20: Đối thủ mới gặp lần đầu.
+      - K = 32: Trận có Host / Trọng tài bảo chứng.
+    - **Thưởng chuỗi thắng (Win Streak Bonus):** Thắng liên tiếp từ 3 trận trở lên (`win_streak >= 3`), mỗi trận thắng tiếp theo được thưởng thêm `+3` đến `+5` Elo để nhanh chóng đưa các tay vợt có trình độ cao / smurf về đúng thứ hạng thực.
+
+---
+
+### 4.3 Module Bản Tin Cộng Đồng (`post/`)
+
+*   **Định vị:** Bản tin mạng xã hội chung (General Community Feed) kết nối cộng đồng người chơi cầu lông phong trào.
+*   **Tính năng chính:**
+    - Người chơi đăng bài viết tự do (Caption, hình ảnh mồ hôi/đồng đội tại sân).
+    - Tương tác xã hội: Thả tim (`post_likes`) và Bình luận trao đổi (`post_comments`).
+    - Hỗ trợ chia sẻ thành tích trận đấu hoặc link bài viết sang Zalo / Facebook.
+*   *Lưu ý:* Tính năng Review đánh giá cụm sân 1–5 sao tạm hoãn để hoàn thiện nghiệp vụ chi tiết ở giai đoạn sau.
+
+---
+
+### 4.4 Module Bảng Xếp Hạng Đa Chiều (`ranking/`) *(đã vá Fix #6)*
+
+*   **Tiêu chí Điều kiện Lên Bảng Xếp Hạng (Leaderboard Qualification Threshold):**
+    - **BXH Cụm Sân (Home Court Leaderboard):** Yêu cầu hoàn thành tối thiểu **5 trận đấu tính điểm tại chính cụm sân đó** (`court_id`).
+    - **BXH Khu vực (Regional Leaderboard):** Yêu cầu hoàn thành tối thiểu **5 trận đấu tính điểm tại các sân trong cùng Quận/Huyện** (`district`).
+      *(Ví dụ: Đánh 2 trận Sân A + 3 trận Sân B cùng thuộc Quận 10 → Chưa đủ 5 trận tại từng sân con nên chưa lên BXH từng sân, nhưng tổng 5 trận tại Quận 10 → Đủ điều kiện hiển thị trên BXH Quận 10).*
+    - **BXH Toàn quốc (Global Leaderboard):** Yêu cầu tối thiểu 5 trận đấu hoàn thành trên toàn hệ thống.
+*   **Cơ chế chống "VĐV du lịch":** Không để người chơi vãng lai thắng 1 trận ăn may rồi chiếm top 1 của sân nhà người khác mãi mãi.
+*   **Sắp xếp:** Theo `elo_rating` giảm dần, phụ theo `win_streak` giảm dần.
+
+*   **Tối ưu hiệu năng *(Fix #6)*:**
+
+    > **Vấn đề cũ:** `SELECT ... ORDER BY elo_rating DESC` full scan toàn bộ bảng `profiles` mỗi lần user mở App → CPU spike khi có 10k+ rows.
+
+    **Bước 1 — Composite Index (thực hiện ngay):**
+    ```sql
+    -- Chạy trong migration script (CONCURRENTLY = không lock bảng khi đang chạy)
+    CREATE INDEX CONCURRENTLY idx_profiles_elo_global
+        ON profiles(elo_rating DESC, win_streak DESC)
+        WHERE onboarding_step = 5;
+
+    CREATE INDEX CONCURRENTLY idx_profiles_elo_court
+        ON profiles(home_court_id, elo_rating DESC)
+        WHERE onboarding_step = 5;
+
+    CREATE INDEX CONCURRENTLY idx_profiles_elo_district
+        ON profiles(district, elo_rating DESC)
+        WHERE onboarding_step = 5;
+    ```
+
+    **Bước 2 — Spring Cache với TTL 5 phút (không cần Redis):**
+    ```java
+    // core/config/CacheConfig.java
+    @Configuration
+    @EnableCaching
+    public class CacheConfig {
+        @Bean
+        public CacheManager cacheManager() {
+            CaffeineCacheManager manager = new CaffeineCacheManager();
+            manager.setCaffeine(Caffeine.newBuilder()
+                .expireAfterWrite(5, TimeUnit.MINUTES)
+                .maximumSize(500));
+            return manager;
+        }
+    }
+
+    // ranking/service/impl/LeaderboardServiceImpl.java
+    @Cacheable(value = "global_leaderboard", key = "'top100'")
+    public List<RankedPlayerDto> getGlobalLeaderboard() { ... }
+
+    // Evict cache khi Elo thay đổi — trong EloEngine.settleMatch()
+    @CacheEvict(value = "global_leaderboard", allEntries = true)
+    public void settleMatch(SessionMatch match) { ... }
+    ```
+
+---
+
+### 4.5 Module Hồ Sơ & Mạng Xã Hội (`profile/`)
+
+*   Quản lý Hộ chiếu QR VĐV (`public_id`).
+*   Cập nhật sân nhà (`home_court_id`), số điện thoại Zalo, link Facebook, tiểu sử lối đánh.
+
+---
+
+## 5. Bảng Mã Lỗi Hệ Thống (`ErrorCode`) *(đã bổ sung)*
+
+| Mã Lỗi | HTTP Status | Thông điệp |
+| :--- | :--- | :--- |
+| `UNAUTHORIZED` | 401 | Phiên đăng nhập không hợp lệ hoặc đã hết hạn |
+| `FORBIDDEN` | 403 | Bạn không có quyền thực hiện thao tác này |
+| `RESOURCE_NOT_FOUND` | 404 | Không tìm thấy tài nguyên yêu cầu |
+| `SCHEDULE_CONFLICT` | 409 | Host hoặc VĐV đã có lịch thi đấu trùng khung giờ này |
+| `ROOM_FULL` | 409 | Phòng đã đủ chỗ, hệ thống đã chuyển bạn vào danh sách chờ |
+| `INVALID_JOIN_CODE` | 400 | Mã phòng không chính xác hoặc phòng không tồn tại |
+| `NOT_ROOM_MEMBER` | 403 | Bạn chưa phải là thành viên chính thức của buổi chơi này |
+| `ALREADY_REGISTERED` | 400 | Bạn đã đăng ký tham gia buổi chơi này trước đó |
+| `MATCH_ALREADY_CONFIRMED` | 400 | Trận đấu này đã được xác nhận kết quả trước đó |
+| `H2H_LIMIT_EXCEEDED` | 200 (Warning) | Đã vượt trần 2 trận đối đầu/ngày, trận đấu chuyển sang Unrated |
+| `ROOM_NOT_IN_PROGRESS` | 409 | Buổi chơi chưa bắt đầu hoặc đã kết thúc *(MỚI — Fix #4)* |
+| `NOT_A_PARTICIPANT` | 403 | Bạn không phải người trực tiếp thi đấu trong trận này *(MỚI — Fix #2)* |
+| `INVITATION_EXPIRED` | 410 | Lời mời đã hết hạn, slot đã nhường cho người tiếp theo *(MỚI — Fix #1)* |
+| `INVALID_OPERATION` | 400 | Thao tác không hợp lệ trong trạng thái hiện tại *(MỚI — Fix #1)* |
+| `NO_EXPERIENCE_AT_COURT` | 403 | Bạn cần tham gia ít nhất 1 buổi tại sân này trước khi đánh giá *(MỚI — Fix #5)* |
+| `INTERNAL_ERROR` | 500 | Đã có lỗi xảy ra trong quá trình xử lý hệ thống |
+
+---
+
+## 6. Danh Sách RESTful API Endpoints Đầy Đủ
+
+| Module | Method | Endpoint | Quyền hạn | Mô tả |
+| :--- | :--- | :--- | :--- | :--- |
+| **Room** | `POST` | `/api/rooms` | Authenticated | Tạo phòng (Flow A hoặc Flow B) |
+| | `GET` | `/api/rooms` | Public / Auth | Danh sách phòng Flow A theo khu vực sân, trình độ |
+| | `POST` | `/api/rooms/lookup-code` | Authenticated | Tra cứu phòng Flow B bằng `join_code` |
+| | `GET` | `/api/rooms/{id}` | Authenticated | Chi tiết phòng, danh sách VĐV, danh sách chờ |
+| | `POST` | `/api/rooms/{id}/join` | Authenticated | Đăng ký tham gia phòng (có Pessimistic Lock) |
+| | `POST` | `/api/rooms/{id}/leave` | Authenticated | Rời phòng → người đầu Waitlist nhận trạng thái `INVITED` |
+| | `POST` | `/api/rooms/{id}/claim-slot` | Authenticated | **[MỚI]** Người được `INVITED` xác nhận nhận slot (TTL 15 phút) |
+| | `POST` | `/api/rooms/{id}/start` | Host | Bắt đầu buổi chơi (`IN_PROGRESS`) |
+| | `POST` | `/api/rooms/{id}/finish` | Host | Kết thúc buổi chơi → tự động chốt pending matches trước khi `COMPLETED` |
+| | `POST` | `/api/rooms/{id}/cancel` | Host | Hủy phòng kèm lý do |
+| **Match** | `POST` | `/api/rooms/{roomId}/matches` | **Participant** (người trực tiếp đấu) | Nhập kết quả trận đấu mới — phòng phải `IN_PROGRESS` |
+| | `GET` | `/api/rooms/{roomId}/matches` | Người trong phòng | Danh sách các trận đã đấu trong buổi chơi |
+| | `POST` | `/api/matches/{matchId}/confirm` | **Participant** đối phương | Xác nhận tỉ số → Chốt ván & tính Elo |
+| | `POST` | `/api/matches/{matchId}/dispute` | **Participant** đối phương | Khiếu nại kết quả sai → Khóa điểm |
+| **Post** | `GET` | `/api/posts` | Public / Auth | Danh sách bài viết Trang chủ (phân trang) |
+| | `POST` | `/api/posts` | Authenticated | Đăng bài viết — `court_review` cần check-in tại sân |
+| | `POST` | `/api/posts/{id}/like` | Authenticated | Thả tim / Bỏ thả tim bài viết |
+| | `GET` | `/api/posts/{id}/comments` | Public / Auth | Danh sách bình luận |
+| | `POST` | `/api/posts/{id}/comments` | Authenticated | Thêm bình luận |
+| **Court** | `GET` | `/api/courts` | Public | Danh sách sân cầu lông, địa chỉ, tiện ích, rating |
+| | `GET` | `/api/courts/{id}/reviews` | Public | Xem danh sách đánh giá của sân |
+| **Ranking** | `GET` | `/api/leaderboard/global` | Public | Top VĐV toàn hệ thống (có cache 5 phút) |
+| | `GET` | `/api/leaderboard/courts/{courtId}` | Public | Top VĐV tại sân nhà cụ thể |
+| | `GET` | `/api/leaderboard/regions` | Public | Top VĐV theo Quận/Huyện/Thành phố |
+| **Profile** | `GET` | `/api/profiles/me` | Authenticated | Xem hồ sơ cá nhân và số liệu thi đấu |
+| | `PUT` | `/api/profiles/me` | Authenticated | Cập nhật thông tin, sân quen, Zalo phone, FB |
+| | `GET` | `/api/profiles/qr/{publicId}` | Authenticated | Quét mã QR xem thông tin người khác |
+| | `POST` | `/api/friends/request` | Authenticated | Gửi lời mời kết bạn |
+| | `POST` | `/api/friends/accept` | Authenticated | Chấp nhận kết bạn |
+
+---
+
+## 7. Changelog v2.0 → v2.1 (Tóm tắt thay đổi)
+
+| Fix | Hạng mục | Thay đổi |
+| :-- | :------- | :------- |
+| **#1** | Race Condition (room/) | Thêm Pessimistic Lock vào `findByIdForUpdate()`; đổi flow Waitlist → `INVITED` + TTL 15 phút + `claim-slot` API + `WaitlistExpiryScheduler` |
+| **#2** | Mutual Consent (match/) | Thêm `confirmed_deadline` (24h); `MatchAutoConfirmScheduler`; Host-close auto-confirm; Participant Guard |
+| **#3** | DB Connection Pool | Đổi cổng `5432` → `6543`; thêm `prepareThreshold=0`; tune đủ 5 Hikari params |
+| **#4** | State Machine | Guard `room.status == IN_PROGRESS` trong `submitScore()`; 5 `ErrorCode` mới |
+| **#5** | Spam Review (post/) | Check-in Guard; Upsert 1 review/sân; DB Unique partial index; đổi sang `AVG()` |
+| **#6** | Leaderboard (ranking/) | 3 Composite Partial Index; `@Cacheable` + `@CacheEvict` với Caffeine TTL 5 phút |
