@@ -1,11 +1,17 @@
 export interface RoomMember {
   user_id: string;
   status: string;
+  id?: string;
+  public_id?: string;
+  name?: string;
   display_name?: string;
-  elo_rating?: number;
-  tier_name?: string;
+  elo_rating?: number | null;
+  tier_name?: string | null;
+  avatar_url?: string | null;
+  role?: string;
   is_host?: boolean;
   is_playing?: boolean;
+  cancellation_kind?: string | null;
   created_at?: string;
   [key: string]: unknown;
 }
@@ -105,8 +111,30 @@ export function parseManagedRoom(json: Record<string, unknown>): ManagedRoomData
       ? `#XP-${id.replace(/-/g, '').substring(0, 4).toUpperCase()}`
       : '#XP-8888');
 
-  const members = Array.isArray(json.members)
-    ? (json.members as RoomMember[])
+  const members: RoomMember[] = Array.isArray(json.members)
+    ? (json.members as Record<string, unknown>[]).map((m) => {
+        const role = String(m.role || '');
+        const isHost = Boolean(m.is_host || role === 'HOST');
+        const name = String(m.display_name || m.name || '');
+        const publicId = m.public_id ? String(m.public_id) : undefined;
+        const userId = String(m.user_id || m.id || publicId || '');
+        return {
+          ...m,
+          user_id: userId,
+          id: String(m.id || userId),
+          public_id: publicId,
+          display_name: name || undefined,
+          name: name || undefined,
+          role: role || (isHost ? 'HOST' : 'PLAYER'),
+          status: String(m.status || 'REGISTERED'),
+          is_host: isHost,
+          is_playing: m.is_playing ?? true,
+          cancellation_kind: (m.cancellation_kind as string) || null,
+          elo_rating: typeof m.elo_rating === 'number' ? m.elo_rating : undefined,
+          tier_name: m.tier_name ? String(m.tier_name) : undefined,
+          avatar_url: m.avatar_url ? String(m.avatar_url) : undefined,
+        } as RoomMember;
+      })
     : [];
 
   const now = new Date();
