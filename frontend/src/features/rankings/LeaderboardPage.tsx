@@ -14,7 +14,7 @@ import { PlayerDetailModal } from './presentation/widgets/PlayerDetailModal';
 type LeaderboardViewMode = 'all' | 'nearMe';
 
 export const LeaderboardPage: React.FC = () => {
-  const { user } = useAuthStore();
+  const { user, profile } = useAuthStore();
   const currentUserId = user?.id || '';
 
   const [courts, setCourts] = useState<Court[]>([]);
@@ -46,8 +46,12 @@ export const LeaderboardPage: React.FC = () => {
       setCourts(courtsList);
 
       let courtId = selectedCourtId;
-      if (!courtId && courtsList.length > 0) {
-        courtId = courtsList[0].id;
+      if (!courtId) {
+        if (profile?.homeCourtId && courtsList.some((c) => c.id === profile.homeCourtId)) {
+          courtId = profile.homeCourtId;
+        } else if (courtsList.length > 0) {
+          courtId = courtsList[0].id;
+        }
         setSelectedCourtId(courtId);
       }
 
@@ -60,7 +64,17 @@ export const LeaderboardPage: React.FC = () => {
       setErrorMessage(e?.message || 'Không thể tải danh sách sân.');
       setLoading(false);
     }
-  }, [selectedCourtId]);
+  }, [selectedCourtId, profile?.homeCourtId]);
+
+  // Sync to home court whenever profile updates (and court exists)
+  useEffect(() => {
+    if (profile?.homeCourtId && courts.length > 0 && courts.some((c) => c.id === profile.homeCourtId)) {
+      if (selectedCourtId !== profile.homeCourtId) {
+        setSelectedCourtId(profile.homeCourtId);
+        loadLeaderboardForCourt(profile.homeCourtId);
+      }
+    }
+  }, [profile?.homeCourtId, courts]);
 
   const loadLeaderboardForCourt = async (courtId: string) => {
     setLoading(true);

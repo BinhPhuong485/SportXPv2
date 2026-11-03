@@ -18,6 +18,14 @@ import { CalendarPage } from './features/calendar/CalendarPage';
 import { OnboardingPage } from './features/onboarding/OnboardingPage';
 import { SplashScreen } from './features/splash/SplashScreen';
 
+const DevProfilePreview = import.meta.env.DEV
+  ? React.lazy(() =>
+      import('./features/profile/presentation/pages/DevProfilePreviewPage').then((m) => ({
+        default: m.DevProfilePreviewPage,
+      }))
+    )
+  : null;
+
 export const App: React.FC = () => {
   return (
     <Routes>
@@ -136,6 +144,18 @@ export const App: React.FC = () => {
           </AuthGate>
         }
       />
+
+      {/* Development-Only Preview Route (tree-shaken out of production bundle) */}
+      {import.meta.env.DEV && DevProfilePreview && (
+        <Route
+          path="/dev/profile-preview"
+          element={
+            <React.Suspense fallback={<div className="p-8 text-center text-xs text-app-muted">Đang tải preview...</div>}>
+              <DevProfilePreview />
+            </React.Suspense>
+          }
+        />
+      )}
 
       {/* Fallback to home */}
       <Route path="*" element={<Navigate to="/" replace />} />

@@ -25,9 +25,6 @@ export class ProfileRepository {
           home_court_id,
           created_at,
           onboarding_step,
-          is_identity_verified,
-          confirmed_matches_count,
-          rank_delta,
           courts (
             id,
             name,
@@ -54,12 +51,12 @@ export class ProfileRepository {
         trustScore: data.trust_score ?? 100,
         winStreak: data.win_streak ?? 0,
         homeCourtId: data.home_court_id,
-        homeCourtName: court?.name,
+        homeCourtName: court?.name || null,
         createdAt: data.created_at,
         onboardingStep: data.onboarding_step ?? 0,
-        isIdentityVerified: Boolean(data.is_identity_verified),
-        confirmedMatchesCount: Number(data.confirmed_matches_count || 0),
-        rankDelta: Number(data.rank_delta || 0),
+        isIdentityVerified: false,
+        confirmedMatchesCount: 0,
+        rankDelta: 0,
       };
     } catch {
       // Fallback query if relation or specific columns differ
@@ -71,6 +68,22 @@ export class ProfileRepository {
 
       if (!fbData) return null;
 
+      let fallbackCourtName: string | null = null;
+      if (fbData.home_court_id) {
+        try {
+          const { data: courtRow } = await supabase
+            .from('courts')
+            .select('name')
+            .eq('id', fbData.home_court_id)
+            .maybeSingle();
+          if (courtRow?.name) {
+            fallbackCourtName = courtRow.name;
+          }
+        } catch {
+          // ignore court fetch failure in fallback
+        }
+      }
+
       return {
         id: fbData.id,
         displayName: fbData.display_name || user.user_metadata?.display_name || 'Vận động viên',
@@ -80,7 +93,7 @@ export class ProfileRepository {
         trustScore: fbData.trust_score ?? 100,
         winStreak: fbData.win_streak ?? 0,
         homeCourtId: fbData.home_court_id,
-        homeCourtName: undefined,
+        homeCourtName: fallbackCourtName,
         createdAt: fbData.created_at,
         onboardingStep: fbData.onboarding_step ?? 0,
         isIdentityVerified: false,
@@ -108,7 +121,10 @@ export class ProfileRepository {
     if (Object.keys(updates).length === 0) return;
 
     const { error } = await supabase.from('profiles').update(updates).eq('id', user.id);
-    if (error) throw error;
+    if (error) {
+      console.error('Update profile error:', error);
+      throw new Error('Không thể lưu thay đổi hồ sơ. Vui lòng thử lại.');
+    }
   }
 
   async loadCourts(): Promise<Court[]> {

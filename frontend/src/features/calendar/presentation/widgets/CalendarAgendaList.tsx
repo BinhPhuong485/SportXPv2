@@ -15,6 +15,7 @@ import {
 import { BentoCard } from '../../../../shared/components/BentoCard';
 import { CalendarEvent } from '../../domain/calendarEvent';
 import { downloadIcs } from '../../utils/icsExport';
+import { EventReminderToggle } from '../../../reminders/presentation/widgets/EventReminderToggle';
 
 interface CalendarAgendaListProps {
   events: CalendarEvent[];
@@ -274,6 +275,9 @@ export const CalendarAgendaList: React.FC<CalendarAgendaListProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
+                    {/* Per-event In-App Reminder Override Toggle */}
+                    <EventReminderToggle eventId={ev.id} isCancelled={ev.isCancelled} compact />
+
                     {/* Add to Calendar button on card (Disabled on cancelled items) */}
                     <button
                       type="button"

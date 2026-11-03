@@ -1,6 +1,7 @@
 import React from 'react';
-import { CheckCircle, CircleDot } from 'lucide-react';
+import { CheckCircle, CircleDot, Home } from 'lucide-react';
 import { Court } from '../../../../core/types/database.types';
+import { useAuthStore } from '../../../../shared/hooks/useAuth';
 
 interface CourtPickerSheetProps {
   courts: Court[];
@@ -15,6 +16,15 @@ export const CourtPickerSheet: React.FC<CourtPickerSheetProps> = ({
   onSelectCourt,
   onClose,
 }) => {
+  const { profile } = useAuthStore();
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
   return (
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-xs transition-opacity animate-in fade-in"
@@ -37,6 +47,7 @@ export const CourtPickerSheet: React.FC<CourtPickerSheetProps> = ({
         <div className="flex flex-col gap-2 pt-1">
           {courts.map((court) => {
             const isSelected = court.id === selectedCourtId;
+            const isHomeCourt = profile?.homeCourtId === court.id;
             return (
               <button
                 key={court.id}
@@ -61,14 +72,22 @@ export const CourtPickerSheet: React.FC<CourtPickerSheetProps> = ({
                 </div>
 
                 {/* Details */}
-                <div className="flex-1 flex flex-col">
-                  <span
-                    className={`text-sm ${
-                      isSelected ? 'font-bold text-app-primary' : 'font-semibold text-app-text'
-                    }`}
-                  >
-                    {court.name}
-                  </span>
+                <div className="flex-1 flex flex-col min-w-0">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span
+                      className={`text-sm truncate ${
+                        isSelected ? 'font-bold text-app-primary' : 'font-semibold text-app-text'
+                      }`}
+                    >
+                      {court.name}
+                    </span>
+                    {isHomeCourt && (
+                      <span className="text-[10px] font-black text-app-primary bg-app-mint px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
+                        <Home size={10} />
+                        <span>Sân nhà</span>
+                      </span>
+                    )}
+                  </div>
                   {(court.distance_km != null || court.distanceKm != null) && (
                     <span className="text-[11px] text-app-muted mt-0.5">
                       Cách bạn ~{Number(court.distance_km ?? court.distanceKm).toFixed(1)} km

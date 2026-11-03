@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, MapPin, AlertTriangle, ChevronRight } from 'lucide-react';
 import { CalendarEvent } from '../../domain/calendarEvent';
+import { EventReminderToggle } from '../../../reminders/presentation/widgets/EventReminderToggle';
 
 interface UpcomingRoomsStripProps {
   events: CalendarEvent[];
@@ -93,10 +94,15 @@ export const UpcomingRoomsStrip: React.FC<UpcomingRoomsStripProps> = ({ events }
                 {ev.title}
               </h5>
 
-              <p className="text-[11px] text-app-muted flex items-center gap-1 truncate">
-                <MapPin size={11} className="shrink-0" />
-                <span className="truncate">{ev.subtitle}</span>
-              </p>
+              <div className="flex items-center justify-between gap-1 pt-1 border-t border-app-border/40 mt-1">
+                <p className="text-[11px] text-app-muted flex items-center gap-1 truncate min-w-0">
+                  <MapPin size={11} className="shrink-0" />
+                  <span className="truncate">{ev.subtitle}</span>
+                </p>
+                <div className="shrink-0">
+                  <EventReminderToggle eventId={ev.id} isCancelled={ev.isCancelled} compact />
+                </div>
+              </div>
             </div>
           );
         })}
