@@ -1,0 +1,5 @@
+# Created at 2026-10-31T16:13:52.910
+Boot Manifest-JAR contains absolute paths in classpath 'E:\Developer\Projects\SportXPv2\backend\target\test-classes'
+Hint: <argLine>-Djdk.net.URLClassPath.disableClassPathURLCheck=true</argLine>
+'other' has different root
+
