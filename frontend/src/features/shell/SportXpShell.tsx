@@ -20,9 +20,9 @@ export const SportXpShell: React.FC = () => {
         <Outlet />
       </main>
 
-      {/* Floating Action Button for Rooms Tab */}
+      {/* Floating Action Button for Rooms Tab (Mobile only, desktop has header CTA) */}
       {isRoomsTab && (
-        <div className="fixed bottom-24 md:bottom-28 right-4 sm:right-6 lg:right-8 xl:right-12 z-30 animate-fade-in">
+        <div className="fixed bottom-24 right-4 sm:right-6 z-30 animate-fade-in md:hidden">
           <button
             type="button"
             onClick={() => navigate('/rooms/new')}

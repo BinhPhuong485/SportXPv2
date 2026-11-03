@@ -128,7 +128,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   return (
     <div
       onClick={onTap}
-      className={`w-full bg-app-surface rounded-[20px] p-[18px] border cursor-pointer select-none transition-all duration-150 hover:shadow-xs active:scale-[0.99] flex flex-col ${
+      className={`w-full bg-app-surface rounded-[20px] p-[18px] border cursor-pointer select-none transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-app-primary/40 active:scale-[0.99] flex flex-col ${
         needsConfirm
           ? 'border-app-loss'
           : active
