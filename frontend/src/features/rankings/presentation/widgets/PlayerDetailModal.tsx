@@ -1,5 +1,5 @@
 import React from 'react';
-import { Zap, CircleDot } from 'lucide-react';
+import { Zap, CircleDot, ShieldCheck, MessageCircle, ExternalLink } from 'lucide-react';
 import { PlayerProfile } from '../../../../core/types/database.types';
 import { rankTierFromElo } from '../../domain/rankTier';
 import { getPlayerInitials } from '../../data/leaderboardRepository';
@@ -22,6 +22,7 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
   const elo = player.eloRating ?? 750;
   const tier = rankTierFromElo(elo);
   const initials = getPlayerInitials(player.displayName);
+  const isQualified = player.confirmedMatchesCount >= 5;
 
   return (
     <div
@@ -62,9 +63,20 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
                 </span>
               )}
             </div>
-            <span className="text-xs text-app-muted mt-1">
-              Hạng #{rank} · {tier.label} ({tier.group})
-            </span>
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-xs text-app-muted">
+                Hạng #{rank} · {tier.label}
+              </span>
+              {isQualified ? (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded">
+                  <ShieldCheck size={11} /> Chính thức
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.2 rounded">
+                  Tập sự ({player.confirmedMatchesCount}/5)
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -81,10 +93,10 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
 
           <div className="p-3 bg-app-background rounded-xl border border-app-border flex flex-col items-center">
             <span className="text-[10px] font-bold text-app-muted tracking-wider uppercase">
-              CHUỖI THẮNG
+              TRẬN ĐÃ ĐẤU
             </span>
             <span className="text-lg font-extrabold text-app-streak tabular-nums mt-1">
-              {player.winStreak} 🔥
+              {player.confirmedMatchesCount} trận
             </span>
           </div>
 
@@ -98,14 +110,53 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
           </div>
         </div>
 
-        {/* Home Court Info */}
-        {player.homeCourtName && (
+        {/* Home Court & Location Info */}
+        {(player.homeCourtName || player.district) && (
           <div className="w-full px-3.5 py-2.5 rounded-xl bg-app-background border border-app-border flex items-center gap-2">
             <CircleDot size={16} className="text-app-primary shrink-0" />
-            <span className="text-xs text-app-muted shrink-0">Sân hoạt động chính:</span>
+            <span className="text-xs text-app-muted shrink-0">Khu vực sinh hoạt:</span>
             <span className="text-xs font-semibold text-app-text truncate">
-              {player.homeCourtName}
+              {[player.homeCourtName, player.district, player.city].filter(Boolean).join(' · ')}
             </span>
+          </div>
+        )}
+
+        {/* Social / Contact Links */}
+        {(player.zaloLink || player.zaloPhone || player.facebookLink) && (
+          <div className="flex flex-col gap-2 pt-1">
+            <span className="text-xs font-bold text-app-muted uppercase tracking-wider">
+              Kênh liên hệ trực tiếp
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {(player.zaloLink || player.zaloPhone) && (
+                <a
+                  href={
+                    player.zaloLink
+                      ? player.zaloLink
+                      : `https://zalo.me/${player.zaloPhone?.replace(/[^0-9]/g, '')}`
+                  }
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 text-xs font-bold flex items-center gap-2 border border-blue-500/20 transition-all"
+                >
+                  <MessageCircle size={14} />
+                  <span>Chat Zalo</span>
+                  <ExternalLink size={12} />
+                </a>
+              )}
+
+              {player.facebookLink && (
+                <a
+                  href={player.facebookLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-2 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-500/20 text-xs font-bold flex items-center gap-2 border border-indigo-500/20 transition-all"
+                >
+                  <ExternalLink size={14} />
+                  <span>Facebook Profile</span>
+                </a>
+              )}
+            </div>
           </div>
         )}
 

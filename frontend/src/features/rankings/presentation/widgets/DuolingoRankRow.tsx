@@ -155,6 +155,15 @@ export const DuolingoRankRow: React.FC<DuolingoRankRowProps> = ({
               🔥 {player.winStreak}
             </span>
           )}
+          {player.confirmedMatchesCount < 5 ? (
+            <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded shrink-0">
+              Tập sự ({player.confirmedMatchesCount}/5)
+            </span>
+          ) : (
+            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded shrink-0">
+              {player.confirmedMatchesCount} trận
+            </span>
+          )}
         </div>
       </div>
 
