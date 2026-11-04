@@ -18,6 +18,8 @@ import {
   HelpCircle,
   LogOut,
   RotateCcw,
+  MessageCircle,
+  Trophy,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -418,9 +420,21 @@ export const RoomDetailPage: React.FC = () => {
             <BentoCard highlighted={room.status === 'IN_PROGRESS'} doubleBezel courtPattern overflowVisible>
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="px-2.5 py-1 rounded-md bg-app-primary/12 text-app-primary text-xs font-extrabold tracking-wider border border-app-primary/30">
-                    {room.statusLabel.toUpperCase()}
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="px-2.5 py-1 rounded-md bg-app-primary/12 text-app-primary text-xs font-extrabold tracking-wider border border-app-primary/30">
+                      {room.statusLabel.toUpperCase()}
+                    </span>
+                    {room.roomType === 'PRIVATE_RATED' || room.isRated ? (
+                      <span className="px-2 py-0.5 rounded-md bg-app-streak/15 text-app-streak border border-app-streak/40 text-[10px] font-extrabold flex items-center gap-1">
+                        <Trophy size={11} />
+                        <span>KÈO KÍN TÍNH ELO</span>
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-md bg-app-primary/15 text-app-primary border border-app-primary/40 text-[10px] font-extrabold">
+                        GIAO LƯU (UNRATED)
+                      </span>
+                    )}
+                  </div>
 
                   {/* Room Code Badge */}
                   <button
@@ -456,6 +470,31 @@ export const RoomDetailPage: React.FC = () => {
                     {room.address && <span className="mt-0.5">{room.address}</span>}
                   </div>
                 </div>
+
+                {/* Link nhóm Zalo buổi chơi (Flow A) */}
+                {room.zaloGroupLink && (
+                  <a
+                    href={room.zaloGroupLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full mt-1 py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
+                  >
+                    <MessageCircle size={16} />
+                    <span>MỞ NHÓM ZALO BUỔI CHƠI</span>
+                  </a>
+                )}
+
+                {/* Session Matches Entry Button */}
+                {room.status !== 'CANCELLED' && room.status !== 'DRAFT' && (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/rooms/${room.id}/session`)}
+                    className="w-full mt-2 py-3 px-4 rounded-xl bg-app-surface border border-app-primary text-app-primary hover:bg-app-primary hover:text-app-on-primary font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xs group"
+                  >
+                    <Trophy size={16} className="text-app-primary group-hover:text-app-on-primary" />
+                    <span>VÀO BUỔI CHƠI & GHI NHẬN TỈ SỐ SET ĐẤU</span>
+                  </button>
+                )}
 
                 {/* Per-event reminder toggle control */}
                 {room.status !== 'CANCELLED' && (

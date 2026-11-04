@@ -12,6 +12,7 @@ import { ConnectionsPage } from './features/social/ConnectionsPage';
 import { ScanProfilePage } from './features/social/ScanProfilePage';
 import { RoomDetailPage } from './features/rooms/RoomDetailPage';
 import { RoomEditorPage } from './features/rooms/RoomEditorPage';
+import { RoomSessionPage } from './features/rooms/RoomSessionPage';
 import { TournamentsPage } from './features/tournaments/TournamentsPage';
 import { CalendarPage } from './features/calendar/CalendarPage';
 
@@ -130,6 +131,16 @@ export const App: React.FC = () => {
           <AuthGate>
             <OnboardingGate>
               <RoomEditorPage />
+            </OnboardingGate>
+          </AuthGate>
+        }
+      />
+      <Route
+        path="/rooms/:roomId/session"
+        element={
+          <AuthGate>
+            <OnboardingGate>
+              <RoomSessionPage />
             </OnboardingGate>
           </AuthGate>
         }

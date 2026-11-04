@@ -140,7 +140,7 @@ export const ManagedRoomsPage: React.FC = () => {
 
     try {
       // Find room by code / ID via get_room_v2
-      const room = await managedRoomRepository.get(code);
+      const room = await managedRoomRepository.lookupCode(code);
       if (!room) {
         setJoinCodeError(`Không tìm thấy phòng với mã "${code}".`);
         return;

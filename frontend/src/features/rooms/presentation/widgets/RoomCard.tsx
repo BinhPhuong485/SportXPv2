@@ -8,6 +8,8 @@ import {
   AlertTriangle,
   Play,
   Activity,
+  Trophy,
+  MessageCircle,
 } from 'lucide-react';
 import { ManagedRoomData } from '../../domain/managedRoom';
 import { RoomUiFormatters } from './roomUiFormatters';
@@ -140,6 +142,22 @@ export const RoomCard: React.FC<RoomCardProps> = ({
       <div className="flex flex-wrap items-center gap-2 mb-3.5">
         {renderSlotBadge()}
         {renderRegistrationBadge()}
+        {room.roomType === 'PRIVATE_RATED' || room.isRated ? (
+          <span className="px-2 py-0.5 rounded-[6px] bg-app-streak/15 text-app-streak border border-app-streak/50 text-[10px] font-extrabold flex items-center gap-1">
+            <Trophy size={11} />
+            <span>TÍNH ELO</span>
+          </span>
+        ) : (
+          <span className="px-2 py-0.5 rounded-[6px] bg-app-primary/10 text-app-primary border border-app-primary/30 text-[10px] font-extrabold">
+            UNRATED
+          </span>
+        )}
+        {room.zaloGroupLink && (
+          <span className="px-1.5 py-0.5 rounded-[6px] bg-blue-600/15 text-blue-500 border border-blue-500/30 text-[10px] font-bold flex items-center gap-1">
+            <MessageCircle size={10} />
+            <span>Zalo</span>
+          </span>
+        )}
         {room.visibility === 'PRIVATE' && (
           <div className="flex items-center gap-1 text-xs text-app-muted">
             <Lock size={13} />
