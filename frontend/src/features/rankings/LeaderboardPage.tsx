@@ -205,7 +205,7 @@ export const LeaderboardPage: React.FC = () => {
       {/* Main Scroll Content */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 overflow-y-auto px-4 md:px-6 py-3 md:py-8 pb-28 max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl w-full mx-auto flex flex-col gap-4 md:gap-5"
+        className="flex-1 overflow-y-auto px-2 sm:px-4 py-2 sm:py-4 pb-28 max-w-4xl w-full mx-auto flex flex-col gap-4"
       >
         {/* Top Header */}
         <div className="flex items-center justify-between pt-1">
@@ -561,8 +561,8 @@ export const LeaderboardPage: React.FC = () => {
 
       {/* Fixed Sticky MyStandingBar at Bottom */}
       {userRankSummary && currentUserProfile && (
-        <div className="sticky bottom-0 md:bottom-28 z-30 w-full pointer-events-none">
-          <div className="max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl w-full mx-auto px-0 md:px-6 pointer-events-auto">
+        <div className="sticky bottom-20 lg:bottom-4 z-30 w-full pointer-events-none">
+          <div className="max-w-4xl w-full mx-auto px-2 sm:px-4 pointer-events-auto">
             <MyFixedStandingBar
               userProfile={currentUserProfile}
               rankSummary={userRankSummary}

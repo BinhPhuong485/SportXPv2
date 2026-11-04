@@ -39,7 +39,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   const renderSlotBadge = () => {
     if (room.status === 'CANCELLED') {
       return (
-        <span className="px-2 py-0.5 rounded-[6px] bg-app-loss/12 text-app-loss border border-app-loss/40 text-[10px] font-extrabold tracking-wider">
+        <span className="px-2.5 py-0.5 rounded-full bg-app-loss/12 text-app-loss border border-app-loss/40 text-[10px] font-black tracking-wide">
           ĐÃ HỦY
         </span>
       );
@@ -47,8 +47,8 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
     if (room.status === 'IN_PROGRESS') {
       return (
-        <span className="px-2 py-0.5 rounded-[6px] bg-app-primary/15 text-app-primary border border-app-primary text-[10px] font-extrabold tracking-wider flex items-center gap-1">
-          <Activity size={11} />
+        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-black tracking-wide flex items-center gap-1">
+          <Activity size={11} className="animate-pulse" />
           <span>ĐANG ĐẤU</span>
         </span>
       );
@@ -56,7 +56,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
     if (room.status === 'COMPLETED') {
       return (
-        <span className="px-2 py-0.5 rounded-[6px] bg-app-border text-app-muted text-[10px] font-bold tracking-wider">
+        <span className="px-2.5 py-0.5 rounded-full bg-app-background text-app-muted border border-app-border text-[10px] font-bold">
           ĐÃ KẾT THÚC
         </span>
       );
@@ -64,7 +64,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
     if (room.status === 'DRAFT') {
       return (
-        <span className="px-2 py-0.5 rounded-[6px] bg-app-border text-app-muted text-[10px] font-bold tracking-wider">
+        <span className="px-2.5 py-0.5 rounded-full bg-app-background text-app-muted border border-app-border text-[10px] font-bold">
           BẢN NHÁP
         </span>
       );
@@ -72,7 +72,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
     if (availableSlots > 0) {
       return (
-        <span className="px-2 py-0.5 rounded-[6px] bg-app-primary/12 text-app-primary border border-app-primary/40 text-[10px] font-extrabold tracking-wider flex items-center gap-1 tabular-nums">
+        <span className="px-2.5 py-0.5 rounded-full bg-app-mint text-app-primary border border-app-primary/20 text-[10px] font-black tracking-wide flex items-center gap-1 tabular-nums">
           <Users size={11} />
           <span>
             CÒN {availableSlots}/{room.capacity} CHỖ
@@ -82,7 +82,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
     }
 
     return (
-      <span className="px-2 py-0.5 rounded-[6px] bg-app-border text-app-muted text-[10px] font-bold tracking-wider tabular-nums">
+      <span className="px-2.5 py-0.5 rounded-full bg-app-background text-app-muted border border-app-border text-[10px] font-bold tabular-nums">
         ĐỦ NGƯỜI ({room.capacity}/{room.capacity})
       </span>
     );
@@ -91,7 +91,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   const renderRegistrationBadge = () => {
     if (room.isHost) {
       return (
-        <span className="px-1.5 py-0.5 rounded-[6px] bg-app-primary/15 text-app-primary border border-app-primary/50 text-[10px] font-extrabold tracking-wider">
+        <span className="px-2 py-0.5 rounded-full bg-app-primary/10 text-app-primary border border-app-primary/20 text-[10px] font-black">
           HOST
         </span>
       );
@@ -99,7 +99,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
     if (room.myStatus === 'REGISTERED') {
       return (
-        <span className="px-1.5 py-0.5 rounded-[6px] bg-app-primary/15 text-app-primary border border-app-primary/50 text-[10px] font-extrabold">
+        <span className="px-2 py-0.5 rounded-full bg-app-mint text-app-primary border border-app-primary/25 text-[10px] font-black">
           ĐÃ VÀO
         </span>
       );
@@ -107,7 +107,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
     if (room.myStatus === 'WAITLIST') {
       return (
-        <span className="px-1.5 py-0.5 rounded-[6px] bg-app-streak/15 text-app-streak border border-app-streak/60 text-[10px] font-extrabold">
+        <span className="px-2 py-0.5 rounded-full bg-app-streak/15 text-app-streak border border-app-streak/40 text-[10px] font-black">
           CHỜ CHỖ
         </span>
       );
@@ -115,7 +115,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
     if (room.myStatus === 'RECONFIRM') {
       return (
-        <span className="px-1.5 py-0.5 rounded-[6px] bg-app-loss/15 text-app-loss border border-app-loss/60 text-[10px] font-extrabold">
+        <span className="px-2 py-0.5 rounded-full bg-app-loss/15 text-app-loss border border-app-loss/40 text-[10px] font-black">
           CẦN XÁC NHẬN
         </span>
       );
@@ -130,97 +130,94 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   return (
     <div
       onClick={onTap}
-      className={`w-full bg-app-surface rounded-[20px] p-[18px] border cursor-pointer select-none transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-app-primary/40 active:scale-[0.99] flex flex-col ${
+      className={`group w-full bg-app-surface rounded-[26px] p-5 border cursor-pointer select-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-app-primary/40 active:scale-[0.99] flex flex-col gap-3 shadow-xs ${
         needsConfirm
-          ? 'border-app-loss'
+          ? 'border-app-loss ring-1 ring-app-loss/30'
           : active
           ? 'border-app-primary shadow-xs'
-          : 'border-app-border'
+          : 'border-app-border/80'
       }`}
     >
       {/* Top Badges Row */}
-      <div className="flex flex-wrap items-center gap-2 mb-3.5">
+      <div className="flex flex-wrap items-center gap-1.5">
         {renderSlotBadge()}
         {renderRegistrationBadge()}
         {room.roomType === 'PRIVATE_RATED' || room.isRated ? (
-          <span className="px-2 py-0.5 rounded-[6px] bg-app-streak/15 text-app-streak border border-app-streak/50 text-[10px] font-extrabold flex items-center gap-1">
+          <span className="px-2 py-0.5 rounded-full bg-app-streak/10 text-app-streak border border-app-streak/25 text-[10px] font-black flex items-center gap-1">
             <Trophy size={11} />
             <span>TÍNH ELO</span>
           </span>
         ) : (
-          <span className="px-2 py-0.5 rounded-[6px] bg-app-primary/10 text-app-primary border border-app-primary/30 text-[10px] font-extrabold">
-            UNRATED
+          <span className="px-2 py-0.5 rounded-full bg-app-background text-app-muted border border-app-border text-[10px] font-bold">
+            GIAO LƯU
           </span>
         )}
         {room.zaloGroupLink && (
-          <span className="px-1.5 py-0.5 rounded-[6px] bg-blue-600/15 text-blue-500 border border-blue-500/30 text-[10px] font-bold flex items-center gap-1">
+          <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-[10px] font-bold flex items-center gap-1">
             <MessageCircle size={10} />
             <span>Zalo</span>
           </span>
         )}
         {room.visibility === 'PRIVATE' && (
-          <div className="flex items-center gap-1 text-xs text-app-muted">
-            <Lock size={13} />
-            <span className="text-[11px] font-medium">Riêng tư · Vào bằng mã</span>
+          <div className="flex items-center gap-1 text-[11px] text-app-muted ml-auto">
+            <Lock size={12} />
+            <span>Kèo riêng tư</span>
           </div>
         )}
       </div>
 
       {/* Room Title */}
-      <h3 className="text-[19px] font-extrabold text-app-text tracking-[-0.3px] leading-tight mb-2.5">
+      <h3 className="text-base sm:text-[17px] font-black text-app-text tracking-tight leading-snug group-hover:text-app-primary transition-colors">
         {room.title}
       </h3>
 
       {/* Date & Schedule */}
-      <div className="flex items-start gap-1.5 text-sm font-semibold text-app-text mb-2">
-        <Clock size={18} className="text-app-primary shrink-0 mt-0.5" />
+      <div className="flex items-center gap-2 text-xs sm:text-[13px] font-bold text-app-text">
+        <Clock size={15} className="text-app-primary shrink-0" />
         <span className="tabular-nums">
           {RoomUiFormatters.dateRange(room.startsAt, room.endsAt)}
         </span>
       </div>
 
       {/* Court Location */}
-      <div className="flex items-start gap-1.5 text-[13px] text-app-muted mb-3">
-        <MapPin size={18} className="text-app-muted shrink-0 mt-0.5" />
+      <div className="flex items-start gap-2 text-xs text-app-muted">
+        <MapPin size={15} className="text-app-muted shrink-0 mt-0.5" />
         <span className="line-clamp-1">
           {room.courtLabel ? `${room.courtName} · ${room.courtLabel}` : room.courtName}
         </span>
       </div>
 
-      {/* Divider */}
-      <hr className="border-app-border/60 my-1" />
-
-      {/* Skill Range & Fee */}
-      <div className="flex flex-wrap items-center justify-between gap-2 py-2">
-        <span className="text-[13px] font-semibold text-app-text">
+      {/* Skill Range & Fee Box */}
+      <div className="p-3 rounded-xl bg-app-background/70 border border-app-border/60 flex items-center justify-between gap-2 mt-0.5">
+        <span className="text-xs font-bold text-app-text">
           {RoomUiFormatters.skillRange(room.minElo, room.maxElo)}
         </span>
-        <span className="text-sm font-extrabold text-app-primary tabular-nums">
+        <span className="text-sm font-black text-app-primary tabular-nums">
           {RoomUiFormatters.currency(room.fee)} / người
         </span>
       </div>
 
       {/* Host Row */}
-      <div className="flex items-center gap-2 pt-1 text-xs text-app-muted">
+      <div className="flex items-center gap-2 pt-1 border-t border-app-border/50 text-xs text-app-muted">
         <div className="w-6 h-6 rounded-full bg-app-mint text-app-primary flex items-center justify-center font-bold text-[11px] shrink-0">
           {hostInitial}
         </div>
         <span className="flex-1 truncate text-xs text-app-muted">
-          Host · {hostShortName}
+          Host: <span className="font-bold text-app-text">{hostShortName}</span>
         </span>
-        <ChevronRight size={20} className="text-app-muted shrink-0" />
+        <ChevronRight size={16} className="text-app-muted group-hover:translate-x-0.5 transition-transform" />
       </div>
 
       {/* Call to action if needs reconfirm or in progress */}
       {(needsConfirm || room.status === 'IN_PROGRESS') && (
-        <div className="mt-3.5 pt-1">
+        <div className="pt-1">
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation();
               onTap();
             }}
-            className={`w-full h-11 rounded-[12px] font-bold text-xs tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-xs ${
+            className={`w-full h-11 rounded-xl font-black text-xs tracking-wider uppercase flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98] ${
               needsConfirm
                 ? 'bg-app-loss text-white hover:brightness-105'
                 : 'bg-app-primary text-app-on-primary hover:brightness-105'
@@ -228,12 +225,12 @@ export const RoomCard: React.FC<RoomCardProps> = ({
           >
             {needsConfirm ? (
               <>
-                <AlertTriangle size={16} />
+                <AlertTriangle size={15} />
                 <span>CẦN XÁC NHẬN ĐIỀU KIỆN MỚI</span>
               </>
             ) : (
               <>
-                <Play size={16} fill="currentColor" />
+                <Play size={15} fill="currentColor" />
                 <span>VÀO PHÒNG ĐẤU</span>
               </>
             )}
@@ -243,4 +240,3 @@ export const RoomCard: React.FC<RoomCardProps> = ({
     </div>
   );
 };
-

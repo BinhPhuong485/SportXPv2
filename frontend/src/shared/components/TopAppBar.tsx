@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, Sun, Moon } from 'lucide-react';
+import { Bell, Sun, Moon, Activity } from 'lucide-react';
 import { useThemeStore } from '../hooks/useTheme';
 import { NotificationModalSheet } from '../../features/notifications/NotificationModalSheet';
 import { useReminderScheduler } from '../../features/reminders/presentation/useReminderScheduler';
@@ -28,12 +28,20 @@ export const TopAppBar: React.FC = () => {
       )}
 
       <header className="sticky top-0 z-40 w-full bg-header-gradient text-white border-b border-app-border/20 shadow-xs">
-        <div className="w-full max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
+        <div className="w-full max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
           {/* Brand Logo & Title */}
-          <div className="flex items-center gap-2">
-            <span className="text-[18px] font-black tracking-[0.15em] text-white select-none">
-              SPORTXP
-            </span>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center text-white border border-white/20 shadow-xs">
+              <Activity size={18} strokeWidth={2.5} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[17px] font-black tracking-[0.14em] text-white select-none leading-none">
+                SPORTXP
+              </span>
+              <span className="text-[9px] text-white/75 font-bold tracking-wider uppercase hidden sm:inline mt-0.5">
+                Cầu lông phong trào
+              </span>
+            </div>
           </div>
 
           {/* Action Icons */}

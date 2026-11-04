@@ -61,7 +61,9 @@ export class PostService {
           created_at,
           profiles:author_id (id, display_name, avatar_url, tier_name),
           courts:court_id (id, name, address),
-          match_rooms:room_id (id, title)
+          match_rooms:room_id (id, title),
+          post_comments (count),
+          post_likes (count)
         `)
         .order('created_at', { ascending: false });
 
@@ -105,8 +107,14 @@ export class PostService {
           courtAddress: court.address || null,
           roomId: row.room_id || null,
           roomTitle: room.title || null,
-          likesCount: Math.max(0, Number(row.likes_count ?? 0)),
-          commentsCount: Math.max(0, Number(row.comments_count ?? 0)),
+          likesCount:
+            Array.isArray(row.post_likes) && row.post_likes[0]?.count != null
+              ? Number(row.post_likes[0].count)
+              : Math.max(0, Number(row.likes_count ?? 0)),
+          commentsCount:
+            Array.isArray(row.post_comments) && row.post_comments[0]?.count != null
+              ? Number(row.post_comments[0].count)
+              : Math.max(0, Number(row.comments_count ?? 0)),
           isLiked: userLikedPostIds.has(row.id),
           createdAt: row.created_at,
         };
