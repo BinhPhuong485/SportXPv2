@@ -8,7 +8,7 @@ export const SportXpShell: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isRoomsTab = location.pathname === '/' || location.pathname === '/rooms';
+  const isRoomsTab = location.pathname === '/rooms';
 
   return (
     <div className="min-h-screen w-full bg-app-background flex flex-col antialiased">

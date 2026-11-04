@@ -4,6 +4,7 @@ import { AuthGate } from './features/auth/AuthGate';
 import { OnboardingGate } from './features/onboarding/OnboardingGate';
 import { AuthPage } from './features/auth/AuthPage';
 import { SportXpShell } from './features/shell/SportXpShell';
+import { FeedPage } from './features/feed/FeedPage';
 import { ManagedRoomsPage } from './features/rooms/ManagedRoomsPage';
 import { LeaderboardPage } from './features/rankings/LeaderboardPage';
 import { ProfilePage } from './features/profile/ProfilePage';
@@ -67,7 +68,8 @@ export const App: React.FC = () => {
           </AuthGate>
         }
       >
-        <Route path="/" element={<ManagedRoomsPage />} />
+        <Route path="/" element={<FeedPage />} />
+        <Route path="/feed" element={<Navigate to="/" replace />} />
         <Route path="/rooms" element={<ManagedRoomsPage />} />
         <Route path="/rankings" element={<LeaderboardPage />} />
         <Route path="/tournaments" element={<TournamentsPage />} />
