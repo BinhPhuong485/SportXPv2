@@ -166,6 +166,60 @@ export const ProfilePage: React.FC = () => {
     storedBadgeIds: customBadgeIds,
   });
 
+  // Reusable section blocks for responsive mobile vs desktop layout
+  const heroSection = (
+    <AthleteHeaderCard
+      player={profile}
+      equippedBadges={equippedBadges}
+      onEdit={() => setIsEditOpen(true)}
+      onOpenBadges={() => setIsBadgeSheetOpen(true)}
+    />
+  );
+
+  const performanceSection = <PerformanceMetricsCard player={profile} />;
+
+  const statsSection = <StatsGrid stats={stats} sourceNote="Dựa trên 20 trận gần nhất" />;
+
+  const recentFormSection = <RecentFormDots form={stats.recentForm} />;
+
+  const eloChartSection = <EloHistoryChart points={eloHistoryPoints} />;
+
+  const upcomingSection = (
+    <ProfileUpcomingSection
+      events={events}
+      roomsHostedCount={roomsHosted}
+      roomsJoinedCount={roomsJoined}
+      tournamentsCount={tournamentsCount}
+    />
+  );
+
+  const diarySection = <MatchDiarySection matches={matches} loading={matchesLoading} />;
+
+  const reminderSettingsSection = <ReminderSettingsCard />;
+
+  const actionsSection = (
+    <div className="grid grid-cols-2 gap-3 pt-1">
+      <Button
+        variant="outline"
+        size="lg"
+        onClick={loadData}
+        icon={<RefreshCw size={16} />}
+        className="uppercase tracking-wider text-xs font-black shadow-2xs"
+      >
+        CẬP NHẬT
+      </Button>
+      <Button
+        variant="danger"
+        size="lg"
+        onClick={signOut}
+        icon={<LogOut size={16} />}
+        className="uppercase tracking-wider text-xs font-black shadow-2xs"
+      >
+        ĐĂNG XUẤT
+      </Button>
+    </div>
+  );
+
   return (
     <PageContent>
       {/* Feedback banner */}
@@ -175,60 +229,44 @@ export const ProfilePage: React.FC = () => {
         </div>
       )}
 
-      {/* 1. ATHLETE IDENTITY HERO (with up to 3 badge chips, tier ring, Elo gauge, court rank) */}
-      <AthleteHeaderCard
-        player={profile}
-        equippedBadges={equippedBadges}
-        onEdit={() => setIsEditOpen(true)}
-        onOpenBadges={() => setIsBadgeSheetOpen(true)}
-      />
+      {/* MOBILE / TABLET VIEW (< 1024px): Exact single column vertical sequence */}
+      <div className="flex flex-col gap-4 lg:hidden">
+        {heroSection}
+        {upcomingSection}
+        {performanceSection}
+        {statsSection}
+        {recentFormSection}
+        {eloChartSection}
+        {diarySection}
+        {reminderSettingsSection}
+        {actionsSection}
+      </div>
 
-      {/* 2. WIN STREAK & TRUST SCORE CARD (Moved up directly below hero per Problem 2) */}
-      <PerformanceMetricsCard player={profile} />
+      {/* DESKTOP HERO DASHBOARD VIEW (>= 1024px): Full-width Hero Banner + Responsive 2-column Grid */}
+      <div className="hidden lg:flex lg:flex-col lg:gap-6">
+        {/* Full-width Widescreen Athlete Hero Banner */}
+        <div className="w-full">
+          {heroSection}
+        </div>
 
-      {/* 3. STATS GRID (6 metrics, honestly labeled) */}
-      <StatsGrid stats={stats} sourceNote="Dựa trên 20 trận gần nhất" />
+        {/* 2-Column Responsive Dashboard Grid */}
+        <div className="grid grid-cols-12 gap-6 items-start">
+          {/* Left Column (5 cols): Upcoming, Performance, Reminders & Actions */}
+          <div className="col-span-5 flex flex-col gap-5 sticky top-20">
+            {upcomingSection}
+            {performanceSection}
+            {reminderSettingsSection}
+            {actionsSection}
+          </div>
 
-      {/* 4. RECENT FORM (10 W/L dots) */}
-      <RecentFormDots form={stats.recentForm} />
-
-      {/* 5. ELO HISTORY CHART (Hand-built SVG line chart) */}
-      <EloHistoryChart points={eloHistoryPoints} />
-
-      {/* 6. "SẮP TỚI" (Upcoming events and activity counts) */}
-      <ProfileUpcomingSection
-        events={events}
-        roomsHostedCount={roomsHosted}
-        roomsJoinedCount={roomsJoined}
-        tournamentsCount={tournamentsCount}
-      />
-
-      {/* 7. "HOẠT ĐỘNG" (Recent matches diary) */}
-      <MatchDiarySection matches={matches} loading={matchesLoading} />
-
-      {/* 8. REMINDER SETTINGS ("Nhắc lịch" settings card) */}
-      <ReminderSettingsCard />
-
-      {/* 9. ACTIONS (Refresh & Sign out) */}
-      <div className="grid grid-cols-2 gap-3 pt-1">
-        <Button
-          variant="outline"
-          size="lg"
-          onClick={loadData}
-          icon={<RefreshCw size={16} />}
-          className="uppercase tracking-wider text-xs font-black shadow-2xs"
-        >
-          CẬP NHẬT
-        </Button>
-        <Button
-          variant="danger"
-          size="lg"
-          onClick={signOut}
-          icon={<LogOut size={16} />}
-          className="uppercase tracking-wider text-xs font-black shadow-2xs"
-        >
-          ĐĂNG XUẤT
-        </Button>
+          {/* Right Column (7 cols): Performance Stats, Form, Elo Chart & Match Diary */}
+          <div className="col-span-7 flex flex-col gap-5">
+            {statsSection}
+            {recentFormSection}
+            {eloChartSection}
+            {diarySection}
+          </div>
+        </div>
       </div>
 
       {/* Edit Profile Bottom Sheet */}
