@@ -10,6 +10,12 @@ export interface PlayerProfile {
   winStreak: number;
   homeCourtId?: string | null;
   homeCourtName?: string | null;
+  district?: string | null;
+  city?: string | null;
+  zaloPhone?: string | null;
+  zaloLink?: string | null;
+  facebookLink?: string | null;
+  bio?: string | null;
   createdAt?: string | null;
   onboardingStep: number;
   publicId?: string | null;

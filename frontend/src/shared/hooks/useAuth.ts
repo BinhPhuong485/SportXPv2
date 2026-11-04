@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../../core/config/supabase';
 import { PlayerProfile } from '../../features/profile/domain/playerProfile';
-import { profileRepository } from '../../features/profile/data/profileRepository';
+import { profileRepository, UpdateProfileParams } from '../../features/profile/data/profileRepository';
 
 interface AuthState {
   session: Session | null;
@@ -13,7 +13,7 @@ interface AuthState {
   profileLoading: boolean;
   setSession: (session: Session | null) => void;
   loadProfile: () => Promise<PlayerProfile | null>;
-  updateProfile: (params: { displayName?: string; homeCourtId?: string | null }) => Promise<void>;
+  updateProfile: (params: UpdateProfileParams) => Promise<void>;
   signOut: () => Promise<void>;
 }
 

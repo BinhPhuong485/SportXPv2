@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Edit2, CheckCircle2, Sparkles, MapPin, Award, Calendar } from 'lucide-react';
+import { Edit2, CheckCircle2, Sparkles, MapPin, Award, Calendar, MessageCircle, ExternalLink } from 'lucide-react';
 import { BentoCard } from '../../../../shared/components/BentoCard';
 import {
   PlayerProfile,
@@ -133,6 +133,38 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
                 <div className="flex items-center gap-1 text-[11px] text-app-muted/80">
                   <Calendar size={11} className="shrink-0" />
                   <span>Gia nhập {formatMemberSince(player.createdAt)}</span>
+                </div>
+              )}
+              {/* Bio & Contact Links */}
+              {player.bio && (
+                <p className="text-xs text-app-muted italic mt-1 bg-app-background/60 p-2 rounded-lg border border-app-border/40">
+                  "{player.bio}"
+                </p>
+              )}
+              {(player.zaloLink || player.zaloPhone || player.facebookLink) && (
+                <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                  {(player.zaloLink || player.zaloPhone) && (
+                    <a
+                      href={player.zaloLink || `https://zalo.me/${player.zaloPhone?.replace(/[^0-9]/g, '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold flex items-center gap-1 border border-blue-500/20 hover:bg-blue-500/20 transition-all"
+                    >
+                      <MessageCircle size={11} />
+                      <span>Zalo</span>
+                    </a>
+                  )}
+                  {player.facebookLink && (
+                    <a
+                      href={player.facebookLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold flex items-center gap-1 border border-indigo-500/20 hover:bg-indigo-500/20 transition-all"
+                    >
+                      <ExternalLink size={11} />
+                      <span>Facebook</span>
+                    </a>
+                  )}
                 </div>
               )}
             </div>
@@ -307,6 +339,38 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
                   <span>Gia nhập {formatMemberSince(player.createdAt)}</span>
                 </div>
               )}
+            {/* Bio & Contact Links (Desktop) */}
+            {player.bio && (
+              <p className="text-xs text-app-muted italic max-w-md bg-app-background/60 p-2 rounded-lg border border-app-border/40">
+                "{player.bio}"
+              </p>
+            )}
+            {(player.zaloLink || player.zaloPhone || player.facebookLink) && (
+              <div className="flex flex-wrap items-center gap-2 mt-1">
+                {(player.zaloLink || player.zaloPhone) && (
+                  <a
+                    href={player.zaloLink || `https://zalo.me/${player.zaloPhone?.replace(/[^0-9]/g, '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center gap-1.5 border border-blue-500/20 hover:bg-blue-500/20 transition-all"
+                  >
+                    <MessageCircle size={13} />
+                    <span>Chat Zalo</span>
+                  </a>
+                )}
+                {player.facebookLink && (
+                  <a
+                    href={player.facebookLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-bold flex items-center gap-1.5 border border-indigo-500/20 hover:bg-indigo-500/20 transition-all"
+                  >
+                    <ExternalLink size={13} />
+                    <span>Facebook Profile</span>
+                  </a>
+                )}
+              </div>
+            )}
             </div>
           </div>
         </div>
