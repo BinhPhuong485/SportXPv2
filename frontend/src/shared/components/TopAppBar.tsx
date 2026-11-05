@@ -19,14 +19,16 @@ import { NotificationModalSheet } from '../../features/notifications/Notificatio
 import { useReminderScheduler } from '../../features/reminders/presentation/useReminderScheduler';
 import { ReminderToast } from '../../features/reminders/presentation/widgets/ReminderToast';
 import { Avatar } from './Avatar';
+import { UserNavMenu } from './UserNavMenu';
 
 export const TopAppBar: React.FC = () => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useThemeStore();
-  const { profile } = useAuthStore();
+  const { profile, signOut } = useAuthStore();
   const [isNoticeOpen, setIsNoticeOpen] = useState(
     () => window.location.href.includes('notice=true')
   );
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const {
     activeToast,
@@ -54,9 +56,9 @@ export const TopAppBar: React.FC = () => {
 
       {/* Top Application Bar (LinkedIn Top Navigation Architecture - Centered Nav) */}
       <header className="sticky top-0 z-40 w-full bg-white dark:bg-app-surface border-b border-app-border/80 shadow-2xs transition-colors select-none">
-        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 h-14 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="relative w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 h-14 flex items-center justify-between gap-2 sm:gap-4">
           {/* 1. LEFT SECTION: Logo & Search Input */}
-          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 z-10">
             {/* SportXP Monogram Logo */}
             <div
               onClick={() => navigate('/')}
@@ -86,8 +88,8 @@ export const TopAppBar: React.FC = () => {
             </div>
           </div>
 
-          {/* 2. CENTER SECTION: Nav Items (Được căn chính giữa Navbar!) */}
-          <nav className="hidden lg:flex items-center justify-center h-full gap-1 flex-1 mx-2">
+          {/* 2. CENTER SECTION: Nav Items (Được căn tuyệt đối chính giữa Navbar!) */}
+          <nav className="hidden lg:flex items-center justify-center h-full gap-1 absolute left-1/2 -translate-x-1/2 top-0 z-10">
             {navLinks.map((item) => {
               const Icon = item.icon;
               return (
@@ -129,18 +131,38 @@ export const TopAppBar: React.FC = () => {
           </nav>
 
           {/* 3. RIGHT SECTION: User Profile Dropdown, CTA, Theme Toggle */}
-          <div className="flex items-center h-full gap-1.5 sm:gap-2 shrink-0">
-            {/* LinkedIn-style "Tôi ▾" (Me) Profile Trigger with Default Silhouette Avatar */}
-            <div
-              onClick={() => navigate('/profile')}
-              className="h-full flex flex-col items-center justify-center px-2 sm:px-2.5 text-app-muted hover:text-app-text cursor-pointer transition-colors"
-              title={profile?.displayName || 'Hồ sơ cá nhân'}
-            >
-              <Avatar src={profile?.avatarUrl} alt={profile?.displayName} size="xs" className="w-6 h-6" />
-              <div className="hidden md:flex items-center gap-0.5 mt-0.5 text-[10px] font-semibold tracking-tight">
-                <span>Tôi</span>
-                <ChevronDown size={10} />
-              </div>
+          <div className="flex items-center h-full gap-1.5 sm:gap-2 shrink-0 z-10">
+            {/* LinkedIn-style "Tôi ▾" (Me) Profile Trigger with Default Silhouette Avatar & Popover Menu */}
+            <div className="relative h-full flex items-center">
+              <button
+                type="button"
+                onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                className={`h-full flex flex-col items-center justify-center px-2 sm:px-2.5 transition-colors cursor-pointer ${
+                  isUserMenuOpen
+                    ? 'text-emerald-600 dark:text-emerald-400 font-bold'
+                    : 'text-app-muted hover:text-app-text'
+                }`}
+                title={profile?.displayName || 'Hồ sơ cá nhân'}
+              >
+                <Avatar src={profile?.avatarUrl} alt={profile?.displayName} size="xs" className="w-6 h-6 shadow-2xs" />
+                <div className="hidden md:flex items-center gap-0.5 mt-0.5 text-[10px] font-semibold tracking-tight">
+                  <span>Tôi</span>
+                  <ChevronDown
+                    size={10}
+                    className={`transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180 text-emerald-600' : ''}`}
+                  />
+                </div>
+              </button>
+
+              {/* Popover User Navigation Menu */}
+              <UserNavMenu
+                isOpen={isUserMenuOpen}
+                onClose={() => setIsUserMenuOpen(false)}
+                profile={profile}
+                onSignOut={signOut}
+                theme={theme}
+                toggleTheme={toggleTheme}
+              />
             </div>
 
             {/* Divider */}
@@ -156,15 +178,6 @@ export const TopAppBar: React.FC = () => {
               <span>Tạo kèo</span>
             </button>
 
-            {/* Dark / Light Mode Switch */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="w-8 h-8 rounded-lg flex items-center justify-center text-app-muted hover:text-app-text hover:bg-app-background/80 transition-colors"
-              title={theme === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'}
-            >
-              {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
-            </button>
           </div>
         </div>
       </header>
