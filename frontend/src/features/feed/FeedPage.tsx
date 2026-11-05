@@ -252,7 +252,7 @@ export const FeedPage: React.FC = () => {
       )}
 
       {/* 1. DESKTOP VIEW (Visible on desktop screen >= 1024px) */}
-      <div className="hidden lg:block w-full">
+      <div className="hidden lg:flex justify-center w-full">
         <FeedDesktopView {...sharedProps} />
       </div>
 
