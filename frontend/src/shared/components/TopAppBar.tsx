@@ -1,12 +1,29 @@
 import React, { useState } from 'react';
-import { Bell, Sun, Moon, Activity } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import {
+  Bell,
+  Sun,
+  Moon,
+  Search,
+  Plus,
+  Flame,
+  Users,
+  Trophy,
+  Calendar,
+  Medal,
+  ChevronDown,
+} from 'lucide-react';
 import { useThemeStore } from '../hooks/useTheme';
+import { useAuthStore } from '../hooks/useAuth';
 import { NotificationModalSheet } from '../../features/notifications/NotificationModalSheet';
 import { useReminderScheduler } from '../../features/reminders/presentation/useReminderScheduler';
 import { ReminderToast } from '../../features/reminders/presentation/widgets/ReminderToast';
+import { Avatar } from './Avatar';
 
 export const TopAppBar: React.FC = () => {
+  const navigate = useNavigate();
   const { theme, toggleTheme } = useThemeStore();
+  const { profile } = useAuthStore();
   const [isNoticeOpen, setIsNoticeOpen] = useState(
     () => window.location.href.includes('notice=true')
   );
@@ -18,65 +35,141 @@ export const TopAppBar: React.FC = () => {
     refreshReminders,
   } = useReminderScheduler();
 
+  const navLinks = [
+    { to: '/', label: 'Bản tin', icon: Flame, end: true },
+    { to: '/rooms', label: 'Tìm kèo', icon: Users, end: false },
+    { to: '/rankings', label: 'Xếp hạng', icon: Trophy, end: false },
+    { to: '/calendar', label: 'Lịch đấu', icon: Calendar, end: false },
+    { to: '/tournaments', label: 'Giải đấu', icon: Medal, end: false },
+  ];
+
   return (
     <>
-      {/* Live In-App Reminder Toast (aria-live polite, centered, top z-50) */}
+      {/* Live In-App Reminder Toast */}
       {activeToast && (
         <div className="fixed top-4 left-4 right-4 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-md z-50 flex justify-center pointer-events-auto">
           <ReminderToast reminder={activeToast} onDismiss={dismissToast} />
         </div>
       )}
 
-      <header className="sticky top-0 z-40 w-full bg-header-gradient text-white border-b border-app-border/20 shadow-xs">
-        <div className="w-full max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
-          {/* Brand Logo & Title */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center text-white border border-white/20 shadow-xs">
-              <Activity size={18} strokeWidth={2.5} />
-            </div>
-            <div className="flex flex-col">
-              <span className="text-[17px] font-black tracking-[0.14em] text-white select-none leading-none">
+      {/* Top Application Bar (LinkedIn Top Navigation Architecture - Centered Nav) */}
+      <header className="sticky top-0 z-40 w-full bg-white dark:bg-app-surface border-b border-app-border/80 shadow-2xs transition-colors select-none">
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 h-14 flex items-center justify-between gap-2 sm:gap-4">
+          {/* 1. LEFT SECTION: Logo & Search Input */}
+          <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+            {/* SportXP Monogram Logo */}
+            <div
+              onClick={() => navigate('/')}
+              className="flex items-center gap-2 cursor-pointer select-none group"
+            >
+              <img
+                src="/assets/brand/symbol.svg"
+                alt="SportXP Logo"
+                className="w-8 h-8 object-contain shrink-0 group-hover:scale-105 transition-transform drop-shadow-xs"
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
+              <span className="text-base font-black tracking-tight text-app-text hidden sm:inline group-hover:text-emerald-600 transition-colors">
                 SPORTXP
               </span>
-              <span className="text-[9px] text-white/75 font-bold tracking-wider uppercase hidden sm:inline mt-0.5">
-                Cầu lông phong trào
-              </span>
+            </div>
+
+            {/* LinkedIn-style Search Box */}
+            <div className="flex items-center gap-2 h-9 px-3 rounded-lg bg-app-background border border-app-border/80 focus-within:border-emerald-500 focus-within:bg-app-surface focus-within:ring-2 focus-within:ring-emerald-500/10 text-xs text-app-muted transition-all w-40 sm:w-52 md:w-60">
+              <Search size={14} className="text-app-muted shrink-0" />
+              <input
+                type="text"
+                placeholder="Tìm kiếm..."
+                className="bg-transparent text-xs text-app-text placeholder:text-app-muted outline-none w-full font-medium"
+              />
             </div>
           </div>
 
-          {/* Action Icons */}
-          <div className="flex items-center gap-1">
-            {/* Theme Toggle (Light / Dark) */}
-            <button
-              type="button"
-              onClick={toggleTheme}
-              className="w-11 h-11 flex items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/10 active:scale-95 transition-all"
-              title={theme === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'}
-              aria-label="Chuyển giao diện sáng/tối"
-            >
-              {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
+          {/* 2. CENTER SECTION: Nav Items (Được căn chính giữa Navbar!) */}
+          <nav className="hidden lg:flex items-center justify-center h-full gap-1 flex-1 mx-2">
+            {navLinks.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  end={item.end}
+                  className={({ isActive }) =>
+                    `h-full flex flex-col items-center justify-center px-3 text-[10px] font-semibold border-b-2 transition-all min-w-[64px] ${
+                      isActive
+                        ? 'border-emerald-600 text-slate-900 dark:text-white font-black'
+                        : 'border-transparent text-app-muted hover:text-app-text'
+                    }`
+                  }
+                >
+                  <Icon size={19} className="shrink-0" />
+                  <span className="mt-0.5 tracking-tight">{item.label}</span>
+                </NavLink>
+              );
+            })}
 
-            {/* Notification Bell with Badge */}
+            {/* Notification Nav Item with Badge */}
             <button
               type="button"
               onClick={() => setIsNoticeOpen(true)}
-              className="relative w-11 h-11 flex items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/10 active:scale-95 transition-all"
+              className="h-full flex flex-col items-center justify-center px-3 text-[10px] font-semibold text-app-muted hover:text-app-text border-b-2 border-transparent transition-all relative min-w-[64px]"
               title="Thông báo"
-              aria-label="Thông báo"
             >
-              <Bell size={21} />
-              {unreadCount > 0 && (
-                <span className="absolute top-2 right-2 min-w-4 h-4 px-1 rounded-full bg-app-streak text-white text-[10px] font-black flex items-center justify-center ring-2 ring-app-primary leading-none shadow-xs">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-              )}
+              <div className="relative">
+                <Bell size={19} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center ring-2 ring-app-surface leading-none shadow-xs">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </div>
+              <span className="mt-0.5 tracking-tight">Thông báo</span>
+            </button>
+          </nav>
+
+          {/* 3. RIGHT SECTION: User Profile Dropdown, CTA, Theme Toggle */}
+          <div className="flex items-center h-full gap-1.5 sm:gap-2 shrink-0">
+            {/* LinkedIn-style "Tôi ▾" (Me) Profile Trigger with Default Silhouette Avatar */}
+            <div
+              onClick={() => navigate('/profile')}
+              className="h-full flex flex-col items-center justify-center px-2 sm:px-2.5 text-app-muted hover:text-app-text cursor-pointer transition-colors"
+              title={profile?.displayName || 'Hồ sơ cá nhân'}
+            >
+              <Avatar src={profile?.avatarUrl} alt={profile?.displayName} size="xs" className="w-6 h-6" />
+              <div className="hidden md:flex items-center gap-0.5 mt-0.5 text-[10px] font-semibold tracking-tight">
+                <span>Tôi</span>
+                <ChevronDown size={10} />
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="h-6 w-px bg-app-border/80 mx-0.5 hidden sm:block" />
+
+            {/* Quick CTA: + Tạo kèo */}
+            <button
+              type="button"
+              onClick={() => navigate('/rooms/new')}
+              className="hidden sm:flex items-center gap-1 h-8 px-3 rounded-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs shadow-xs transition-all"
+            >
+              <Plus size={14} strokeWidth={2.8} />
+              <span>Tạo kèo</span>
+            </button>
+
+            {/* Dark / Light Mode Switch */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-app-muted hover:text-app-text hover:bg-app-background/80 transition-colors"
+              title={theme === 'dark' ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'}
+            >
+              {theme === 'dark' ? <Sun size={15} /> : <Moon size={15} />}
             </button>
           </div>
         </div>
       </header>
 
-      {/* Notification Modal Sheet */}
+      {/* Notification Modal Sheet Drawer */}
       <NotificationModalSheet
         isOpen={isNoticeOpen}
         onClose={() => setIsNoticeOpen(false)}
