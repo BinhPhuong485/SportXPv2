@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Bell,
-  Sun,
-  Moon,
   Search,
   Plus,
   Flame,
