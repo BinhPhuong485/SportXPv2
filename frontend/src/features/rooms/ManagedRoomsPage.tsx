@@ -265,7 +265,7 @@ export const ManagedRoomsPage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/rooms/new')}
-            className="hidden md:flex h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold tracking-wider uppercase items-center gap-2 shadow-xs transition-all"
+            className="hidden md:flex h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold tracking-wider uppercase items-center gap-2 shadow-xs transition-all whitespace-nowrap shrink-0"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span>TẠO KÈO MỚI</span>

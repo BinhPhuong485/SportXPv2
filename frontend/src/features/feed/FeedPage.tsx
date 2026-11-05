@@ -11,6 +11,7 @@ import { Court, PlayerProfile } from '../../core/types/database.types';
 import { useAuthStore } from '../../shared/hooks/useAuth';
 import { FeedTab } from './types';
 import { FeedDesktopView } from './views/FeedDesktopView';
+import { FeedTabletView } from './views/FeedTabletView';
 import { FeedMobileView } from './views/FeedMobileView';
 import { CommentDrawer } from './components/CommentDrawer';
 import { CreatePostModal } from './components/CreatePostModal';
@@ -251,13 +252,18 @@ export const FeedPage: React.FC = () => {
         </div>
       )}
 
-      {/* 1. DESKTOP VIEW (Visible on desktop screen >= 1024px) */}
-      <div className="hidden lg:flex justify-center w-full">
+      {/* 1. DESKTOP VIEW (Visible on desktop screen >= 1280px) */}
+      <div className="hidden xl:flex justify-center w-full">
         <FeedDesktopView {...sharedProps} />
       </div>
 
-      {/* 2. MOBILE VIEW (Visible on mobile/tablet screen < 1024px) */}
-      <div className="block lg:hidden w-full">
+      {/* 2. TABLET / IPAD VIEW (Visible on iPad / tablet screens 768px - 1279px) */}
+      <div className="hidden md:flex xl:hidden justify-center w-full">
+        <FeedTabletView {...sharedProps} />
+      </div>
+
+      {/* 3. MOBILE VIEW (Visible on mobile screen < 768px) */}
+      <div className="block md:hidden w-full">
         <FeedMobileView {...sharedProps} />
       </div>
 
