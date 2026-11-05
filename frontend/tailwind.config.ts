@@ -36,7 +36,8 @@ export default {
         'bento-highlight': 'linear-gradient(135deg, rgb(var(--color-mint)) 0%, rgb(var(--color-surface)) 65%)',
       },
       borderRadius: {
-        'bento': '20px',
+        'bento': '26px',
+        'bento-card': '28px',
         'btn': '14px',
         'input': '14px',
         'badge': '6px',

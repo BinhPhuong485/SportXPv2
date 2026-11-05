@@ -53,16 +53,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setSession: (session) => {
     const prevUser = get().user;
     const nextUser = session?.user ?? null;
+    const userChanged = prevUser?.id !== nextUser?.id;
+
     set({
       session,
       user: nextUser,
       loading: false,
       initialized: true,
     });
-    if (nextUser && nextUser.id !== prevUser?.id) {
-      get().loadProfile();
-    } else if (!nextUser) {
-      set({ profile: null });
+
+    if (userChanged) {
+      if (nextUser) {
+        get().loadProfile();
+      } else {
+        set({ profile: null });
+      }
     }
   },
   loadProfile: async () => {
@@ -108,16 +113,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 if (supabase) {
   supabase.auth.getSession().then(({ data: { session } }) => {
     useAuthStore.getState().setSession(session);
-    if (session?.user) {
+    if (session?.user && !useAuthStore.getState().profile) {
       useAuthStore.getState().loadProfile();
     }
   });
 
-  supabase.auth.onAuthStateChange((_event, session) => {
-    useAuthStore.getState().setSession(session);
-    if (session?.user) {
-      useAuthStore.getState().loadProfile();
+  supabase.auth.onAuthStateChange((event, session) => {
+    const currentUserId = useAuthStore.getState().user?.id;
+    const nextUserId = session?.user?.id ?? null;
+
+    if (event === 'SIGNED_OUT' || !session) {
+      useAuthStore.setState({ session: null, user: null, profile: null, initialized: true });
+      return;
     }
+
+    // If same user session refreshed (e.g. browser tab focus, token renewal):
+    // Silently sync session token without re-fetching profile or changing object references
+    if (currentUserId && currentUserId === nextUserId) {
+      useAuthStore.setState({ session, initialized: true });
+      return;
+    }
+
+    // Different user or initial login:
+    useAuthStore.getState().setSession(session);
   });
 } else {
   useAuthStore.getState().setSession(null);
