@@ -3,26 +3,26 @@
 @tailwind utilities;
 
 :root {
-  /* LIGHT THEME: Mapped from reference (#0B69DA, #FEFEFE, #EFF7FC) */
-  --color-bg: 239 247 252; /* #EFF7FC Ultra-airy soft ice backdrop */
-  --color-surface: 254 254 254; /* #FEFEFE Pure White Bento Card */
-  --color-border: 226 238 246; /* #E2EEF6 Hairline Soft Border */
-  --color-primary: 14 117 78; /* #0E754E Athletic Court Emerald (mapped from #0B69DA) */
-  --color-accent: 22 163 74; /* #16A34A Vibrant Green */
-  --color-accent-text: 14 117 78; /* #0E754E */
-  --color-mint: 226 244 236; /* #E2F4EC Soft Active Pill Container (mapped from #E8F3FC) */
-  --color-text: 15 23 42; /* #0F172A Dark Slate Text */
-  --color-muted: 100 116 139; /* #64748B Slate Grey */
+  /* LIGHT THEME: Standardized Design Tokens */
+  --color-bg: 248 250 252; /* #F8FAFC Slate 50 - Clean neutral canvas backdrop */
+  --color-surface: 255 255 255; /* #FFFFFF Pure White Surface */
+  --color-border: 226 232 240; /* #E2E8F0 Slate 200 - Crisp hairline card border */
+  --color-primary: 22 163 74; /* #16A34A Green 600 - Primary Brand */
+  --color-accent: 21 128 61; /* #15803D Green 700 - Deep Brand Hover */
+  --color-accent-text: 21 128 61; /* #15803D */
+  --color-mint: 220 252 231; /* #DCFCE7 Green 100 - Primary Subtle Container */
+  --color-text: 15 23 42; /* #0F172A Slate 900 - High Contrast Text Primary */
+  --color-muted: 71 85 105; /* #475569 Slate 600 - Text Secondary */
   --color-loss: 225 29 72; /* #E11D48 Crimson */
-  --color-streak: 180 83 9; /* #B45309 Amber Gold */
-  --color-gold: 245 158 11; /* #F59E0B Gold */
-  --color-on-primary: 254 254 254; /* #FEFEFE */
+  --color-streak: 234 88 12; /* #EA580C Orange 600 - Hot/Streak */
+  --color-gold: 234 88 12; /* #EA580C Orange 600 - Hot / Rating Accent */
+  --color-on-primary: 255 255 255; /* #FFFFFF */
   --color-court-dark: 9 40 30; /* #09281E Night Stadium */
 
   /* Calendar Event Semantic Tokens (Light) */
-  --color-event-hosting: 14 117 78;
+  --color-event-hosting: 22 163 74;
   --color-event-joined: 13 122 104;
-  --color-event-waitlist: 180 83 9;
+  --color-event-waitlist: 234 88 12;
   --color-event-tournament: 109 40 217;
   --color-event-cancelled: 225 29 72;
 }
