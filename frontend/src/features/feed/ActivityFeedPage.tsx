@@ -60,7 +60,7 @@ export const ActivityFeedPage: React.FC<ActivityFeedPageProps> = ({
           <button
             type="button"
             onClick={() => setShowRecordSheet(true)}
-            className="h-10 px-4 rounded-xl bg-app-primary text-app-on-primary font-bold text-xs flex items-center gap-1.5 shadow-xs hover:brightness-105 active:scale-95 transition-all"
+            className="h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all"
           >
             <Plus size={16} />
             <span>GHI NHẬN SET CẦU</span>

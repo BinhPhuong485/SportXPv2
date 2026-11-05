@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   Bell,
-  Sun,
-  Moon,
   Search,
   Plus,
   Flame,
@@ -78,7 +76,7 @@ export const TopAppBar: React.FC = () => {
             </div>
 
             {/* LinkedIn-style Search Box */}
-            <div className="flex items-center gap-2 h-9 px-3 rounded-lg bg-app-background border border-app-border/80 focus-within:border-emerald-500 focus-within:bg-app-surface focus-within:ring-2 focus-within:ring-emerald-500/10 text-xs text-app-muted transition-all w-40 sm:w-52 md:w-60">
+            <div className="flex items-center gap-2 h-9 px-3 rounded-lg bg-app-background border border-app-border/80 focus-within:border-emerald-500 focus-within:bg-app-surface focus-within:ring-2 focus-within:ring-emerald-500/10 text-xs text-app-muted transition-all w-40 sm:w-52 md:w-64 lg:w-72">
               <Search size={14} className="text-app-muted shrink-0" />
               <input
                 type="text"
@@ -88,8 +86,8 @@ export const TopAppBar: React.FC = () => {
             </div>
           </div>
 
-          {/* 2. CENTER SECTION: Nav Items (Được căn tuyệt đối chính giữa Navbar!) */}
-          <nav className="hidden lg:flex items-center justify-center h-full gap-1 absolute left-1/2 -translate-x-1/2 top-0 z-10">
+          {/* 2. CENTER SECTION: Nav Items (Được căn tuyệt đối chính giữa Navbar - Desktop >= 1280px) */}
+          <nav className="hidden xl:flex items-center justify-center h-full gap-1 absolute left-1/2 -translate-x-1/2 top-0 z-10">
             {navLinks.map((item) => {
               const Icon = item.icon;
               return (
@@ -131,7 +129,22 @@ export const TopAppBar: React.FC = () => {
           </nav>
 
           {/* 3. RIGHT SECTION: User Profile Dropdown, CTA, Theme Toggle */}
-          <div className="flex items-center h-full gap-1.5 sm:gap-2 shrink-0 z-10">
+          <div className="flex items-center h-full gap-1 sm:gap-2 shrink-0 z-10">
+            {/* Notification Bell for Mobile & Tablet (< xl) */}
+            <button
+              type="button"
+              onClick={() => setIsNoticeOpen(true)}
+              className="xl:hidden p-2 text-app-muted hover:text-app-text relative rounded-full hover:bg-app-background/60 transition-colors"
+              title="Thông báo"
+            >
+              <Bell size={19} />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 min-w-3.5 h-3.5 px-0.5 rounded-full bg-rose-500 text-white text-[8px] font-black flex items-center justify-center ring-2 ring-app-surface leading-none">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </button>
+
             {/* LinkedIn-style "Tôi ▾" (Me) Profile Trigger with Default Silhouette Avatar & Popover Menu */}
             <div className="relative h-full flex items-center">
               <button

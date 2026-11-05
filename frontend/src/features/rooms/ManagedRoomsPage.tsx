@@ -265,7 +265,7 @@ export const ManagedRoomsPage: React.FC = () => {
           <button
             type="button"
             onClick={() => navigate('/rooms/new')}
-            className="hidden md:flex h-10 px-4 rounded-xl bg-app-primary text-app-on-primary text-xs font-black tracking-wider uppercase items-center gap-2 hover:brightness-105 active:scale-95 shadow-xs transition-all"
+            className="hidden md:flex h-10 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold tracking-wider uppercase items-center gap-2 shadow-xs transition-all whitespace-nowrap shrink-0"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span>TẠO KÈO MỚI</span>
@@ -676,7 +676,7 @@ export const ManagedRoomsPage: React.FC = () => {
             type="button"
             disabled={searchingCode}
             onClick={handleJoinByCode}
-            className="w-full h-12 rounded-[14px] bg-app-primary text-app-on-primary font-bold text-sm tracking-wide hover:brightness-105 active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-xs"
+            className="w-full h-12 rounded-[14px] bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold text-sm tracking-wide disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-xs"
           >
             {searchingCode ? (
               <>

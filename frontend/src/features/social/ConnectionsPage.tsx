@@ -36,8 +36,8 @@ export const ConnectionsPage: React.FC = () => {
               onClick={() => setKind(key as 'friends' | 'incoming' | 'outgoing' | 'blocked')}
               className={`px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
                 kind === key
-                  ? 'bg-app-primary text-app-on-primary border-app-primary'
-                  : 'bg-app-surface text-app-muted border-app-border hover:border-app-primary/50'
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs'
+                  : 'bg-app-surface text-app-muted border-app-border hover:border-emerald-600/50'
               }`}
             >
               {label}
@@ -59,7 +59,7 @@ export const ConnectionsPage: React.FC = () => {
 
           <button
             onClick={() => navigate('/scan')}
-            className="mt-2 px-5 py-2.5 rounded-xl bg-app-primary text-app-on-primary font-bold text-xs tracking-wider uppercase flex items-center gap-2 hover:brightness-105 active:scale-[0.99] transition-all"
+            className="mt-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs tracking-wider uppercase flex items-center gap-2 transition-all shadow-xs"
           >
             <QrCode size={15} />
             <span>QUÉT MÃ ĐỐI THỦ</span>

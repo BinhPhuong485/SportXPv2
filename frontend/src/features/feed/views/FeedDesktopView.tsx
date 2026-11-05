@@ -39,7 +39,7 @@ export const FeedDesktopView: React.FC<FeedViewProps> = ({
   const navigate = useNavigate();
 
   return (
-    <div className="w-full max-w-7xl flex flex-row gap-5 items-start justify-center select-none">
+    <div className="w-full max-w-7xl mx-auto flex flex-row gap-5 items-start justify-center select-none">
       {/* ========================================================= */}
       {/* COLUMN 1: LEFT USER PROFILE & SHORTCUTS (LinkedIn Left Rail) */}
       {/* ========================================================= */}

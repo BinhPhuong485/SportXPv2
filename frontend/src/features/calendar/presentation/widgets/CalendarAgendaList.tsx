@@ -101,7 +101,7 @@ export const CalendarAgendaList: React.FC<CalendarAgendaListProps> = ({
             onClick={() => setFilterType('all')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
               filterType === 'all'
-                ? 'bg-app-primary text-app-on-primary shadow-2xs'
+                ? 'bg-emerald-600 text-white shadow-2xs'
                 : 'bg-app-surface border border-app-border text-app-muted hover:text-app-text'
             }`}
           >
@@ -112,7 +112,7 @@ export const CalendarAgendaList: React.FC<CalendarAgendaListProps> = ({
             onClick={() => setFilterType('rooms')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
               filterType === 'rooms'
-                ? 'bg-app-primary text-app-on-primary shadow-2xs'
+                ? 'bg-emerald-600 text-white shadow-2xs'
                 : 'bg-app-surface border border-app-border text-app-muted hover:text-app-text'
             }`}
           >
@@ -123,7 +123,7 @@ export const CalendarAgendaList: React.FC<CalendarAgendaListProps> = ({
             onClick={() => setFilterType('tournaments')}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
               filterType === 'tournaments'
-                ? 'bg-app-primary text-app-on-primary shadow-2xs'
+                ? 'bg-emerald-600 text-white shadow-2xs'
                 : 'bg-app-surface border border-app-border text-app-muted hover:text-app-text'
             }`}
           >

@@ -90,7 +90,7 @@ export const CommentDrawer: React.FC<CommentDrawerProps> = ({
             type="button"
             onClick={onSendComment}
             disabled={!newCommentText.trim()}
-            className="w-10 h-10 rounded-full bg-emerald-600 text-white flex items-center justify-center disabled:opacity-40 hover:brightness-105 active:scale-95 transition-all shrink-0"
+            className="w-10 h-10 rounded-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white flex items-center justify-center disabled:opacity-40 transition-all shrink-0 shadow-xs"
           >
             <Send size={15} />
           </button>

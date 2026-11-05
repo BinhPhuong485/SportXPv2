@@ -257,7 +257,7 @@ export const ActivityEditorPage: React.FC = () => {
                 type="button"
                 disabled={busy}
                 onClick={() => handleSave(true)}
-                className="flex-1 h-12 rounded-xl bg-app-primary text-app-on-primary text-xs font-extrabold uppercase tracking-wider hover:brightness-105 active:scale-[0.99] transition-all disabled:opacity-50 shadow-xs"
+                className="flex-1 h-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-extrabold uppercase tracking-wider transition-all disabled:opacity-50 shadow-xs"
               >
                 CÔNG BỐ BÀI VIẾT
               </button>

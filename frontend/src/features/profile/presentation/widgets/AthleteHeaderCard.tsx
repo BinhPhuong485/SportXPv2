@@ -80,7 +80,7 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
 
             {/* Name, Home court & Rank at court */}
             <div className="min-w-0 flex flex-col gap-1">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                 <h2 className="text-xl font-extrabold text-app-text leading-tight truncate">
                   {player.displayName}
                 </h2>
@@ -176,22 +176,22 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
               <button
                 type="button"
                 onClick={onOpenBadges}
-                className="w-10 h-10 rounded-full border border-app-border bg-app-surface flex items-center justify-center text-app-muted hover:text-app-primary hover:border-app-primary/40 active:scale-95 transition-all shadow-2xs"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-app-border bg-app-surface flex items-center justify-center text-app-muted hover:text-app-primary hover:border-app-primary/40 active:scale-95 transition-all shadow-2xs"
                 title="Huy hiệu vận động viên"
                 aria-label="Chọn huy hiệu hiển thị"
               >
-                <Award size={18} />
+                <Award size={17} />
               </button>
             )}
             {onEdit && (
               <button
                 type="button"
                 onClick={onEdit}
-                className="w-10 h-10 rounded-full border border-app-border bg-app-surface flex items-center justify-center text-app-muted hover:text-app-text hover:border-app-primary/40 active:scale-95 transition-all shadow-2xs"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full border border-app-border bg-app-surface flex items-center justify-center text-app-muted hover:text-app-text hover:border-app-primary/40 active:scale-95 transition-all shadow-2xs"
                 title="Chỉnh sửa hồ sơ"
                 aria-label="Chỉnh sửa thông tin hồ sơ"
               >
-                <Edit2 size={17} />
+                <Edit2 size={16} />
               </button>
             )}
           </div>
