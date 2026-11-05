@@ -4,7 +4,7 @@
 
 :root {
   /* LIGHT THEME: Standardized Design Tokens */
-  --color-bg: 248 250 252; /* #F8FAFC Slate 50 - Clean neutral canvas backdrop */
+  --color-bg: 241 245 249; /* #F1F5F9 Slate 100 - Enhanced contrast canvas backdrop */
   --color-surface: 255 255 255; /* #FFFFFF Pure White Surface */
   --color-border: 226 232 240; /* #E2E8F0 Slate 200 - Crisp hairline card border */
   --color-primary: 5 150 105; /* #059669 Emerald 600 - Standardized Primary Brand (Matches 'Tạo kèo' & 'Xem chi tiết') */
