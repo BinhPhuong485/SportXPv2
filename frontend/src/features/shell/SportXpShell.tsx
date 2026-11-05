@@ -16,13 +16,13 @@ export const SportXpShell: React.FC = () => {
       <TopAppBar />
 
       {/* 2. Main Responsive Content Area */}
-      <main className="w-full flex-1 flex justify-center px-3 sm:px-4 lg:px-6 py-4 sm:py-5 pb-24 lg:pb-8">
+      <main className="w-full flex-1 flex justify-center px-3 sm:px-4 lg:px-6 py-4 sm:py-5 pb-28 xl:pb-8">
         <Outlet />
       </main>
 
-      {/* Floating Action Button for Rooms Tab (Mobile only) */}
+      {/* Floating Action Button for Rooms Tab (Mobile only, on tablet/desktop header has CTA button) */}
       {isRoomsTab && (
-        <div className="fixed bottom-24 right-4 sm:right-6 z-30 animate-fade-in lg:hidden">
+        <div className="fixed bottom-24 right-4 sm:right-6 z-30 animate-fade-in md:hidden">
           <button
             type="button"
             onClick={() => navigate('/rooms/new')}
@@ -34,8 +34,8 @@ export const SportXpShell: React.FC = () => {
         </div>
       )}
 
-      {/* Bottom Navigation Bar (Mobile only, hidden on desktop >= 1024px) */}
-      <div className="lg:hidden">
+      {/* Bottom Navigation Bar (Visible on mobile & all tablet/iPad devices < 1280px, hidden on desktop >= 1280px) */}
+      <div className="xl:hidden">
         <BottomNav />
       </div>
     </div>
