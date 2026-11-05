@@ -246,7 +246,7 @@ export const RoomDetailPage: React.FC = () => {
                 type="button"
                 disabled={busy}
                 onClick={() => executeAction('publish')}
-                className="flex-1 h-11 rounded-[12px] bg-app-primary text-app-on-primary font-bold text-xs flex items-center justify-center gap-1.5 hover:brightness-105 transition-all shadow-xs"
+                className="flex-1 h-11 rounded-[12px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs"
               >
                 MỞ ĐĂNG KÝ
               </button>
@@ -257,7 +257,7 @@ export const RoomDetailPage: React.FC = () => {
                 type="button"
                 disabled={busy}
                 onClick={() => executeAction('start')}
-                className="w-full h-11 rounded-[12px] bg-app-primary text-app-on-primary font-bold text-xs flex items-center justify-center gap-1.5 hover:brightness-105 transition-all shadow-xs"
+                className="w-full h-11 rounded-[12px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs"
               >
                 <Play size={16} fill="currentColor" />
                 <span>BẮT ĐẦU BUỔI CHƠI</span>
@@ -489,9 +489,9 @@ export const RoomDetailPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => navigate(`/rooms/${room.id}/session`)}
-                    className="w-full mt-2 py-3 px-4 rounded-xl bg-app-surface border border-app-primary text-app-primary hover:bg-app-primary hover:text-app-on-primary font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xs group"
+                    className="w-full mt-2 py-3 px-4 rounded-xl bg-app-surface border border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xs group"
                   >
-                    <Trophy size={16} className="text-app-primary group-hover:text-app-on-primary" />
+                    <Trophy size={16} className="text-emerald-600 group-hover:text-white" />
                     <span>VÀO BUỔI CHƠI & GHI NHẬN TỈ SỐ SET ĐẤU</span>
                   </button>
                 )}
@@ -744,7 +744,7 @@ export const RoomDetailPage: React.FC = () => {
                     expected_revision: room.revision,
                   })
                 }
-                className="flex-2 h-12 rounded-[14px] bg-app-primary text-app-on-primary font-bold text-xs hover:brightness-105 transition-all shadow-xs"
+                className="flex-2 h-12 rounded-[14px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs transition-all shadow-xs"
               >
                 ĐỒNG Ý ĐIỀU KIỆN MỚI
               </button>
@@ -778,7 +778,7 @@ export const RoomDetailPage: React.FC = () => {
                 type="button"
                 disabled={busy}
                 onClick={() => executeAction('publish')}
-                className="flex-1 h-12 rounded-[14px] bg-app-primary text-app-on-primary font-bold text-xs flex items-center justify-center gap-1.5 hover:brightness-105 transition-all shadow-xs"
+                className="flex-1 h-12 rounded-[14px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs"
               >
                 MỞ ĐĂNG KÝ
               </button>
@@ -798,7 +798,7 @@ export const RoomDetailPage: React.FC = () => {
                 type="button"
                 disabled={busy}
                 onClick={() => executeAction('start')}
-                className="flex-2 h-12 rounded-[14px] bg-app-primary text-app-on-primary font-bold text-xs flex items-center justify-center gap-1.5 hover:brightness-105 transition-all shadow-xs"
+                className="flex-2 h-12 rounded-[14px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs"
               >
                 <Play size={16} fill="currentColor" />
                 <span>BẮT ĐẦU BUỔI CHƠI</span>
@@ -848,7 +848,7 @@ export const RoomDetailPage: React.FC = () => {
                 }
                 className={`h-12 px-6 rounded-[14px] font-bold text-xs tracking-wider uppercase transition-all shadow-xs active:scale-[0.99] ${
                   availableSlots > 0
-                    ? 'bg-app-primary text-app-on-primary hover:brightness-105'
+                    ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white'
                     : 'bg-app-streak text-white hover:brightness-105'
                 }`}
               >
@@ -892,7 +892,7 @@ export const RoomDetailPage: React.FC = () => {
           <div className="w-full flex flex-col gap-2 pt-1">
             <button
               onClick={handleShareLink}
-              className="w-full h-12 rounded-[14px] bg-app-primary text-app-on-primary font-bold text-xs tracking-wider uppercase hover:brightness-105 transition-all shadow-xs"
+              className="w-full h-12 rounded-[14px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs tracking-wider uppercase transition-all shadow-xs"
             >
               CHIA SẺ LINK PHÒNG
             </button>

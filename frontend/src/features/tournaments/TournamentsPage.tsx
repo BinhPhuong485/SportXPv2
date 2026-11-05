@@ -107,8 +107,8 @@ export const TournamentsPage: React.FC = () => {
               onClick={() => setSelectedFilter(opt.id)}
               className={`px-4 py-2 rounded-full text-xs font-bold border transition-all shrink-0 active:scale-95 ${
                 selected
-                  ? 'bg-app-primary border-app-primary text-app-on-primary shadow-xs'
-                  : 'bg-app-surface border-app-border text-app-text hover:border-app-primary/40'
+                  ? 'bg-emerald-600 border-emerald-600 text-white shadow-xs'
+                  : 'bg-app-surface border-app-border text-app-text hover:border-emerald-600/40'
               }`}
             >
               {opt.label}
@@ -150,7 +150,7 @@ export const TournamentsPage: React.FC = () => {
           <button
             type="button"
             onClick={loadTournaments}
-            className="mt-1 px-4 py-2.5 rounded-btn bg-app-primary text-app-on-primary text-xs font-bold hover:brightness-105 active:scale-95 transition-all flex items-center gap-2 shadow-xs"
+            className="mt-1 px-4 py-2.5 rounded-btn bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold transition-all flex items-center gap-2 shadow-xs"
           >
             <RefreshCw size={14} />
             <span>Thử lại</span>

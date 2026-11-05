@@ -7,21 +7,21 @@
   --color-bg: 248 250 252; /* #F8FAFC Slate 50 - Clean neutral canvas backdrop */
   --color-surface: 255 255 255; /* #FFFFFF Pure White Surface */
   --color-border: 226 232 240; /* #E2E8F0 Slate 200 - Crisp hairline card border */
-  --color-primary: 22 163 74; /* #16A34A Green 600 - Primary Brand */
-  --color-accent: 21 128 61; /* #15803D Green 700 - Deep Brand Hover */
-  --color-accent-text: 21 128 61; /* #15803D */
-  --color-mint: 220 252 231; /* #DCFCE7 Green 100 - Primary Subtle Container */
+  --color-primary: 5 150 105; /* #059669 Emerald 600 - Standardized Primary Brand (Matches 'Tạo kèo' & 'Xem chi tiết') */
+  --color-accent: 4 120 87; /* #047857 Emerald 700 - Deep Brand Hover */
+  --color-accent-text: 4 120 87; /* #047857 Emerald 700 */
+  --color-mint: 209 250 229; /* #D1FAE5 Emerald 100 - Primary Subtle Container */
   --color-text: 15 23 42; /* #0F172A Slate 900 - High Contrast Text Primary */
   --color-muted: 71 85 105; /* #475569 Slate 600 - Text Secondary */
   --color-loss: 225 29 72; /* #E11D48 Crimson */
   --color-streak: 234 88 12; /* #EA580C Orange 600 - Hot/Streak */
   --color-gold: 234 88 12; /* #EA580C Orange 600 - Hot / Rating Accent */
   --color-on-primary: 255 255 255; /* #FFFFFF */
-  --color-court-dark: 9 40 30; /* #09281E Night Stadium */
+  --color-court-dark: 6 78 59; /* #064E3B Emerald 900 */
 
   /* Calendar Event Semantic Tokens (Light) */
-  --color-event-hosting: 22 163 74;
-  --color-event-joined: 13 122 104;
+  --color-event-hosting: 5 150 105;
+  --color-event-joined: 13 148 136;
   --color-event-waitlist: 234 88 12;
   --color-event-tournament: 109 40 217;
   --color-event-cancelled: 225 29 72;
@@ -32,21 +32,21 @@
   --color-bg: 7 8 10; /* #07080A Obsidian */
   --color-surface: 17 19 23; /* #111317 Graphite */
   --color-border: 27 31 38; /* #1B1F26 Dark Slate */
-  --color-primary: 0 214 101; /* #00D665 Athletic Neon Green */
-  --color-accent: 0 232 114; /* #00E872 Vibrant Neon */
-  --color-accent-text: 0 232 114;
-  --color-mint: 13 46 28; /* #0D2E1C Deep Pine */
+  --color-primary: 5 150 105; /* #059669 Emerald 600 - Consistent Elegant Emerald */
+  --color-accent: 4 120 87; /* #047857 Emerald 700 */
+  --color-accent-text: 16 185 129; /* #10B981 Emerald 500 */
+  --color-mint: 6 78 59; /* #064E3B Deep Emerald */
   --color-text: 255 255 255; /* #FFFFFF */
   --color-muted: 126 134 149; /* #7E8695 Muted Slate */
   --color-loss: 239 68 68; /* #EF4444 Crimson */
   --color-streak: 245 166 35; /* #F5A623 Amber Gold */
   --color-gold: 245 158 11; /* #F59E0B Sweet Spot Gold */
-  --color-on-primary: 7 8 10; /* #07080A */
-  --color-court-dark: 9 40 30; /* #09281E Night Stadium */
+  --color-on-primary: 255 255 255; /* Pure White text on emerald buttons */
+  --color-court-dark: 6 78 59; /* #064E3B Emerald 900 */
 
   /* Calendar Event Semantic Tokens (Dark) */
-  --color-event-hosting: 0 214 101;
-  --color-event-joined: 0 194 203;
+  --color-event-hosting: 5 150 105;
+  --color-event-joined: 20 184 166;
   --color-event-waitlist: 245 158 11;
   --color-event-tournament: 167 139 250;
   --color-event-cancelled: 239 68 68;

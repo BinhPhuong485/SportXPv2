@@ -1114,7 +1114,7 @@ export const RoomEditorPage: React.FC = () => {
             <button
               type="submit"
               disabled={busy}
-              className="w-full py-4 px-6 rounded-btn bg-app-primary text-app-on-primary font-black text-base tracking-wide uppercase hover:brightness-105 active:scale-[0.99] disabled:opacity-50 transition-all shadow-md mt-4 flex items-center justify-center gap-2"
+              className="w-full py-4 px-6 rounded-btn bg-emerald-600 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 text-white font-black text-base tracking-wide uppercase transition-all shadow-md mt-4 flex items-center justify-center gap-2"
             >
               {busy ? (
                 <>

@@ -295,7 +295,7 @@ export const RoomFilterSheet: React.FC<RoomFilterSheetProps> = ({
         <button
           type="button"
           onClick={handleApply}
-          className="w-full h-12 mt-4 rounded-[14px] bg-app-primary text-app-on-primary font-bold text-sm tracking-wide flex items-center justify-center hover:brightness-105 active:scale-[0.99] transition-all shadow-xs"
+          className="w-full h-12 mt-4 rounded-[14px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-sm tracking-wide flex items-center justify-center transition-all shadow-xs"
         >
           ÁP DỤNG BỘ LỌC
         </button>

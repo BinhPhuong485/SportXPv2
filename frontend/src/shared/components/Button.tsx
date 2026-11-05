@@ -34,11 +34,11 @@ export const Button: React.FC<ButtonProps> = ({
 
   const variantStyles = {
     primary:
-      'bg-app-primary text-app-on-primary hover:brightness-105 active:brightness-95 shadow-xs border border-app-primary/20',
+      'bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-xs border border-emerald-700/20 transition-all',
     secondary:
-      'bg-app-mint text-app-primary hover:brightness-95 active:brightness-90 border border-app-primary/25',
+      'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-800/40',
     outline:
-      'bg-app-surface text-app-text border border-app-border hover:border-app-primary/60 hover:text-app-primary active:bg-app-background',
+      'bg-app-surface text-app-text border border-app-border hover:border-emerald-600 hover:text-emerald-600 active:bg-app-background',
     danger:
       'bg-app-loss text-white hover:brightness-105 active:brightness-95 shadow-xs border border-app-loss/20',
     ghost:

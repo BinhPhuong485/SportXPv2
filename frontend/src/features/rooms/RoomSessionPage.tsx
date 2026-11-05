@@ -698,7 +698,7 @@ export const RoomSessionPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={busy}
-                  className="px-5 py-2 rounded-xl bg-app-primary text-app-on-primary text-xs font-black uppercase hover:brightness-105 active:scale-95 transition-all shadow-xs"
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-black uppercase transition-all shadow-xs"
                 >
                   {busy ? 'Đang lưu…' : 'Lưu & Chờ Xác Nhận'}
                 </button>

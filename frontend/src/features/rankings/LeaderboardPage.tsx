@@ -241,7 +241,7 @@ export const LeaderboardPage: React.FC = () => {
             }}
             className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
               scope === 'court'
-                ? 'bg-app-primary text-app-on-primary shadow-xs'
+                ? 'bg-emerald-600 text-white shadow-xs'
                 : 'text-app-muted hover:text-app-text'
             }`}
           >
@@ -257,7 +257,7 @@ export const LeaderboardPage: React.FC = () => {
             }}
             className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
               scope === 'district'
-                ? 'bg-app-primary text-app-on-primary shadow-xs'
+                ? 'bg-emerald-600 text-white shadow-xs'
                 : 'text-app-muted hover:text-app-text'
             }`}
           >
@@ -273,7 +273,7 @@ export const LeaderboardPage: React.FC = () => {
             }}
             className={`py-2.5 px-2 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
               scope === 'national'
-                ? 'bg-app-primary text-app-on-primary shadow-xs'
+                ? 'bg-emerald-600 text-white shadow-xs'
                 : 'text-app-muted hover:text-app-text'
             }`}
           >
@@ -365,7 +365,7 @@ export const LeaderboardPage: React.FC = () => {
               onClick={() => setViewMode('all')}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 viewMode === 'all'
-                  ? 'bg-app-primary text-app-on-primary shadow-xs'
+                  ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-app-muted hover:text-app-text'
               }`}
             >
@@ -376,7 +376,7 @@ export const LeaderboardPage: React.FC = () => {
               onClick={() => setViewMode('nearMe')}
               className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                 viewMode === 'nearMe'
-                  ? 'bg-app-primary text-app-on-primary shadow-xs'
+                  ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-app-muted hover:text-app-text'
               }`}
             >
@@ -388,7 +388,7 @@ export const LeaderboardPage: React.FC = () => {
         {/* Loading / Error States */}
         {loading && allPlayers.length === 0 ? (
           <div className="py-20 flex flex-col items-center justify-center gap-3 text-app-muted text-xs">
-            <div className="w-7 h-7 border-2 border-app-primary border-t-transparent rounded-full animate-spin" />
+            <div className="w-7 h-7 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
             <span>Đang tải bảng xếp hạng…</span>
           </div>
         ) : errorMessage && allPlayers.length === 0 ? (
@@ -397,7 +397,7 @@ export const LeaderboardPage: React.FC = () => {
             <button
               type="button"
               onClick={fetchRankings}
-              className="px-4 py-2 rounded-xl bg-app-primary text-app-on-primary font-bold text-xs flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs"
             >
               <RefreshCw size={14} />
               <span>Thử lại</span>
