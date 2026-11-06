@@ -83,6 +83,17 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
           setMessage('Kiểm tra email để xác nhận tài khoản, sau đó đăng nhập.');
           setPassword('');
         } else {
+          try {
+            await supabase.rpc('get_onboarding_state');
+            if (displayName.trim()) {
+              await supabase
+                .from('profiles')
+                .update({ display_name: displayName.trim() })
+                .eq('id', data.session.user.id);
+            }
+          } catch {
+            // non-blocking
+          }
           onSuccess?.();
         }
       } else {
@@ -92,6 +103,11 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
         });
 
         if (signInError) throw signInError;
+        try {
+          await supabase.rpc('get_onboarding_state');
+        } catch {
+          // non-blocking
+        }
         if (onSuccess) {
           onSuccess();
         } else {

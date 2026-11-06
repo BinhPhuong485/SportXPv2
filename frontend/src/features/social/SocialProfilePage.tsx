@@ -189,7 +189,10 @@ export const SocialProfilePage: React.FC = () => {
 
       {/* Toast Alert */}
       {toastMessage && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-app-surface text-app-text border border-app-border shadow-xl text-xs font-bold animate-in fade-in slide-in-from-top duration-200">
+        <div
+          style={{ zIndex: 999999 }}
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-[99999] px-5 py-3 rounded-2xl bg-stone-900/95 text-white shadow-2xl text-xs sm:text-sm font-bold border border-white/20 animate-in fade-in slide-in-from-top-3 duration-200 pointer-events-none max-w-[92vw] text-center"
+        >
           {toastMessage}
         </div>
       )}
@@ -299,20 +302,17 @@ export const SocialProfilePage: React.FC = () => {
                   </span>
                   <div className="flex flex-wrap gap-2">
                     {(profile.zaloLink || profile.zaloPhone) && (
-                      <a
-                        href={
-                          profile.zaloLink
-                            ? profile.zaloLink
-                            : `https://zalo.me/${profile.zaloPhone?.replace(/[^0-9]/g, '')}`
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 py-2.5 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 text-xs font-bold flex items-center gap-2 border border-blue-500/20 transition-all shadow-xs"
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setToastMessage('Tính năng liên hệ Zalo đang được phát triển.');
+                          setTimeout(() => setToastMessage(null), 3000);
+                        }}
+                        className="px-4 py-2.5 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 text-xs font-bold flex items-center gap-2 border border-blue-500/20 transition-all shadow-xs cursor-pointer"
                       >
                         <MessageCircle size={15} />
                         <span>Chat Zalo</span>
-                        <ExternalLink size={12} />
-                      </a>
+                      </button>
                     )}
 
                     {profile.facebookLink && (

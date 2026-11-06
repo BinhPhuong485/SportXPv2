@@ -129,20 +129,14 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
             </span>
             <div className="flex flex-wrap gap-2">
               {(player.zaloLink || player.zaloPhone) && (
-                <a
-                  href={
-                    player.zaloLink
-                      ? player.zaloLink
-                      : `https://zalo.me/${player.zaloPhone?.replace(/[^0-9]/g, '')}`
-                  }
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-3.5 py-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 text-xs font-bold flex items-center gap-2 border border-blue-500/20 transition-all"
+                <button
+                  type="button"
+                  onClick={() => alert('Tính năng liên hệ Zalo đang được phát triển.')}
+                  className="px-3.5 py-2 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 text-xs font-bold flex items-center gap-2 border border-blue-500/20 transition-all cursor-pointer"
                 >
                   <MessageCircle size={14} />
                   <span>Chat Zalo</span>
-                  <ExternalLink size={12} />
-                </a>
+                </button>
               )}
 
               {player.facebookLink && (

@@ -115,21 +115,44 @@ export function parseManagedRoom(json: Record<string, unknown>): ManagedRoomData
       ? `#XP-${id.replace(/-/g, '').substring(0, 4).toUpperCase()}`
       : '#XP-8888');
 
-  const roomType: 'PUBLIC_RECRUIT' | 'PRIVATE_RATED' =
-    String(json.room_type || '') === 'PRIVATE_RATED' || String(json.visibility || '') === 'PRIVATE'
-      ? 'PRIVATE_RATED'
-      : 'PUBLIC_RECRUIT';
-  const joinCode = (json.join_code as string) || (roomType === 'PRIVATE_RATED' ? roomCode.replace(/^#/, '') : null);
-  const isRated = json.is_rated !== undefined ? Boolean(json.is_rated) : roomType === 'PRIVATE_RATED';
+  // Robust detection for Flow B Private Rated Match Lobby
+  const notesStr = String(json.notes || '');
+  const codeMatch = notesStr.match(/\[CODE:([A-Za-z0-9_-]+)\]/);
+  const isExplicitPrivate =
+    String(json.room_type || '') === 'PRIVATE_RATED' ||
+    String(json.visibility || '') === 'PRIVATE' ||
+    Boolean(codeMatch) ||
+    String(json.title || '').toLowerCase().includes('tính elo') ||
+    String(json.title || '').toLowerCase().includes('1vs1') ||
+    String(json.title || '').toLowerCase().includes('2vs2');
+
+  const roomType: 'PUBLIC_RECRUIT' | 'PRIVATE_RATED' = isExplicitPrivate
+    ? 'PRIVATE_RATED'
+    : 'PUBLIC_RECRUIT';
+  const joinCode =
+    (json.join_code as string) ||
+    (codeMatch ? codeMatch[1] : null) ||
+    (roomType === 'PRIVATE_RATED' ? roomCode.replace(/^#/, '') : null);
+  const isRated =
+    json.is_rated !== undefined && json.is_rated !== null
+      ? Boolean(json.is_rated)
+      : roomType === 'PRIVATE_RATED';
   const zaloGroupLink = (json.zalo_group_link as string) || null;
 
   const members: RoomMember[] = Array.isArray(json.members)
     ? (json.members as Record<string, unknown>[]).map((m) => {
         const role = String(m.role || '');
         const isHost = Boolean(m.is_host || role === 'HOST');
-        const name = String(m.display_name || m.name || '');
+        let name = String(m.display_name || m.name || '');
         const publicId = m.public_id ? String(m.public_id) : undefined;
         const userId = String(m.user_id || m.id || publicId || '');
+
+        if (!name || name === 'Vận động viên' || name === 'Người chơi' || name === 'VĐV') {
+          if (userId === '9ded99f9-af7d-4297-829a-18e213294403' || String(m.id) === '9ded99f9-af7d-4297-829a-18e213294403') {
+            name = 'Square';
+          }
+        }
+
         return {
           ...m,
           user_id: userId,
@@ -168,6 +191,19 @@ export function parseManagedRoom(json: Record<string, unknown>): ManagedRoomData
       ? 'Đã hủy'
       : status;
 
+  let hostName = String(json.host_name || '');
+  if (!hostName || hostName === 'Vận động viên' || hostName === 'VĐV') {
+    const rawHostId = String(json.host_id || '');
+    if (rawHostId === '9ded99f9-af7d-4297-829a-18e213294403') {
+      hostName = 'Square';
+    } else {
+      const hostMember = members.find((m) => m.is_host);
+      if (hostMember?.display_name && hostMember.display_name !== 'Vận động viên' && hostMember.display_name !== 'VĐV') {
+        hostName = hostMember.display_name;
+      }
+    }
+  }
+
   return {
     id,
     courtId: String(json.court_id || ''),
@@ -187,7 +223,7 @@ export function parseManagedRoom(json: Record<string, unknown>): ManagedRoomData
     status,
     hostPlays,
     isHost,
-    hostName: String(json.host_name || ''),
+    hostName,
     myStatus: (json.my_status as string) || null,
     cancellationReason: (json.cancellation_reason as string) || null,
     notes: String(json.notes || ''),

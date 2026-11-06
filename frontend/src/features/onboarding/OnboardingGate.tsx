@@ -32,6 +32,9 @@ export const OnboardingGate: React.FC<OnboardingGateProps> = ({ children }) => {
 
   const loadOnboardingState = useCallback(async () => {
     if (isSkipOnboarding) {
+      if (userId && supabase) {
+        supabase.rpc('get_onboarding_state').then(() => {}, () => {});
+      }
       setLoading(false);
       return;
     }

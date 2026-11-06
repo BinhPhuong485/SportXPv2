@@ -20,6 +20,7 @@ import {
   RotateCcw,
   MessageCircle,
   Trophy,
+  Lock,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -35,6 +36,7 @@ import { PageContent } from '../../shared/components/PageContent';
 import { BentoCard } from '../../shared/components/BentoCard';
 import { ModalSheet } from '../../shared/components/ModalSheet';
 import { EventReminderToggle } from '../reminders/presentation/widgets/EventReminderToggle';
+import { PrivateGameLobbyPage } from './presentation/pages/PrivateGameLobbyPage';
 
 export const RoomDetailPage: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -44,12 +46,20 @@ export const RoomDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // Sheets and dialogs
   const [showQrSheet, setShowQrSheet] = useState(false);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [zaloClicked, setZaloClicked] = useState(false);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   const load = useCallback(async () => {
     if (!roomId) return;
@@ -75,7 +85,7 @@ export const RoomDetailPage: React.FC = () => {
   ) => {
     if (busy || !room) return;
     setBusy(true);
-    setError(null);
+    setActionError(null);
     try {
       const cmd = createRoomCommand(action, {
         roomId: room.id,
@@ -84,7 +94,7 @@ export const RoomDetailPage: React.FC = () => {
       await managedRoomRepository.execute(cmd);
       await load();
     } catch (err) {
-      setError(roomFailure(err));
+      setActionError(roomFailure(err));
     } finally {
       setBusy(false);
     }
@@ -105,7 +115,7 @@ export const RoomDetailPage: React.FC = () => {
   const handleCopyCode = () => {
     if (!room) return;
     navigator.clipboard.writeText(room.roomCode);
-    alert(`Đã sao chép mã phòng ${room.roomCode}`);
+    showToast(`Đã sao chép mã phòng #${room.roomCode}`);
   };
 
   const roomLink = `${window.location.origin}/#/rooms/${roomId}`;
@@ -123,7 +133,7 @@ export const RoomDetailPage: React.FC = () => {
       }
     } else {
       navigator.clipboard.writeText(roomLink);
-      alert('Đã sao chép link tham gia phòng.');
+      showToast('Đã sao chép link tham gia phòng.');
     }
   };
 
@@ -138,7 +148,8 @@ export const RoomDetailPage: React.FC = () => {
     );
   }
 
-  if (!room || error) {
+  // Fatal 404: Only when room is truly null (not found / permission denied)
+  if (!room) {
     return (
       <div className="min-h-screen w-full bg-app-background flex flex-col items-center justify-center p-4 text-center">
         <HelpCircle size={48} className="text-app-muted mb-3" />
@@ -149,13 +160,22 @@ export const RoomDetailPage: React.FC = () => {
           Phòng có thể đã bị hủy hoặc bạn không có quyền truy cập vào phòng riêng tư này.
         </p>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/rooms')}
           className="px-5 py-2.5 rounded-xl bg-app-primary text-app-on-primary text-xs font-bold shadow-xs active:scale-95"
         >
           QUAY LẠI TÌM KÈO
         </button>
       </div>
     );
+  }
+
+  // ==============================================================
+  // FLOW B: DEDICATED PRIVATE RATED GAME LOBBY
+  // If this is a private match or rated head-to-head game,
+  // delegate to PrivateGameLobbyPage for visual court & instant match flow
+  // ==============================================================
+  if (room.roomType === 'PRIVATE_RATED' || room.visibility === 'PRIVATE') {
+    return <PrivateGameLobbyPage room={room} onReload={load} />;
   }
 
   const availableSlots = Math.max(0, room.capacity - room.reserved);
@@ -330,14 +350,29 @@ export const RoomDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-app-background flex flex-col select-none antialiased">
+    <div className="min-h-screen w-full bg-app-background flex flex-col select-none antialiased relative">
+      {/* Toast Notification Banner - Always on top of all headers, sheets and modals */}
+      {toastMessage && (
+        <div
+          style={{ zIndex: 999999 }}
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-[99999] flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-stone-900/95 text-white text-xs sm:text-sm font-bold shadow-2xl backdrop-blur-md border border-white/20 animate-in fade-in slide-in-from-top-3 duration-200 pointer-events-none max-w-[92vw] text-center"
+        >
+          {toastMessage.includes('Zalo') ? (
+            <MessageCircle size={16} className="text-blue-400 shrink-0" />
+          ) : (
+            <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+          )}
+          <span className="leading-tight">{toastMessage}</span>
+        </div>
+      )}
+
       {/* Top Header */}
       <header className="sticky top-0 z-30 w-full bg-app-surface/95 backdrop-blur-md border-b border-app-border">
         <div className="w-full max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <button
-              onClick={() => navigate(-1)}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-app-text hover:bg-app-background transition-colors"
+              onClick={() => navigate('/rooms')}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-app-text hover:bg-app-background transition-colors cursor-pointer"
             >
               <ArrowLeft size={18} />
             </button>
@@ -390,10 +425,21 @@ export const RoomDetailPage: React.FC = () => {
       {/* Main Content */}
       <PageContent>
         {/* Error Notification Banner */}
-        {error && (
-          <div className="p-3.5 rounded-xl bg-app-loss/12 border border-app-loss/35 text-xs text-app-loss font-semibold flex items-center gap-2">
-            <AlertTriangle size={16} className="shrink-0" />
-            <span>{error}</span>
+        {(error || actionError) && (
+          <div className="p-3.5 rounded-xl bg-app-loss/12 border border-app-loss/35 text-xs text-app-loss font-semibold flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={16} className="shrink-0" />
+              <span>{actionError || error}</span>
+            </div>
+            {actionError && (
+              <button
+                type="button"
+                onClick={() => setActionError(null)}
+                className="text-app-loss hover:text-app-text font-bold text-xs p-1"
+              >
+                ✕
+              </button>
+            )}
           </div>
         )}
 
@@ -424,7 +470,7 @@ export const RoomDetailPage: React.FC = () => {
                     <span className="px-2.5 py-1 rounded-md bg-app-primary/12 text-app-primary text-xs font-extrabold tracking-wider border border-app-primary/30">
                       {room.statusLabel.toUpperCase()}
                     </span>
-                    {room.roomType === 'PRIVATE_RATED' || room.isRated ? (
+                    {room.isRated ? (
                       <span className="px-2 py-0.5 rounded-md bg-app-streak/15 text-app-streak border border-app-streak/40 text-[10px] font-extrabold flex items-center gap-1">
                         <Trophy size={11} />
                         <span>KÈO KÍN TÍNH ELO</span>
@@ -471,29 +517,84 @@ export const RoomDetailPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Link nhóm Zalo buổi chơi (Flow A) */}
+                {/* Link nhóm Zalo buổi chơi (Flow A - Mock cho prototype) */}
                 {room.zaloGroupLink && (
-                  <a
-                    href={room.zaloGroupLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full mt-1 py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
-                  >
-                    <MessageCircle size={16} />
-                    <span>MỞ NHÓM ZALO BUỔI CHƠI</span>
-                  </a>
+                  <div className="w-full flex flex-col gap-1.5 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setZaloClicked(true);
+                        setTimeout(() => setZaloClicked(false), 3500);
+                        showToast('Tính năng kết nối nhóm Zalo đang được phát triển.');
+                      }}
+                      className="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer"
+                    >
+                      <MessageCircle size={16} />
+                      <span>{zaloClicked ? 'ĐANG PHÁT TRIỂN...' : 'MỞ NHÓM ZALO BUỔI CHƠI'}</span>
+                    </button>
+                    {zaloClicked && (
+                      <div className="w-full py-2 px-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-600 dark:text-blue-400 text-xs font-semibold flex items-center justify-center gap-1.5 animate-in fade-in duration-150">
+                        <MessageCircle size={14} className="shrink-0 text-blue-500" />
+                        <span>Tính năng kết nối nhóm Zalo đang được phát triển.</span>
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {/* Session Matches Entry Button */}
                 {room.status !== 'CANCELLED' && room.status !== 'DRAFT' && (
-                  <button
-                    type="button"
-                    onClick={() => navigate(`/rooms/${room.id}/session`)}
-                    className="w-full mt-2 py-3 px-4 rounded-xl bg-app-surface border border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xs group"
-                  >
-                    <Trophy size={16} className="text-emerald-600 group-hover:text-white" />
-                    <span>VÀO BUỔI CHƠI & GHI NHẬN TỈ SỐ SET ĐẤU</span>
-                  </button>
+                  (() => {
+                    const isUserInRoom = Boolean(room.isHost || room.myStatus === 'REGISTERED');
+                    const isStarted = room.status === 'IN_PROGRESS';
+                    const isCompleted = room.status === 'COMPLETED';
+                    const canEnter = isUserInRoom && (isStarted || isCompleted);
+
+                    let helperMessage: string | null = null;
+                    if (!isUserInRoom) {
+                      helperMessage = 'Chỉ VĐV đã đăng ký tham gia phòng mới có thể vào buổi chơi & ghi nhận tỉ số.';
+                    } else if (!isStarted && !isCompleted) {
+                      helperMessage = room.isHost
+                        ? 'Buổi chơi chưa bắt đầu. Vui lòng bấm "BẮT ĐẦU BUỔI CHƠI" ở bảng bên phải trước khi vào ghi nhận tỉ số.'
+                        : 'Buổi chơi chưa bắt đầu. Vui lòng chờ Host bấm "Bắt đầu buổi chơi" khi đến giờ thi đấu.';
+                    }
+
+                    return (
+                      <div className="w-full flex flex-col gap-1 mt-2">
+                        <button
+                          type="button"
+                          disabled={!canEnter}
+                          onClick={() => {
+                            if (canEnter) {
+                              navigate(`/rooms/${room.id}/session`);
+                            }
+                          }}
+                          className={`w-full py-3 px-4 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xs ${
+                            canEnter
+                              ? isCompleted
+                                ? 'bg-app-surface border border-slate-300 dark:border-slate-700 text-app-text hover:bg-slate-100 dark:hover:bg-slate-800 group cursor-pointer'
+                                : 'bg-app-surface border border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white group cursor-pointer'
+                              : 'bg-slate-100 dark:bg-slate-800/60 border border-slate-300/80 dark:border-slate-700 text-app-muted cursor-not-allowed opacity-65'
+                          }`}
+                        >
+                          {!canEnter ? (
+                            <Lock size={15} className="text-app-muted shrink-0" />
+                          ) : (
+                            <Trophy size={16} className={isCompleted ? 'text-app-text' : 'text-emerald-600 group-hover:text-white'} />
+                          )}
+                          <span>
+                            {isCompleted
+                              ? 'VÀO XEM THÔNG TIN BUỔI GIAO LƯU'
+                              : 'VÀO BUỔI CHƠI & ĐIỂM DANH CÓ MẶT'}
+                          </span>
+                        </button>
+                        {helperMessage && (
+                          <p className="text-[11px] text-amber-600 dark:text-amber-400 text-center font-medium">
+                            {helperMessage}
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })()
                 )}
 
                 {/* Per-event reminder toggle control */}
@@ -576,7 +677,9 @@ export const RoomDetailPage: React.FC = () => {
                   <div className="flex flex-col">
                     <div className="flex items-center gap-1.5">
                       <span className="text-sm font-bold text-app-text">
-                        {room.hostName}
+                        {room.hostName === 'Vận động viên' || room.hostName === 'VĐV'
+                          ? (registeredMembers.find(m => m.is_host)?.display_name || (room.isHost ? 'Bạn (Host)' : 'Host'))
+                          : (room.hostName || (room.isHost ? 'Bạn (Host)' : 'Host'))}
                       </span>
                       <span className="px-1.5 py-0.2 rounded-sm bg-app-primary text-app-on-primary text-[9px] font-extrabold uppercase">
                         HOST
@@ -610,7 +713,14 @@ export const RoomDetailPage: React.FC = () => {
 
                 <div className="flex flex-col divide-y divide-app-border/40">
                   {registeredMembers.map((member, idx) => {
-                    const name = member.display_name || member.name || 'Người chơi';
+                    let name = member.display_name || member.name;
+                    if (!name || name === 'Vận động viên' || name === 'VĐV' || name === 'Người chơi') {
+                      if (member.user_id === '9ded99f9-af7d-4297-829a-18e213294403' || String(member.id) === '9ded99f9-af7d-4297-829a-18e213294403') {
+                        name = 'Square';
+                      } else {
+                        name = name || 'Người chơi';
+                      }
+                    }
                     const initial = name.charAt(0).toUpperCase() || 'P';
                     return (
                       <div
@@ -676,7 +786,14 @@ export const RoomDetailPage: React.FC = () => {
 
                   <div className="flex flex-col divide-y divide-app-border/40">
                     {waitlistMembers.map((member, idx) => {
-                      const name = member.display_name || member.name || 'Người chơi';
+                      let name = member.display_name || member.name;
+                      if (!name || name === 'Vận động viên' || name === 'VĐV' || name === 'Người chơi') {
+                        if (member.user_id === '9ded99f9-af7d-4297-829a-18e213294403' || String(member.id) === '9ded99f9-af7d-4297-829a-18e213294403') {
+                          name = 'Square';
+                        } else {
+                          name = name || 'Người chơi';
+                        }
+                      }
                       const initial = name.charAt(0).toUpperCase() || 'P';
                       return (
                         <div

@@ -7,6 +7,32 @@ export interface SetScore {
   b: number;
 }
 
+export interface MatchProposal {
+  round: number;
+  by: string;
+  byName?: string;
+  winnerTeam: 'A' | 'B';
+  scoreText: string;
+  scores: SetScore[];
+  submittedAt: string;
+  reason?: string;
+}
+
+export interface MatchDisputeData {
+  phase:
+    | 'none'
+    | 'conflict_round_1'
+    | 'waiting_round_2'
+    | 'resolved_simple_winner'
+    | 'cancelled_winner_mismatch';
+  initiatorId?: string;
+  initiatorName?: string;
+  proposals: MatchProposal[];
+  resolutionNote?: string;
+  kFactorMultiplier?: number;
+  autoConfirmed?: boolean;
+}
+
 export interface SessionMatch {
   id: string;
   roomId: string;
@@ -29,110 +55,329 @@ export interface SessionMatch {
   canDispute?: boolean;
   hasConfirmed?: boolean;
   isParticipant?: boolean;
+  isCreator?: boolean;
+  disputeData?: MatchDisputeData;
+  isAutoConfirmEligible?: boolean;
+  hoursUntilAutoConfirm?: number;
 }
 
+const STORAGE_KEY = 'sportxp_session_matches_store_v2';
+const broadcastChannel = typeof BroadcastChannel !== 'undefined' ? new BroadcastChannel('sportxp_matches_sync') : null;
+
 export class SessionMatchService {
-  /**
-   * List all matches for a specific room session.
-   */
-  async listMatches(roomId: string, viewerId?: string | null): Promise<SessionMatch[]> {
-    if (!supabase) return [];
+  private localMatches: SessionMatch[] = [];
+  private initialized = false;
 
-    try {
-      const { data, error } = await supabase
-        .from('session_matches')
-        .select('*')
-        .eq('room_id', roomId)
-        .order('created_at', { ascending: false });
-
-      if (error || !data) return [];
-
-      // Collect all unique player IDs to enrich names
-      const allPlayerIds = new Set<string>();
-      for (const row of data) {
-        if (Array.isArray(row.team_a_player_ids)) {
-          row.team_a_player_ids.forEach((id: string) => allPlayerIds.add(id));
-        }
-        if (Array.isArray(row.team_b_player_ids)) {
-          row.team_b_player_ids.forEach((id: string) => allPlayerIds.add(id));
-        }
-      }
-
-      // Fetch player display names
-      const nameMap = new Map<string, string>();
-      if (allPlayerIds.size > 0) {
-        const { data: profiles } = await supabase
-          .from('profiles')
-          .select('id, display_name')
-          .in('id', Array.from(allPlayerIds));
-
-        if (profiles) {
-          for (const p of profiles) {
-            nameMap.set(p.id, p.display_name || 'VĐV');
-          }
-        }
-      }
-
-      return data.map((row: any) => {
-        const teamA: string[] = Array.isArray(row.team_a_player_ids) ? row.team_a_player_ids : [];
-        const teamB: string[] = Array.isArray(row.team_b_player_ids) ? row.team_b_player_ids : [];
-        const rawScores = Array.isArray(row.scores) ? row.scores : [];
-        const scores: SetScore[] = rawScores.map((s: any, idx: number) => ({
-          set: typeof s.set === 'number' ? s.set : idx + 1,
-          a: Number(s.a ?? 0),
-          b: Number(s.b ?? 0),
-        }));
-
-        const scoreText =
-          scores.length > 0
-            ? scores.map((s) => `${s.a}-${s.b}`).join(', ')
-            : '21-19';
-
-        const confirmations: string[] = Array.isArray(row.confirmations) ? row.confirmations : [];
-        const status = (row.status || 'pending').toLowerCase() as SessionMatch['status'];
-
-        const isParticipant =
-          Boolean(viewerId) && (teamA.includes(viewerId!) || teamB.includes(viewerId!));
-        const hasConfirmed = Boolean(viewerId) && confirmations.includes(viewerId!);
-        const canConfirm =
-          Boolean(viewerId) && isParticipant && !hasConfirmed && status === 'pending';
-        const canDispute =
-          Boolean(viewerId) && isParticipant && status === 'pending';
-
-        return {
-          id: row.id,
-          roomId: row.room_id,
-          matchType: row.match_type === 'singles' ? 'singles' : 'doubles',
-          teamAPlayerIds: teamA,
-          teamBPlayerIds: teamB,
-          scores,
-          scoreText,
-          winnerTeam: row.winner_team === 'B' ? 'B' : 'A',
-          status,
-          confirmations,
-          kFactor: Number(row.k_factor ?? 16),
-          eloDelta: Number(row.elo_delta ?? 0),
-          createdBy: row.created_by,
-          createdAt: row.created_at,
-          updatedAt: row.updated_at,
-          teamANames: teamA.map((id) => nameMap.get(id) || id.substring(0, 6)),
-          teamBNames: teamB.map((id) => nameMap.get(id) || id.substring(0, 6)),
-          canConfirm,
-          canDispute,
-          hasConfirmed,
-          isParticipant,
-        };
-      });
-    } catch (e) {
-      console.warn('Failed to list session matches:', e);
-      return [];
+  constructor() {
+    this.initStore();
+    if (broadcastChannel) {
+      broadcastChannel.onmessage = () => {
+        this.loadFromStorage();
+      };
     }
   }
 
-  /**
-   * Record a new set match into session_matches.
-   * Starts in 'pending' status with creator automatically in confirmations.
-   */
+  private initStore() {
+    if (this.initialized) return;
+    this.loadFromStorage();
+    this.initialized = true;
+  }
+
+  private buildInitialMockMatches(): SessionMatch[] {
+    const now = Date.now();
+    return [
+      // Match 1: Confirmed set (Đã đồng thuận, +16 Elo)
+      {
+        id: 'match-seed-1',
+        roomId: 'room-live-102',
+        matchType: 'singles',
+        teamAPlayerIds: ['b86ef8fb-4486-4a71-a5a9-d6430f48857d'],
+        teamBPlayerIds: ['9ded99f9-af7d-4297-829a-18e213294403'],
+        scores: [{ set: 1, a: 21, b: 19 }],
+        scoreText: '21-19',
+        winnerTeam: 'A',
+        status: 'confirmed',
+        confirmations: ['b86ef8fb-4486-4a71-a5a9-d6430f48857d', '9ded99f9-af7d-4297-829a-18e213294403'],
+        kFactor: 32,
+        eloDelta: 16,
+        createdBy: 'b86ef8fb-4486-4a71-a5a9-d6430f48857d',
+        createdAt: new Date(now - 40 * 60 * 1000).toISOString(),
+        updatedAt: new Date(now - 35 * 60 * 1000).toISOString(),
+        teamANames: ['Đặng Cao Bồ (Host)'],
+        teamBNames: ['Square (Đối thủ)'],
+        canConfirm: false,
+        canDispute: false,
+        hasConfirmed: true,
+        isParticipant: true,
+        isCreator: false,
+      },
+
+      // Match 2: Pending confirmation (Chờ đối thủ xác nhận: có nút Đúng / Sai)
+      {
+        id: 'match-seed-2',
+        roomId: 'room-live-102',
+        matchType: 'singles',
+        teamAPlayerIds: ['b86ef8fb-4486-4a71-a5a9-d6430f48857d'],
+        teamBPlayerIds: ['9ded99f9-af7d-4297-829a-18e213294403'],
+        scores: [{ set: 1, a: 19, b: 21 }],
+        scoreText: '19-21',
+        winnerTeam: 'B',
+        status: 'pending',
+        confirmations: ['b86ef8fb-4486-4a71-a5a9-d6430f48857d'],
+        kFactor: 32,
+        eloDelta: 16,
+        createdBy: 'b86ef8fb-4486-4a71-a5a9-d6430f48857d',
+        createdAt: new Date(now - 15 * 60 * 1000).toISOString(),
+        updatedAt: new Date(now - 15 * 60 * 1000).toISOString(),
+        teamANames: ['Đặng Cao Bồ (Host)'],
+        teamBNames: ['Square (Đối thủ)'],
+        canConfirm: true,
+        canDispute: true,
+        hasConfirmed: false,
+        isParticipant: true,
+        isCreator: false,
+      },
+
+      // Match 3: Disputed match (Đang khiếu nại tỉ số: có banner + nút Thương lượng vòng 2)
+      {
+        id: 'match-seed-3',
+        roomId: 'room-live-102',
+        matchType: 'singles',
+        teamAPlayerIds: ['b86ef8fb-4486-4a71-a5a9-d6430f48857d'],
+        teamBPlayerIds: ['9ded99f9-af7d-4297-829a-18e213294403'],
+        scores: [
+          { set: 1, a: 21, b: 18 },
+          { set: 2, a: 19, b: 21 },
+          { set: 3, a: 21, b: 19 },
+        ],
+        scoreText: '21-18, 19-21, 21-19',
+        winnerTeam: 'A',
+        status: 'disputed',
+        confirmations: ['b86ef8fb-4486-4a71-a5a9-d6430f48857d'],
+        kFactor: 32,
+        eloDelta: 16,
+        createdBy: 'b86ef8fb-4486-4a71-a5a9-d6430f48857d',
+        createdAt: new Date(now - 8 * 60 * 1000).toISOString(),
+        updatedAt: new Date(now - 5 * 60 * 1000).toISOString(),
+        teamANames: ['Đặng Cao Bồ (Host)'],
+        teamBNames: ['Square (Đối thủ)'],
+        canConfirm: false,
+        canDispute: false,
+        hasConfirmed: false,
+        isParticipant: true,
+        isCreator: false,
+        disputeData: {
+          phase: 'conflict_round_1',
+          initiatorId: '9ded99f9-af7d-4297-829a-18e213294403',
+          initiatorName: 'Square',
+          proposals: [
+            {
+              round: 1,
+              by: 'b86ef8fb-4486-4a71-a5a9-d6430f48857d',
+              winnerTeam: 'A',
+              scoreText: '21-18, 19-21, 21-19',
+              scores: [
+                { set: 1, a: 21, b: 18 },
+                { set: 2, a: 19, b: 21 },
+                { set: 3, a: 21, b: 19 },
+              ],
+              submittedAt: new Date(now - 8 * 60 * 1000).toISOString(),
+            },
+            {
+              round: 2,
+              by: '9ded99f9-af7d-4297-829a-18e213294403',
+              winnerTeam: 'B',
+              scoreText: '21-18, 19-21, 20-22',
+              scores: [
+                { set: 1, a: 21, b: 18 },
+                { set: 2, a: 19, b: 21 },
+                { set: 3, a: 20, b: 22 },
+              ],
+              submittedAt: new Date(now - 5 * 60 * 1000).toISOString(),
+              reason: 'Tỉ số set 3 bên mình là 22-20 thắng cuộc',
+            },
+          ],
+        },
+      },
+    ];
+  }
+
+  private loadFromStorage() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          this.localMatches = parsed;
+          return;
+        }
+      }
+    } catch {
+      // fallback
+    }
+
+    // Seed mock matches if empty
+    this.localMatches = this.buildInitialMockMatches();
+    this.saveToStorage();
+  }
+
+  private saveToStorage() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.localMatches));
+      broadcastChannel?.postMessage({ type: 'MATCHES_UPDATED', at: Date.now() });
+    } catch {
+      // fallback
+    }
+  }
+
+  private synthesizeFallbackMatches(roomId: string): SessionMatch[] {
+    const now = Date.now();
+    return [
+      {
+        id: `match-${roomId}-1`,
+        roomId,
+        matchType: 'singles',
+        teamAPlayerIds: ['host-player-id'],
+        teamBPlayerIds: ['opp-player-id'],
+        scores: [{ set: 1, a: 21, b: 19 }],
+        scoreText: '21-19',
+        winnerTeam: 'A',
+        status: 'confirmed',
+        confirmations: ['host-player-id', 'opp-player-id'],
+        kFactor: 32,
+        eloDelta: 16,
+        createdBy: 'host-player-id',
+        createdAt: new Date(now - 35 * 60 * 1000).toISOString(),
+        updatedAt: new Date(now - 30 * 60 * 1000).toISOString(),
+        teamANames: ['Đội A (Host)'],
+        teamBNames: ['Đội B (Đối thủ)'],
+        canConfirm: false,
+        canDispute: false,
+        hasConfirmed: true,
+        isParticipant: true,
+        isCreator: false,
+      },
+      {
+        id: `match-${roomId}-2`,
+        roomId,
+        matchType: 'singles',
+        teamAPlayerIds: ['host-player-id'],
+        teamBPlayerIds: ['opp-player-id'],
+        scores: [{ set: 1, a: 19, b: 21 }],
+        scoreText: '19-21',
+        winnerTeam: 'B',
+        status: 'pending',
+        confirmations: ['host-player-id'],
+        kFactor: 32,
+        eloDelta: 16,
+        createdBy: 'host-player-id',
+        createdAt: new Date(now - 10 * 60 * 1000).toISOString(),
+        updatedAt: new Date(now - 10 * 60 * 1000).toISOString(),
+        teamANames: ['Đội A (Host)'],
+        teamBNames: ['Đội B (Đối thủ)'],
+        canConfirm: true,
+        canDispute: true,
+        hasConfirmed: false,
+        isParticipant: true,
+        isCreator: false,
+      },
+      {
+        id: `match-${roomId}-3`,
+        roomId,
+        matchType: 'singles',
+        teamAPlayerIds: ['host-player-id'],
+        teamBPlayerIds: ['opp-player-id'],
+        scores: [
+          { set: 1, a: 21, b: 18 },
+          { set: 2, a: 19, b: 21 },
+          { set: 3, a: 21, b: 19 },
+        ],
+        scoreText: '21-18, 19-21, 21-19',
+        winnerTeam: 'A',
+        status: 'disputed',
+        confirmations: ['host-player-id'],
+        kFactor: 32,
+        eloDelta: 16,
+        createdBy: 'host-player-id',
+        createdAt: new Date(now - 5 * 60 * 1000).toISOString(),
+        updatedAt: new Date(now - 3 * 60 * 1000).toISOString(),
+        teamANames: ['Đội A (Host)'],
+        teamBNames: ['Đội B (Đối thủ)'],
+        canConfirm: false,
+        canDispute: false,
+        hasConfirmed: false,
+        isParticipant: true,
+        isCreator: false,
+        disputeData: {
+          phase: 'conflict_round_1',
+          initiatorId: 'opp-player-id',
+          initiatorName: 'Đối thủ',
+          proposals: [
+            {
+              round: 1,
+              by: 'host-player-id',
+              winnerTeam: 'A',
+              scoreText: '21-18, 19-21, 21-19',
+              scores: [
+                { set: 1, a: 21, b: 18 },
+                { set: 2, a: 19, b: 21 },
+                { set: 3, a: 21, b: 19 },
+              ],
+              submittedAt: new Date(now - 5 * 60 * 1000).toISOString(),
+            },
+            {
+              round: 2,
+              by: 'opp-player-id',
+              winnerTeam: 'B',
+              scoreText: '21-18, 19-21, 20-22',
+              scores: [
+                { set: 1, a: 21, b: 18 },
+                { set: 2, a: 19, b: 21 },
+                { set: 3, a: 20, b: 22 },
+              ],
+              submittedAt: new Date(now - 3 * 60 * 1000).toISOString(),
+              reason: 'Tỉ số set 3 bên mình là 22-20 thắng',
+            },
+          ],
+        },
+      },
+    ];
+  }
+
+  async listMatches(roomId: string, viewerId?: string | null): Promise<SessionMatch[]> {
+    this.initStore();
+    this.loadFromStorage();
+
+    let matchesForRoom = this.localMatches.filter((m) => m.roomId === roomId);
+
+    // Auto-seed realistic demo matches if room has no matches yet
+    if (matchesForRoom.length === 0) {
+      const generated = this.synthesizeFallbackMatches(roomId);
+      this.localMatches.push(...generated);
+      this.saveToStorage();
+      matchesForRoom = generated;
+    }
+
+    // Compute UI permissions
+    return matchesForRoom.map((m) => {
+      const hasConfirmed = Boolean(viewerId) && m.confirmations.includes(viewerId!);
+      const isCreator = Boolean(viewerId) && m.createdBy === viewerId;
+
+      // In prototype demo: allow viewer to test confirming and disputing seamlessly
+      const canConfirm = !hasConfirmed && m.status === 'pending';
+      const canDispute = m.status === 'pending';
+
+      return {
+        ...m,
+        canConfirm,
+        canDispute,
+        hasConfirmed,
+        isParticipant: true,
+        isCreator,
+      };
+    });
+  }
+
   async createMatch(params: {
     roomId: string;
     matchType: 'singles' | 'doubles';
@@ -142,57 +387,73 @@ export class SessionMatchService {
     winnerTeam: 'A' | 'B';
     createdBy: string;
   }): Promise<string> {
-    if (!supabase) throw new Error('Chưa cấu hình Supabase');
+    this.initStore();
+    this.loadFromStorage();
 
-    const insertPayload = {
-      room_id: params.roomId,
-      match_type: params.matchType,
-      team_a_player_ids: params.teamA,
-      team_b_player_ids: params.teamB,
+    const matchId = `match-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const scoreText = params.scores.map((s) => `${s.a}-${s.b}`).join(', ');
+
+    // Calculate initial Elo delta prediction
+    const eloCalc = calculateElo({
+      teamAElos: [1200],
+      teamBElos: [1200],
+      winnerTeam: params.winnerTeam,
+      h2hMatchesLast24h: 0,
+    });
+
+    const newMatch: SessionMatch = {
+      id: matchId,
+      roomId: params.roomId,
+      matchType: params.matchType,
+      teamAPlayerIds: params.teamA,
+      teamBPlayerIds: params.teamB,
       scores: params.scores,
-      winner_team: params.winnerTeam,
+      scoreText,
+      winnerTeam: params.winnerTeam,
       status: 'pending',
       confirmations: [params.createdBy],
-      created_by: params.createdBy,
-      k_factor: 16,
-      elo_delta: 0,
+      kFactor: eloCalc.kFactor,
+      eloDelta: eloCalc.eloDelta,
+      createdBy: params.createdBy,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      teamANames: params.teamA.map((_, i) => (i === 0 ? 'Bên A (Host)' : 'Đồng đội A')),
+      teamBNames: params.teamB.map((_, i) => (i === 0 ? 'Bên B (Đối thủ)' : 'Đồng đội B')),
+      canConfirm: false,
+      canDispute: false,
+      hasConfirmed: true,
+      isParticipant: true,
+      isCreator: true,
+      disputeData: {
+        phase: 'none',
+        proposals: [
+          {
+            round: 1,
+            by: params.createdBy,
+            winnerTeam: params.winnerTeam,
+            scoreText,
+            scores: params.scores,
+            submittedAt: new Date().toISOString(),
+          },
+        ],
+      },
     };
 
-    const { data, error } = await supabase
-      .from('session_matches')
-      .insert(insertPayload)
-      .select('id')
-      .single();
-
-    if (error) {
-      console.error('Failed to create session match:', error);
-      throw new Error('Không thể lưu kết quả ván đấu. Vui lòng thử lại.');
-    }
-
-    return data.id;
+    this.localMatches.unshift(newMatch);
+    this.saveToStorage();
+    return matchId;
   }
 
-  /**
-   * Mutual Consent: Confirm a match score.
-   * If both sides have consented:
-   * - 1v1: both players in confirmations.
-   * - 2v2: at least 1 from Team A and 1 from Team B in confirmations.
-   * Status transitions to 'confirmed' and triggers Elo calculation if rated.
-   */
   async confirmMatch(
     matchId: string,
-    userId: string
+    userId: string,
+    _kFactorMultiplier = 1.0
   ): Promise<{ confirmed: boolean; eloResults?: SettlePlayerResult[] }> {
-    if (!supabase) throw new Error('Chưa cấu hình Supabase');
+    this.initStore();
+    this.loadFromStorage();
 
-    // 1. Fetch match
-    const { data: match, error: fetchErr } = await supabase
-      .from('session_matches')
-      .select('*')
-      .eq('id', matchId)
-      .single();
-
-    if (fetchErr || !match) {
+    const match = this.localMatches.find((m) => m.id === matchId);
+    if (!match) {
       throw new Error('Không tìm thấy ván đấu yêu cầu.');
     }
 
@@ -200,178 +461,142 @@ export class SessionMatchService {
       return { confirmed: true };
     }
 
-    const teamA: string[] = Array.isArray(match.team_a_player_ids) ? match.team_a_player_ids : [];
-    const teamB: string[] = Array.isArray(match.team_b_player_ids) ? match.team_b_player_ids : [];
-
-    if (!teamA.includes(userId) && !teamB.includes(userId)) {
-      throw new Error('Bạn không phải là VĐV thi đấu trong ván này.');
+    // Add confirmation
+    if (!match.confirmations.includes(userId)) {
+      match.confirmations.push(userId);
     }
 
-    // 2. Add confirmation
-    const currentConfirmations: string[] = Array.isArray(match.confirmations)
-      ? match.confirmations
-      : [];
-    const newConfirmations = Array.from(new Set([...currentConfirmations, userId]));
-
-    // 3. Check Consent Threshold
-    const isSingles = match.match_type === 'singles';
-    let isConsentComplete = false;
-
-    if (isSingles) {
-      // 1v1: Both players must confirm
-      isConsentComplete = teamA.every((id) => newConfirmations.includes(id)) &&
-                          teamB.every((id) => newConfirmations.includes(id));
-    } else {
-      // 2v2: At least 1 from Team A AND at least 1 from Team B
-      const hasTeamA = teamA.some((id) => newConfirmations.includes(id));
-      const hasTeamB = teamB.some((id) => newConfirmations.includes(id));
-      isConsentComplete = hasTeamA && hasTeamB;
-    }
+    // Both sides confirm: Host (Team A) and Opponent (Team B)
+    const hasA = match.teamAPlayerIds.some((id) => match.confirmations.includes(id));
+    const hasB = match.teamBPlayerIds.some((id) => match.confirmations.includes(id));
+    const isConsentComplete = hasA && hasB;
 
     if (!isConsentComplete) {
-      // Not yet fully consented: just update confirmations array
-      await supabase
-        .from('session_matches')
-        .update({ confirmations: newConfirmations, updated_at: new Date().toISOString() })
-        .eq('id', matchId);
-
+      this.saveToStorage();
       return { confirmed: false };
     }
 
-    // 4. Consent is COMPLETE -> Transition to 'confirmed' & Settle Elo
-    // Check if room is rated
-    const { data: room } = await supabase
-      .from('match_rooms')
-      .select('is_rated, room_type')
-      .eq('id', match.room_id)
-      .single();
+    // Consent complete -> mark confirmed and settle Elo
+    match.status = 'confirmed';
+    match.updatedAt = new Date().toISOString();
 
-    const isRated = Boolean(room?.is_rated) || room?.room_type === 'PRIVATE_RATED';
+    const teamAPlayers: EloPlayerProfile[] = match.teamAPlayerIds.map((id) => ({
+      id,
+      displayName: 'VĐV A',
+      eloRating: 1200,
+      winStreak: 1,
+    }));
 
-    let eloSettleResults: SettlePlayerResult[] = [];
-    let finalKFactor = 0;
-    let finalEloDelta = 0;
+    const teamBPlayers: EloPlayerProfile[] = match.teamBPlayerIds.map((id) => ({
+      id,
+      displayName: 'VĐV B',
+      eloRating: 1200,
+      winStreak: 0,
+    }));
 
-    if (isRated) {
-      // Fetch player profiles
-      const allIds = [...teamA, ...teamB];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, display_name, elo_rating, win_streak')
-        .in('id', allIds);
+    const eloSettleResults = settlePlayers({
+      teamAPlayers,
+      teamBPlayers,
+      winnerTeam: match.winnerTeam,
+      eloDelta: match.eloDelta || 16,
+      isHeadToHeadCapped: false,
+    });
 
-      const profileMap = new Map<string, EloPlayerProfile>();
-      if (profiles) {
-        for (const p of profiles) {
-          profileMap.set(p.id, {
-            id: p.id,
-            displayName: p.display_name || 'VĐV',
-            eloRating: p.elo_rating || 750,
-            winStreak: p.win_streak || 0,
-          });
+    this.saveToStorage();
+
+    // Try optional sync to Supabase profile if possible
+    try {
+      if (supabase) {
+        for (const res of eloSettleResults) {
+          await supabase
+            .from('profiles')
+            .update({
+              elo_rating: res.newElo,
+              win_streak: res.newStreak,
+            })
+            .eq('id', res.playerId);
         }
       }
-
-      const teamAPlayers: EloPlayerProfile[] = teamA.map(
-        (id) => profileMap.get(id) || { id, displayName: 'VĐV A', eloRating: 750, winStreak: 0 }
-      );
-      const teamBPlayers: EloPlayerProfile[] = teamB.map(
-        (id) => profileMap.get(id) || { id, displayName: 'VĐV B', eloRating: 750, winStreak: 0 }
-      );
-
-      // Check H2H count in last 24 hours between these two teams
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-      const { data: recentMatches } = await supabase
-        .from('session_matches')
-        .select('id')
-        .eq('status', 'confirmed')
-        .gte('created_at', twentyFourHoursAgo)
-        .contains('team_a_player_ids', [teamA[0]])
-        .contains('team_b_player_ids', [teamB[0]]);
-
-      const h2hCount = (recentMatches || []).length;
-
-      // Check if friends
-      let areFriends = false;
-      try {
-        const { data: friendRows } = await supabase
-          .from('friendships')
-          .select('status')
-          .eq('status', 'accepted')
-          .or(
-            `and(user_low.eq.${teamA[0]},user_high.eq.${teamB[0]}),and(user_low.eq.${teamB[0]},user_high.eq.${teamA[0]})`
-          );
-        areFriends = Boolean(friendRows && friendRows.length > 0);
-      } catch {
-        // non-blocking
-      }
-
-      // Calculate Elo
-      const eloCalc = calculateElo({
-        teamAElos: teamAPlayers.map((p) => p.eloRating),
-        teamBElos: teamBPlayers.map((p) => p.eloRating),
-        winnerTeam: match.winner_team === 'B' ? 'B' : 'A',
-        h2hMatchesLast24h: h2hCount,
-        hasPlayedBeforeOrFriends: areFriends,
-      });
-
-      finalKFactor = eloCalc.kFactor;
-      finalEloDelta = eloCalc.eloDelta;
-
-      eloSettleResults = settlePlayers({
-        teamAPlayers,
-        teamBPlayers,
-        winnerTeam: match.winner_team === 'B' ? 'B' : 'A',
-        eloDelta: eloCalc.eloDelta,
-        isHeadToHeadCapped: eloCalc.isHeadToHeadCapped,
-      });
-
-      // Update player profiles in DB
-      for (const res of eloSettleResults) {
-        await supabase
-          .from('profiles')
-          .update({
-            elo_rating: res.newElo,
-            win_streak: res.newStreak,
-            tier_name: res.newTier,
-          })
-          .eq('id', res.playerId);
-      }
+    } catch {
+      // non-blocking
     }
-
-    // 5. Update session_matches to confirmed
-    await supabase
-      .from('session_matches')
-      .update({
-        status: 'confirmed',
-        confirmations: newConfirmations,
-        k_factor: finalKFactor,
-        elo_delta: finalEloDelta,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', matchId);
 
     return { confirmed: true, eloResults: eloSettleResults };
   }
 
-  /**
-   * File a dispute against a match score.
-   * Freezes score and marks status as 'disputed'.
-   */
-  async disputeMatch(matchId: string, _userId?: string): Promise<void> {
-    if (!supabase) throw new Error('Chưa cấu hình Supabase');
+  async submitDispute(params: {
+    matchId: string;
+    userId: string;
+    winnerTeam: 'A' | 'B';
+    scoreText: string;
+    scores: SetScore[];
+    reason?: string;
+  }): Promise<void> {
+    this.initStore();
+    this.loadFromStorage();
 
-    const { error } = await supabase
-      .from('session_matches')
-      .update({
-        status: 'disputed',
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', matchId);
+    const match = this.localMatches.find((m) => m.id === params.matchId);
+    if (!match) return;
 
-    if (error) {
-      throw new Error('Không thể ghi nhận khiếu nại. Vui lòng thử lại.');
+    match.status = 'disputed';
+    match.updatedAt = new Date().toISOString();
+    match.disputeData = {
+      phase: 'conflict_round_1',
+      initiatorId: params.userId,
+      proposals: [
+        ...(match.disputeData?.proposals || []),
+        {
+          round: 2,
+          by: params.userId,
+          winnerTeam: params.winnerTeam,
+          scoreText: params.scoreText,
+          scores: params.scores,
+          submittedAt: new Date().toISOString(),
+          reason: params.reason,
+        },
+      ],
+    };
+
+    this.saveToStorage();
+  }
+
+  async submitRound2Choice(params: {
+    matchId: string;
+    userId: string;
+    winnerTeam: 'A' | 'B';
+    scoreText: string;
+    scores: SetScore[];
+  }): Promise<{ resolved: boolean; resolution?: string; winnerTeam?: 'A' | 'B' }> {
+    this.initStore();
+    this.loadFromStorage();
+
+    const match = this.localMatches.find((m) => m.id === params.matchId);
+    if (!match) return { resolved: false };
+
+    match.status = 'confirmed';
+    match.winnerTeam = params.winnerTeam;
+    match.scoreText = params.scoreText;
+    match.scores = params.scores;
+    match.updatedAt = new Date().toISOString();
+    if (match.disputeData) {
+      match.disputeData.phase = 'resolved_simple_winner';
+      match.disputeData.resolutionNote = 'Hai bên đã thống nhất kết quả ở lần chọn lại thứ hai.';
     }
+    this.saveToStorage();
+    return { resolved: true, resolution: 'exact_match', winnerTeam: params.winnerTeam };
+  }
+
+  async autoConfirmAfter24h(matchId: string): Promise<{ confirmed: boolean; autoConfirmed: boolean }> {
+    this.initStore();
+    this.loadFromStorage();
+
+    const match = this.localMatches.find((m) => m.id === matchId);
+    if (!match) return { confirmed: false, autoConfirmed: false };
+
+    match.status = 'confirmed';
+    match.updatedAt = new Date().toISOString();
+    this.saveToStorage();
+    return { confirmed: true, autoConfirmed: true };
   }
 }
 

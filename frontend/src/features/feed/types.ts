@@ -1,6 +1,8 @@
 import { PostItem, PostCommentItem } from '../../services/postService';
 import { CalendarEvent } from '../calendar/domain/calendarEvent';
 import { PlayerProfile } from '../profile/domain/playerProfile';
+import { ManagedRoomData } from '../rooms/domain/managedRoom';
+import { Court } from '../../core/types/database.types';
 
 export type FeedTab = 'all' | 'court_review' | 'match_recap' | 'general';
 
@@ -19,6 +21,9 @@ export interface FeedViewProps {
   onOpenCreateModal: (preset?: 'court_review' | 'match_recap' | 'general') => void;
   onRefreshFeed: () => void;
   onShowToast: (msg: string) => void;
+  urgentRoom?: ManagedRoomData | null;
+  suggestedPlayers?: PlayerProfile[];
+  courts?: Court[];
 }
 
 export interface CommentDrawerProps {

@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 :root {
-  /* LIGHT THEME: Low-Glare Anti-Fatigue Canvas with Crisp High-Contrast Cards */
-  --color-bg: 226 232 240; /* #E2E8F0 Slate 200 - Darker soothing canvas that highlights white cards */
+  /* LIGHT THEME: Standardized Design Tokens */
+  --color-bg: 241 245 249; /* #F1F5F9 Slate 100 - Enhanced contrast canvas backdrop */
   --color-surface: 255 255 255; /* #FFFFFF Pure White Surface */
-  --color-border: 203 213 225; /* #CBD5E1 Slate 300 - Hairline card border */
+  --color-border: 226 232 240; /* #E2E8F0 Slate 200 - Crisp hairline card border */
   --color-primary: 5 150 105; /* #059669 Emerald 600 - Standardized Primary Brand (Matches 'Tạo kèo' & 'Xem chi tiết') */
   --color-accent: 4 120 87; /* #047857 Emerald 700 - Deep Brand Hover */
   --color-accent-text: 4 120 87; /* #047857 Emerald 700 */

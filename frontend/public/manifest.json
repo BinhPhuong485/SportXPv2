@@ -1,11 +1,12 @@
 {
-    "name": "sport_xp_4",
-    "short_name": "sport_xp_4",
-    "start_url": ".",
+    "name": "SportXP — Mạng Xã Hội Thể Thao Cầu Lông",
+    "short_name": "SportXP",
+    "start_url": "/",
+    "scope": "/",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "EXE",
+    "background_color": "#176344",
+    "theme_color": "#176344",
+    "description": "Nền tảng ghép kèo cầu lông, tính điểm Elo tự động và kết nối cộng đồng VĐV phong trào",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

@@ -1,7 +1,7 @@
 export const AppColors = {
-  background: '#E2E8F0',
+  background: '#F1F5F9',
   surface: '#FFFFFF',
-  border: '#CBD5E1',
+  border: '#E2E8F0',
   primary: '#059669',
   accent: '#047857',
   accentText: '#047857',
