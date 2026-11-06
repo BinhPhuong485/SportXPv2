@@ -15,7 +15,9 @@ export class CalendarRepository {
     try {
       const mineRooms = await managedRoomRepository.list('mine', 0);
       for (const r of mineRooms) {
-        allRoomsMap.set(r.id, r);
+        if (r.isHost || (r.myStatus && r.myStatus !== 'CANCELLED' && r.myStatus !== 'LEAVE')) {
+          allRoomsMap.set(r.id, r);
+        }
       }
     } catch (e) {
       console.warn('Failed to load mine rooms for calendar:', e);

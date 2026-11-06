@@ -76,6 +76,11 @@ export const ManagedRoomsPage: React.FC = () => {
 
         // Client-side filtering
         let filtered = rows;
+        if (scope === 'mine') {
+          filtered = filtered.filter(
+            (r) => r.isHost || (r.myStatus && r.myStatus !== 'CANCELLED' && r.myStatus !== 'LEAVE')
+          );
+        }
         if (filter.area !== 'Tất cả') {
           filtered = filtered.filter(
             (r) =>
@@ -158,7 +163,7 @@ export const ManagedRoomsPage: React.FC = () => {
 
   const currentArea = filter.area === 'Tất cả' ? 'TP.HCM • Q.10, Bình Thạnh, Thủ Đức' : filter.area;
 
-  const displayRooms = items.length > 0 ? items : [
+  const sampleRooms: ManagedRoomData[] = [
     {
       id: 'sample-room-1',
       courtId: 'court-1',
@@ -241,6 +246,8 @@ export const ManagedRoomsPage: React.FC = () => {
       roomCode: '#XP-3341'
     }
   ] as unknown as ManagedRoomData[];
+
+  const displayRooms = items.length > 0 ? items : mainTab === 'discover' ? sampleRooms : [];
 
   return (
     <div className="w-full flex flex-col bg-app-background min-h-[calc(100vh-64px)] select-none pb-12">
@@ -540,6 +547,25 @@ export const ManagedRoomsPage: React.FC = () => {
                 <div className="py-12 flex flex-col items-center justify-center gap-2">
                   <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
                   <span className="text-xs text-app-muted font-medium">Đang tải phòng thi đấu…</span>
+                </div>
+              ) : mainTab === 'mine' && displayRooms.length === 0 ? (
+                <div className="py-12 bg-white dark:bg-app-surface border border-app-border rounded-xl flex flex-col items-center justify-center p-6 text-center gap-2.5">
+                  <Calendar size={32} className="text-app-muted/60" />
+                  <h4 className="text-sm font-bold text-app-text">Chưa Có Buổi Chơi Nào</h4>
+                  <p className="text-xs text-app-muted max-w-sm leading-relaxed">
+                    {mineSubTab === 'mine'
+                      ? 'Bạn chưa tham gia buổi chơi nào sắp diễn ra. Hãy vào Phòng Chờ Đang Mở để tìm kèo hoặc tự tạo kèo mới!'
+                      : 'Bạn chưa có lịch sử buổi chơi nào.'}
+                  </p>
+                  {mineSubTab === 'mine' && (
+                    <button
+                      type="button"
+                      onClick={() => setMainTab('discover')}
+                      className="mt-1 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-all shadow-xs cursor-pointer"
+                    >
+                      Khám Phá Phòng Chờ
+                    </button>
+                  )}
                 </div>
               ) : (
                 displayRooms.map((room) => (

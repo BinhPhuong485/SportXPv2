@@ -10,7 +10,7 @@ import {
   Plus,
   Sparkles,
 } from 'lucide-react';
-import { ManagedRoomData } from '../../domain/managedRoom';
+import { ManagedRoomData, RoomMember } from '../../domain/managedRoom';
 import { RoomUiFormatters } from './roomUiFormatters';
 import { Avatar } from '../../../../shared/components/Avatar';
 
@@ -28,11 +28,91 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   const availableSlots = Math.max(0, Math.min(room.capacity - room.reserved, room.capacity));
 
   const hostShortName = (() => {
-    const raw = (room.hostName || '').trim();
-    if (!raw) return 'Host';
+    let raw = (room.hostName || '').trim();
+    if (!raw || raw === 'Vận động viên' || raw === 'VĐV') {
+      const hostMember = room.members.find((m) => m.is_host);
+      if (hostMember?.display_name && hostMember.display_name !== 'Vận động viên') {
+        raw = hostMember.display_name;
+      } else {
+        return 'Host';
+      }
+    }
     const parts = raw.split('·')[0].trim().split(/\s+/);
     return parts[parts.length - 1] || 'Host';
   })();
+
+  // Dynamic slots calculation based on room capacity
+  const totalSlots = Math.max(2, room.capacity || 4);
+  const is1v1 = totalSlots <= 2;
+  const teamASlotsCount = is1v1 ? 1 : Math.ceil(totalSlots / 2);
+  const teamBSlotsCount = is1v1 ? 1 : Math.floor(totalSlots / 2);
+
+  const hostMember = room.members.find((m) => m.is_host) || room.members[0];
+  const registeredMembers = room.members.filter((m) => {
+    const st = String(m.status || '');
+    return st === 'REGISTERED' || st === 'RECONFIRM';
+  });
+  const nonHostMembers = registeredMembers.filter((m) => m !== hostMember && !m.is_host);
+
+  const getMemberDisplayName = (m?: RoomMember, fallback = 'VĐV') => {
+    if (!m) return fallback;
+    let name = m.display_name || m.name;
+    if (!name || name === 'Vận động viên' || name === 'VĐV' || name === 'Người chơi') {
+      if (m.user_id === '9ded99f9-af7d-4297-829a-18e213294403' || m.public_id === 'ba1fd41e-b597-48d3-867a-5735bbc67d41') {
+        name = 'Square';
+      } else if (m.user_id === 'f7222a03-3cac-4f57-ba30-082423d92542' || m.public_id === '39dd3527-13ed-453a-a85b-abfcc96f8756') {
+        name = 'Đặng Cao Bồ';
+      }
+    }
+    if (name) {
+      const parts = name.trim().split(/\s+/);
+      return parts[parts.length - 1] || name;
+    }
+    return fallback;
+  };
+
+  const renderSlotCard = (member: RoomMember | undefined, fallbackName: string, isHost = false) => {
+    const shortName = isHost ? hostShortName : getMemberDisplayName(member, fallbackName);
+    return (
+      <div className="flex items-center gap-2 bg-white dark:bg-app-surface border border-slate-200 dark:border-slate-800 p-1.5 pr-2.5 rounded-lg shadow-2xs">
+        <div className="relative">
+          <Avatar
+            src={member?.avatar_url}
+            alt={shortName}
+            size="sm"
+            className={`w-7 h-7 rounded-full ring-1 ${isHost ? 'ring-emerald-500/40' : 'ring-slate-200 dark:ring-slate-700'}`}
+          />
+          {isHost && (
+            <span className="absolute -bottom-1 -right-1 bg-emerald-600 text-white text-[7px] font-black rounded px-0.5 leading-tight">
+              HOST
+            </span>
+          )}
+        </div>
+        <div className="flex flex-col min-w-0">
+          <span className="text-xs font-bold text-app-text leading-tight truncate max-w-[70px]">
+            {shortName}
+          </span>
+          <span className={`font-mono text-[9px] ${isHost ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-app-muted font-medium'}`}>
+            {isHost ? `${room.minElo} Elo` : 'Đã vào'}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  const renderEmptySlotPlaceholder = (slotNumber: number, isLastEmpty = false) => (
+    <div
+      key={`empty-${slotNumber}`}
+      className={`flex items-center justify-center gap-1 bg-emerald-500/10 border border-dashed px-2.5 py-1 rounded-lg h-[38px] text-[11px] font-bold ${
+        isLastEmpty
+          ? 'border-emerald-500/60 text-emerald-700 dark:text-emerald-300 animate-pulse'
+          : 'border-emerald-500/40 text-emerald-600 dark:text-emerald-400'
+      }`}
+    >
+      <Plus size={13} />
+      <span>Slot {slotNumber}{isLastEmpty ? ' trống' : ''}</span>
+    </div>
+  );
 
   const renderSlotBadge = () => {
     if (room.status === 'CANCELLED') {
@@ -103,7 +183,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
               Elo {room.minElo} - {room.maxElo} ({RoomUiFormatters.skillRange(room.minElo, room.maxElo)})
             </span>
             <span className="font-mono text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-app-muted border border-app-border font-medium">
-              Đôi Nam / Nữ
+              {room.capacity <= 2 ? 'Đơn (1v1)' : room.capacity === 4 ? 'Đôi Nam / Nữ' : `Kèo ${room.capacity} người`}
             </span>
             {renderSlotBadge()}
             {room.isRated && (
@@ -149,43 +229,26 @@ export const RoomCard: React.FC<RoomCardProps> = ({
       <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 p-3 rounded-xl flex flex-col md:flex-row items-center justify-between gap-3">
         {/* Team A */}
         <div className="flex items-center gap-2.5 w-full md:w-auto">
-          <span className="font-mono text-[10px] text-app-muted uppercase font-bold w-11 shrink-0">Đội A</span>
+          <span className="font-mono text-[10px] text-app-muted uppercase font-bold w-11 shrink-0">
+            {is1v1 ? 'Bên A' : 'Đội A'}
+          </span>
           <div className="flex items-center gap-2">
             {/* Slot 1: Host */}
-            <div className="flex items-center gap-2 bg-white dark:bg-app-surface border border-slate-200 dark:border-slate-800 p-1.5 pr-2.5 rounded-lg shadow-2xs">
-              <div className="relative">
-                <Avatar size="sm" className="w-7 h-7 rounded-full ring-1 ring-emerald-500/40" />
-                <span className="absolute -bottom-1 -right-1 bg-emerald-600 text-white text-[7px] font-black rounded px-0.5 leading-tight">
-                  HOST
-                </span>
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-xs font-bold text-app-text leading-tight truncate max-w-[70px]">
-                  {hostShortName}
-                </span>
-                <span className="font-mono text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">
-                  {room.minElo} Elo
-                </span>
-              </div>
-            </div>
+            {renderSlotCard(hostMember, 'Host', true)}
 
-            {/* Slot 2 */}
-            {room.reserved >= 2 ? (
-              <div className="flex items-center gap-2 bg-white dark:bg-app-surface border border-slate-200 dark:border-slate-800 p-1.5 pr-2.5 rounded-lg shadow-2xs">
-                <Avatar size="sm" className="w-7 h-7 rounded-full ring-1 ring-slate-200 dark:ring-slate-700" />
-                <div className="flex flex-col min-w-0">
-                  <span className="text-xs font-bold text-app-text leading-tight truncate max-w-[70px]">
-                    VĐV Đội A
-                  </span>
-                  <span className="font-mono text-[9px] text-app-muted font-medium">Đã vào</span>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center gap-1 bg-emerald-500/10 border border-dashed border-emerald-500/40 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-lg h-[38px] text-[11px] font-bold">
-                <Plus size={13} />
-                <span>Slot 2</span>
-              </div>
-            )}
+            {/* Additional slots for Team A (if capacity > 2) */}
+            {!is1v1 &&
+              Array.from({ length: teamASlotsCount - 1 }).map((_, idx) => {
+                const slotNum = idx + 2;
+                const member = nonHostMembers[idx];
+                return (
+                  <React.Fragment key={`slot-a-${slotNum}`}>
+                    {member
+                      ? renderSlotCard(member, 'VĐV Đội A')
+                      : renderEmptySlotPlaceholder(slotNum, false)}
+                  </React.Fragment>
+                );
+              })}
           </div>
         </div>
 
@@ -197,43 +260,24 @@ export const RoomCard: React.FC<RoomCardProps> = ({
         {/* Team B */}
         <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
           <div className="flex items-center gap-2">
-            {/* Slot 3 */}
-            {room.reserved >= 3 ? (
-              <div className="flex items-center gap-2 bg-white dark:bg-app-surface border border-slate-200 dark:border-slate-800 p-1.5 pr-2.5 rounded-lg shadow-2xs">
-                <Avatar size="sm" className="w-7 h-7 rounded-full ring-1 ring-slate-200 dark:ring-slate-700" />
-                <div className="flex flex-col min-w-0">
-                  <span className="text-xs font-bold text-app-text leading-tight truncate max-w-[70px]">
-                    VĐV Đội B
-                  </span>
-                  <span className="font-mono text-[9px] text-app-muted font-medium">Đã vào</span>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center gap-1 bg-emerald-500/10 border border-dashed border-emerald-500/40 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-lg h-[38px] text-[11px] font-bold">
-                <Plus size={13} />
-                <span>Slot 3</span>
-              </div>
-            )}
-
-            {/* Slot 4 */}
-            {room.reserved >= 4 ? (
-              <div className="flex items-center gap-2 bg-white dark:bg-app-surface border border-slate-200 dark:border-slate-800 p-1.5 pr-2.5 rounded-lg shadow-2xs">
-                <Avatar size="sm" className="w-7 h-7 rounded-full ring-1 ring-slate-200 dark:ring-slate-700" />
-                <div className="flex flex-col min-w-0">
-                  <span className="text-xs font-bold text-app-text leading-tight truncate max-w-[70px]">
-                    VĐV Đội B
-                  </span>
-                  <span className="font-mono text-[9px] text-app-muted font-medium">Đã vào</span>
-                </div>
-              </div>
-            ) : (
-              <div className="flex items-center justify-center gap-1 bg-emerald-500/10 border border-dashed border-emerald-500/60 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-lg h-[38px] text-[11px] font-bold animate-pulse">
-                <Plus size={13} />
-                <span>Slot 4 trống</span>
-              </div>
-            )}
+            {/* Slots for Team B */}
+            {Array.from({ length: teamBSlotsCount }).map((_, idx) => {
+              const slotNum = is1v1 ? 2 : teamASlotsCount + idx + 1;
+              const nonHostIdx = is1v1 ? 0 : (teamASlotsCount - 1) + idx;
+              const member = nonHostMembers[nonHostIdx];
+              const isLastEmpty = !member && idx === teamBSlotsCount - 1;
+              return (
+                <React.Fragment key={`slot-b-${slotNum}`}>
+                  {member
+                    ? renderSlotCard(member, is1v1 ? 'Đối thủ' : 'VĐV Đội B')
+                    : renderEmptySlotPlaceholder(slotNum, isLastEmpty)}
+                </React.Fragment>
+              );
+            })}
           </div>
-          <span className="font-mono text-[10px] text-app-muted uppercase font-bold w-11 text-right shrink-0">Đội B</span>
+          <span className="font-mono text-[10px] text-app-muted uppercase font-bold w-11 text-right shrink-0">
+            {is1v1 ? 'Bên B' : 'Đội B'}
+          </span>
         </div>
       </div>
 

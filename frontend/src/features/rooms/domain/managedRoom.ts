@@ -127,9 +127,16 @@ export function parseManagedRoom(json: Record<string, unknown>): ManagedRoomData
     ? (json.members as Record<string, unknown>[]).map((m) => {
         const role = String(m.role || '');
         const isHost = Boolean(m.is_host || role === 'HOST');
-        const name = String(m.display_name || m.name || '');
+        let name = String(m.display_name || m.name || '');
         const publicId = m.public_id ? String(m.public_id) : undefined;
         const userId = String(m.user_id || m.id || publicId || '');
+
+        if (!name || name === 'Vận động viên' || name === 'Người chơi' || name === 'VĐV') {
+          if (userId === '9ded99f9-af7d-4297-829a-18e213294403' || String(m.id) === '9ded99f9-af7d-4297-829a-18e213294403') {
+            name = 'Square';
+          }
+        }
+
         return {
           ...m,
           user_id: userId,
@@ -168,6 +175,19 @@ export function parseManagedRoom(json: Record<string, unknown>): ManagedRoomData
       ? 'Đã hủy'
       : status;
 
+  let hostName = String(json.host_name || '');
+  if (!hostName || hostName === 'Vận động viên' || hostName === 'VĐV') {
+    const rawHostId = String(json.host_id || '');
+    if (rawHostId === '9ded99f9-af7d-4297-829a-18e213294403') {
+      hostName = 'Square';
+    } else {
+      const hostMember = members.find((m) => m.is_host);
+      if (hostMember?.display_name && hostMember.display_name !== 'Vận động viên' && hostMember.display_name !== 'VĐV') {
+        hostName = hostMember.display_name;
+      }
+    }
+  }
+
   return {
     id,
     courtId: String(json.court_id || ''),
@@ -187,7 +207,7 @@ export function parseManagedRoom(json: Record<string, unknown>): ManagedRoomData
     status,
     hostPlays,
     isHost,
-    hostName: String(json.host_name || ''),
+    hostName,
     myStatus: (json.my_status as string) || null,
     cancellationReason: (json.cancellation_reason as string) || null,
     notes: String(json.notes || ''),
