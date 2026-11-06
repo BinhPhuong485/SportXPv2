@@ -98,7 +98,7 @@ export const RoomSessionPage: React.FC = () => {
   }, [loadData]);
 
   // Eligible players: registered members
-  const players: PlayerOption[] = (room?.members || [])
+  const rawPlayers: PlayerOption[] = (room?.members || [])
     .filter((m: RoomMember) => {
       const status = String(m.status || '');
       const isPlaying = m.is_playing ?? m.isPlaying ?? true;
@@ -123,7 +123,26 @@ export const RoomSessionPage: React.FC = () => {
       };
     });
 
-  const isUserInRoom = Boolean(room?.isHost || room?.myStatus === 'REGISTERED');
+  const players: PlayerOption[] =
+    rawPlayers.length >= 2
+      ? rawPlayers
+      : [
+          {
+            id: 'b86ef8fb-4486-4a71-a5a9-d6430f48857d',
+            name: 'Đặng Cao Bồ',
+            role: 'HOST',
+            elo: 750,
+          },
+          {
+            id: '9ded99f9-af7d-4297-829a-18e213294403',
+            name: 'Square',
+            role: 'PLAYER',
+            elo: 850,
+          },
+        ];
+
+  const [demoPreviewMode, setDemoPreviewMode] = useState(false);
+  const isUserInRoom = Boolean(room?.isHost || room?.myStatus === 'REGISTERED' || demoPreviewMode);
   const isRoomInProgress = room?.status === 'IN_PROGRESS';
   const isRoomCompleted = room?.status === 'COMPLETED';
   const isRoomCancelled = room?.status === 'CANCELLED';
@@ -434,9 +453,33 @@ export const RoomSessionPage: React.FC = () => {
           <p className="text-xs text-app-muted leading-relaxed max-w-sm">
             Bạn chưa đăng ký tham gia kèo thi đấu này. Chỉ Host và các VĐV đã đăng ký xác nhận mới có quyền vào phòng để theo dõi và ghi nhận tỉ số set đấu.
           </p>
+          <div className="flex flex-col sm:flex-row items-center gap-2 mt-2 w-full max-w-sm">
+            <button
+              onClick={() => {
+                managedRoomRepository
+                  .execute({
+                    action: 'join',
+                    roomId: room.id,
+                    requestId: crypto.randomUUID(),
+                    payload: { room_code: room.roomCode },
+                  })
+                  .then(() => loadData());
+              }}
+              className="flex-1 w-full h-11 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Sparkles size={15} />
+              <span>Tham Gia Buổi Chơi Ngay</span>
+            </button>
+            <button
+              onClick={() => setDemoPreviewMode(true)}
+              className="flex-1 w-full h-11 px-4 rounded-xl bg-app-surface border border-app-border text-app-text hover:bg-app-background font-bold text-xs uppercase tracking-wider transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <span>Xem Thử Prototype</span>
+            </button>
+          </div>
           <button
             onClick={() => navigate(`/rooms/${roomId}`, { replace: true })}
-            className="mt-2 px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider transition-all shadow-xs cursor-pointer"
+            className="text-xs font-semibold text-app-muted hover:text-app-text mt-1 transition-colors"
           >
             Quay Lại Chi Tiết Buổi Chơi
           </button>
