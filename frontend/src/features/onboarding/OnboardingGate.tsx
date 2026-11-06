@@ -28,16 +28,22 @@ export const OnboardingGate: React.FC<OnboardingGateProps> = ({ children }) => {
       : null
   );
 
+  const userId = user?.id;
+
   const loadOnboardingState = useCallback(async () => {
     if (isSkipOnboarding) {
       setLoading(false);
       return;
     }
-    if (!user || !supabase) {
+    if (!userId || !supabase) {
       setLoading(false);
       return;
     }
-    setLoading(true);
+    // Only show full-screen blocking loader on initial load (when state is null)
+    // Never unmount existing UI on subsequent background checks or tab switches!
+    if (!state) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const { data, error: rpcError } = await supabase.rpc('get_onboarding_state');
@@ -59,11 +65,13 @@ export const OnboardingGate: React.FC<OnboardingGateProps> = ({ children }) => {
         tierName: raw.tier_name,
       });
     } catch {
-      setError('Chưa tải được tiến độ của bạn. Kiểm tra kết nối và thử lại để tiếp tục.');
+      if (!state) {
+        setError('Chưa tải được tiến độ của bạn. Kiểm tra kết nối và thử lại để tiếp tục.');
+      }
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [userId, isSkipOnboarding]);
 
   useEffect(() => {
     loadOnboardingState();

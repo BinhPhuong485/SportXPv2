@@ -203,7 +203,7 @@ export const ForgotPasswordSheet: React.FC<ForgotPasswordSheetProps> = ({
             <button
               type="submit"
               disabled={busy}
-              className="w-full h-12 rounded-[14px] bg-app-primary text-app-on-primary font-bold text-sm hover:brightness-105 active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 transition-all"
+              className="w-full h-12 rounded-[14px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-xs"
             >
               {busy ? (
                 <div className="w-4 h-4 border-2 border-app-on-primary border-t-transparent rounded-full animate-spin" />
@@ -295,7 +295,7 @@ export const ForgotPasswordSheet: React.FC<ForgotPasswordSheetProps> = ({
             <button
               type="submit"
               disabled={busy}
-              className="w-full h-12 mt-1 rounded-[12px] bg-app-primary text-app-on-primary font-bold text-sm hover:brightness-105 active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 transition-all"
+              className="w-full h-12 mt-1 rounded-[12px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-sm disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-xs"
             >
               {busy ? (
                 <div className="w-4 h-4 border-2 border-app-on-primary border-t-transparent rounded-full animate-spin" />
@@ -335,7 +335,7 @@ export const ForgotPasswordSheet: React.FC<ForgotPasswordSheetProps> = ({
                 onClose();
                 onSuccess?.();
               }}
-              className="w-full h-12 mt-4 rounded-[12px] bg-app-primary text-app-on-primary font-bold text-sm hover:brightness-105 active:scale-[0.99] transition-all"
+              className="w-full h-12 mt-4 rounded-[12px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-sm transition-all shadow-xs"
             >
               ĐĂNG NHẬP NGAY
             </button>

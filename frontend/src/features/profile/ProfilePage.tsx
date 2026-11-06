@@ -81,12 +81,12 @@ export const ProfilePage: React.FC = () => {
     }
   }, [user?.id]);
 
-  const handleSaveProfile = async (displayName: string, homeCourtId: string | null) => {
-    await updateProfile({ displayName, homeCourtId });
+  const handleSaveProfile = async (params: any) => {
+    await updateProfile(params);
     setFeedback('Đã cập nhật hồ sơ thành công.');
     setTimeout(() => setFeedback(null), 3000);
-    if (displayName) {
-      profileRepository.playerRecentMatches(displayName).then(setMatches);
+    if (params?.displayName) {
+      profileRepository.playerRecentMatches(params.displayName).then(setMatches);
     }
   };
 

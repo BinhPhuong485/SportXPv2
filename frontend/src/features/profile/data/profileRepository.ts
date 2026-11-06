@@ -2,6 +2,16 @@ import { supabase } from '../../../core/config/supabase';
 import { PlayerProfile, MatchDiaryItem } from '../domain/playerProfile';
 import { Court } from '../../rooms/data/managedRoomRepository';
 
+export interface UpdateProfileParams {
+  displayName?: string;
+  homeCourtId?: string | null;
+  zaloPhone?: string | null;
+  zaloLink?: string | null;
+  facebookLink?: string | null;
+  bio?: string | null;
+  district?: string | null;
+}
+
 export class ProfileRepository {
   async currentProfile(): Promise<PlayerProfile | null> {
     if (!supabase) return null;
@@ -23,6 +33,12 @@ export class ProfileRepository {
           trust_score,
           win_streak,
           home_court_id,
+          district,
+          city,
+          zalo_phone,
+          zalo_link,
+          facebook_link,
+          bio,
           created_at,
           onboarding_step,
           courts (
@@ -40,6 +56,28 @@ export class ProfileRepository {
       const rawCourt = Array.isArray(data.courts) ? data.courts[0] : data.courts;
       const court = rawCourt as unknown as { id: string; name: string; distance_km?: number } | null;
 
+      // Count confirmed matches from session_matches
+      let confirmedMatches = 0;
+      try {
+        const { data: matches } = await supabase
+          .from('session_matches')
+          .select('team_a_player_ids, team_b_player_ids')
+          .eq('status', 'confirmed');
+        if (matches) {
+          for (const m of matches) {
+            const players = [
+              ...(Array.isArray(m.team_a_player_ids) ? m.team_a_player_ids : []),
+              ...(Array.isArray(m.team_b_player_ids) ? m.team_b_player_ids : []),
+            ];
+            if (players.includes(user.id)) {
+              confirmedMatches++;
+            }
+          }
+        }
+      } catch {
+        // ignore
+      }
+
       return {
         id: data.id,
         publicId: data.public_id,
@@ -52,17 +90,23 @@ export class ProfileRepository {
         winStreak: data.win_streak ?? 0,
         homeCourtId: data.home_court_id,
         homeCourtName: court?.name || null,
+        district: data.district || null,
+        city: data.city || 'TP. Hồ Chí Minh',
+        zaloPhone: data.zalo_phone || null,
+        zaloLink: data.zalo_link || null,
+        facebookLink: data.facebook_link || null,
+        bio: data.bio || null,
         createdAt: data.created_at,
         onboardingStep: data.onboarding_step ?? 0,
         isIdentityVerified: false,
-        confirmedMatchesCount: 0,
+        confirmedMatchesCount: confirmedMatches,
         rankDelta: 0,
       };
     } catch {
       // Fallback query if relation or specific columns differ
       const { data: fbData } = await supabase
         .from('profiles')
-        .select('id, display_name, avatar_url, elo_rating, tier_name, trust_score, win_streak, home_court_id, created_at, onboarding_step')
+        .select('id, display_name, avatar_url, elo_rating, tier_name, trust_score, win_streak, home_court_id, district, city, zalo_phone, zalo_link, facebook_link, bio, created_at, onboarding_step')
         .eq('id', user.id)
         .maybeSingle();
 
@@ -94,6 +138,12 @@ export class ProfileRepository {
         winStreak: fbData.win_streak ?? 0,
         homeCourtId: fbData.home_court_id,
         homeCourtName: fallbackCourtName,
+        district: fbData.district || null,
+        city: fbData.city || 'TP. Hồ Chí Minh',
+        zaloPhone: fbData.zalo_phone || null,
+        zaloLink: fbData.zalo_link || null,
+        facebookLink: fbData.facebook_link || null,
+        bio: fbData.bio || null,
         createdAt: fbData.created_at,
         onboardingStep: fbData.onboarding_step ?? 0,
         isIdentityVerified: false,
@@ -104,7 +154,7 @@ export class ProfileRepository {
     }
   }
 
-  async updateProfile(params: { displayName?: string; homeCourtId?: string | null }): Promise<void> {
+  async updateProfile(params: UpdateProfileParams): Promise<void> {
     if (!supabase) throw new Error('Chưa kết nối Supabase.');
     const { data: authData } = await supabase.auth.getUser();
     const user = authData?.user;
@@ -116,6 +166,21 @@ export class ProfileRepository {
     }
     if (params.homeCourtId !== undefined) {
       updates.home_court_id = params.homeCourtId && params.homeCourtId.trim().length > 0 ? params.homeCourtId : null;
+    }
+    if (params.zaloPhone !== undefined) {
+      updates.zalo_phone = params.zaloPhone && params.zaloPhone.trim().length > 0 ? params.zaloPhone.trim() : null;
+    }
+    if (params.zaloLink !== undefined) {
+      updates.zalo_link = params.zaloLink && params.zaloLink.trim().length > 0 ? params.zaloLink.trim() : null;
+    }
+    if (params.facebookLink !== undefined) {
+      updates.facebook_link = params.facebookLink && params.facebookLink.trim().length > 0 ? params.facebookLink.trim() : null;
+    }
+    if (params.bio !== undefined) {
+      updates.bio = params.bio && params.bio.trim().length > 0 ? params.bio.trim() : null;
+    }
+    if (params.district !== undefined) {
+      updates.district = params.district && params.district.trim().length > 0 ? params.district.trim() : null;
     }
 
     if (Object.keys(updates).length === 0) return;

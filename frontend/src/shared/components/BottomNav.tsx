@@ -1,6 +1,12 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 
+const FeedIcon: React.FC<{ active?: boolean }> = () => (
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+    <path d="M19 3H5c-1.1 0-2-.9-2-2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+  </svg>
+);
+
 const TennisIcon: React.FC<{ active?: boolean }> = ({ active }) => (
   <svg
     viewBox="0 0 24 24"
@@ -23,11 +29,7 @@ const LeaderboardIcon: React.FC<{ active?: boolean }> = () => (
   </svg>
 );
 
-const TournamentIcon: React.FC<{ active?: boolean }> = () => (
-  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-    <path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 15.9V19H7v2h10v-2h-4v-3.1c1.99-.44 3.51-2.07 3.61-4.06 2.47-.31 4.39-2.39 4.39-4.94V7c0-1.1-.9-2-2-2zM5 8V7h2v3.82C5.84 10.4 5 9.3 5 8zm14 0c0 1.3-.84 2.4-2 2.82V7h2v1z" />
-  </svg>
-);
+
 
 const PersonIcon: React.FC<{ active?: boolean }> = () => (
   <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
@@ -37,9 +39,10 @@ const PersonIcon: React.FC<{ active?: boolean }> = () => (
 
 export const BottomNav: React.FC = () => {
   const tabs = [
-    { to: '/', label: 'Tìm kèo', icon: TennisIcon },
+    { to: '/', label: 'Bản tin', icon: FeedIcon },
+    { to: '/rooms', label: 'Tìm kèo', icon: TennisIcon },
     { to: '/rankings', label: 'Xếp hạng', icon: LeaderboardIcon },
-    { to: '/tournaments', label: 'Giải đấu', icon: TournamentIcon },
+
     { to: '/profile', label: 'Hồ sơ', icon: PersonIcon },
   ];
 

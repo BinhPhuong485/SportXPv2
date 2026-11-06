@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuthStore } from '../../shared/hooks/useAuth';
-import { SplashScreen } from '../splash/SplashScreen';
 import { AuthPage } from './AuthPage';
 
 interface AuthGateProps {
@@ -9,20 +8,18 @@ interface AuthGateProps {
 
 export const AuthGate: React.FC<AuthGateProps> = ({ children }) => {
   const { user, initialized } = useAuthStore();
-  const isBypassSplash =
-    typeof window !== 'undefined' &&
-    (window.location.search.includes('noSplash=true') ||
-      window.location.hash.includes('noSplash=true'));
 
-  const [splashCompleted, setSplashCompleted] = useState(isBypassSplash);
-
-  // Show Splash first upon app boot
-  if (!splashCompleted) {
-    return <SplashScreen onComplete={() => setSplashCompleted(true)} />;
+  // If auth state is still resolving, show clean background with minimal loader
+  if (!initialized) {
+    return (
+      <div className="min-h-screen w-full bg-app-background flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
-  // Once splash is completed, if not initialized or not signed in, show AuthPage
-  if (!initialized || !user) {
+  // Not signed in -> show AuthPage
+  if (!user) {
     return <AuthPage />;
   }
 

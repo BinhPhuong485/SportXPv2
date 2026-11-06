@@ -163,6 +163,21 @@ export class ManagedRoomRepository {
     if (room.members.length > 0) {
       await this.enrichMembersWithProfiles(room.members);
     }
+    try {
+      const { data: extra } = await supabase
+        .from('match_rooms')
+        .select('room_type, join_code, is_rated, zalo_group_link')
+        .eq('id', id)
+        .maybeSingle();
+      if (extra) {
+        if (extra.room_type) room.roomType = extra.room_type as 'PUBLIC_RECRUIT' | 'PRIVATE_RATED';
+        if (extra.join_code) room.joinCode = extra.join_code;
+        if (typeof extra.is_rated === 'boolean') room.isRated = extra.is_rated;
+        if (extra.zalo_group_link) room.zaloGroupLink = extra.zalo_group_link;
+      }
+    } catch {
+      // non-blocking extra enrichment
+    }
     return room;
   }
 
@@ -175,7 +190,53 @@ export class ManagedRoomRepository {
       p_payload: command.payload || {},
     });
     if (error) throw error;
+    const targetRoomId = String(data || command.roomId || '');
+    if (targetRoomId && command.payload) {
+      const updates: Record<string, unknown> = {};
+      if ('room_type' in command.payload) updates.room_type = command.payload.room_type;
+      if ('join_code' in command.payload) updates.join_code = command.payload.join_code;
+      if ('is_rated' in command.payload) updates.is_rated = command.payload.is_rated;
+      if ('zalo_group_link' in command.payload) updates.zalo_group_link = command.payload.zalo_group_link;
+      if (Object.keys(updates).length > 0) {
+        try {
+          await supabase.from('match_rooms').update(updates).eq('id', targetRoomId);
+        } catch {
+          // silent fallback
+        }
+      }
+    }
     return String(data || '');
+  }
+
+  async lookupCode(code: string): Promise<ManagedRoomData | null> {
+    if (!supabase) return null;
+    const clean = code.trim().toUpperCase().replace(/^#/, '');
+    if (!clean) return null;
+
+    try {
+      const { data } = await supabase
+        .from('match_rooms')
+        .select('id')
+        .or(`join_code.ilike.%${clean}%,notes.ilike.%${clean}%`)
+        .limit(1)
+        .maybeSingle();
+
+      if (data?.id) {
+        return await this.get(data.id);
+      }
+    } catch {
+      // fallback
+    }
+
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clean)) {
+      try {
+        return await this.get(clean);
+      } catch {
+        return null;
+      }
+    }
+
+    return null;
   }
 
   async courts(): Promise<Court[]> {

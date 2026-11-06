@@ -19,6 +19,8 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
+  Link2,
+  MessageCircle,
 } from 'lucide-react';
 import { managedRoomRepository, roomFailure } from './data/managedRoomRepository';
 import { ManagedRoomData, Court, newRoomRequestId } from './domain/managedRoom';
@@ -54,6 +56,16 @@ export const RoomEditorPage: React.FC = () => {
   const [courtLabel, setCourtLabel] = useState('');
   const [notes, setNotes] = useState('');
   const [roomCode, setRoomCode] = useState(() => generateRoomCode());
+  const [roomType, setRoomType] = useState<'PUBLIC_RECRUIT' | 'PRIVATE_RATED'>('PUBLIC_RECRUIT');
+  const [zaloGroupLink, setZaloGroupLink] = useState('');
+  const [joinCode, setJoinCode] = useState(() => {
+    const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    let rand = '';
+    for (let i = 0; i < 4; i++) {
+      rand += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return `XP-${rand}`;
+  });
   const [isPrivate, setIsPrivate] = useState(false);
   const [hostPlays, setHostPlays] = useState(true);
   const [isDraft, setIsDraft] = useState(false);
@@ -100,6 +112,9 @@ export const RoomEditorPage: React.FC = () => {
             setMaxElo(String(existing.maxElo));
             setFee(String(existing.fee));
             setIsPrivate(existing.visibility === 'PRIVATE');
+            if (existing.roomType) setRoomType(existing.roomType);
+            if (existing.zaloGroupLink) setZaloGroupLink(existing.zaloGroupLink);
+            if (existing.joinCode) setJoinCode(existing.joinCode);
             setHostPlays(existing.hostPlays);
             setIsDraft(existing.status === 'DRAFT');
             setNotes(existing.notes || '');
@@ -274,7 +289,11 @@ export const RoomEditorPage: React.FC = () => {
       min_elo: parseInt(minElo, 10),
       max_elo: parseInt(maxElo, 10),
       fee: parseInt(fee, 10),
-      visibility: isPrivate ? 'PRIVATE' : 'PUBLIC',
+      visibility: roomType === 'PRIVATE_RATED' ? 'PRIVATE' : 'PUBLIC',
+      room_type: roomType,
+      is_rated: roomType === 'PRIVATE_RATED',
+      join_code: roomType === 'PRIVATE_RATED' ? (joinCode.trim().toUpperCase() || roomCode.replace(/^#/, '')) : null,
+      zalo_group_link: roomType === 'PUBLIC_RECRUIT' && zaloGroupLink.trim() ? zaloGroupLink.trim() : null,
       host_plays: hostPlays,
       notes: notes,
       court_label: courtLabel,
@@ -413,20 +432,23 @@ export const RoomEditorPage: React.FC = () => {
           <div className="w-full flex flex-col lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
             {/* LEFT COLUMN: Mode + Arena & Time */}
             <div className="flex flex-col gap-4">
-              {/* SECTION 2: GAME MODE SELECTOR (PUBLIC VS PRIVATE) */}
+              {/* SECTION 2: FLOW A (PUBLIC RECRUIT) VS FLOW B (PRIVATE RATED) */}
           <section className="bg-app-surface rounded-[20px] p-4 border border-app-border flex flex-col gap-3 shadow-xs">
             <div className="flex items-center gap-1.5 text-xs font-extrabold text-app-muted tracking-wider uppercase">
               <Shield size={15} className="text-app-primary" />
-              <span>CHẾ ĐỘ PHÒNG (ROOM VISIBILITY)</span>
+              <span>LOẠI KÈO ĐẤU (FLOW A vs FLOW B)</span>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
-              {/* Public */}
+              {/* Flow A: Public Recruit */}
               <button
                 type="button"
-                onClick={() => setIsPrivate(false)}
+                onClick={() => {
+                  setRoomType('PUBLIC_RECRUIT');
+                  setIsPrivate(false);
+                }}
                 className={`p-3.5 rounded-2xl border text-left flex flex-col gap-1.5 transition-all ${
-                  !isPrivate
+                  roomType === 'PUBLIC_RECRUIT'
                     ? 'border-app-primary bg-app-primary/8 shadow-xs'
                     : 'border-app-border bg-app-background hover:border-app-muted/40'
                 }`}
@@ -434,25 +456,30 @@ export const RoomEditorPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <Globe
                     size={20}
-                    className={!isPrivate ? 'text-app-primary' : 'text-app-muted'}
+                    className={roomType === 'PUBLIC_RECRUIT' ? 'text-app-primary' : 'text-app-muted'}
                   />
-                  {!isPrivate && (
+                  {roomType === 'PUBLIC_RECRUIT' && (
                     <CheckCircle2 size={16} className="text-app-primary" />
                   )}
                 </div>
-                <div className="text-sm font-extrabold text-app-text mt-1">Public</div>
-                <div className="text-[11px] font-bold text-app-primary">Sảnh mở tự do</div>
+                <div className="text-sm font-extrabold text-app-text mt-1">Tuyển Quân (Flow A)</div>
+                <div className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-app-primary/15 text-app-primary w-fit uppercase">
+                  Unrated • Giao lưu
+                </div>
                 <div className="text-[11px] text-app-muted leading-tight mt-0.5">
-                  Hiện ở sảnh theo khu vực sân. Ai đủ điều kiện đều có thể đăng ký.
+                  Hiện công khai ở sảnh. Không áp lực rank. Có đính kèm link nhóm Zalo để trao đổi.
                 </div>
               </button>
 
-              {/* Private */}
+              {/* Flow B: Private Rated */}
               <button
                 type="button"
-                onClick={() => setIsPrivate(true)}
+                onClick={() => {
+                  setRoomType('PRIVATE_RATED');
+                  setIsPrivate(true);
+                }}
                 className={`p-3.5 rounded-2xl border text-left flex flex-col gap-1.5 transition-all ${
-                  isPrivate
+                  roomType === 'PRIVATE_RATED'
                     ? 'border-app-streak bg-app-streak/8 shadow-xs'
                     : 'border-app-border bg-app-background hover:border-app-muted/40'
                 }`}
@@ -460,29 +487,76 @@ export const RoomEditorPage: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <Lock
                     size={20}
-                    className={isPrivate ? 'text-app-streak' : 'text-app-muted'}
+                    className={roomType === 'PRIVATE_RATED' ? 'text-app-streak' : 'text-app-muted'}
                   />
-                  {isPrivate && (
+                  {roomType === 'PRIVATE_RATED' && (
                     <CheckCircle2 size={16} className="text-app-streak" />
                   )}
                 </div>
-                <div className="text-sm font-extrabold text-app-text mt-1">Private</div>
-                <div className="text-[11px] font-bold text-app-streak">Phòng riêng có mã</div>
+                <div className="text-sm font-extrabold text-app-text mt-1">Cáp Kèo Kín (Flow B)</div>
+                <div className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-app-streak/15 text-app-streak w-fit uppercase">
+                  Rated • Tính điểm Elo
+                </div>
                 <div className="text-[11px] text-app-muted leading-tight mt-0.5">
-                  Ẩn khỏi sảnh. Có mã phòng là có thể tham gia, không cần kết bạn.
+                  Ẩn khỏi sảnh. Chỉ vào bằng mã 6 ký tự. Cả 2 bên phải đồng thuận tỉ số sau trận để cập nhật Elo.
                 </div>
               </button>
             </div>
 
-            {isPrivate && (
-              <div className="p-2.5 rounded-xl bg-app-background border border-app-border flex items-start gap-2 text-[11px] text-app-muted">
-                <KeyRound size={15} className="text-app-streak shrink-0 mt-0.5" />
-                <span>
-                  {isEditing ? (
-                    <>Khóa bảo vệ: Chia sẻ mã <strong>{roomCode}</strong> cho người muốn tham gia. Nhập mã chỉ mở chi tiết, vẫn kiểm tra trình độ, lịch và số chỗ khi đăng ký.</>
-                  ) : (
-                    <>Khóa bảo vệ: Mã phòng sẽ được cấp tự động sau khi tạo kèo xong để bạn chia sẻ cho bạn bè tham gia. Nhập mã chỉ mở chi tiết, vẫn kiểm tra trình độ, lịch và số chỗ khi đăng ký.</>
-                  )}
+            {/* Flow A: Link Zalo Buổi Chơi */}
+            {roomType === 'PUBLIC_RECRUIT' && (
+              <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-app-background border border-app-border">
+                <label className="text-xs font-bold text-app-text flex items-center gap-1.5">
+                  <MessageCircle size={14} className="text-app-primary" />
+                  <span>Link nhóm Zalo buổi chơi (Host đính kèm)</span>
+                </label>
+                <div className="relative flex items-center">
+                  <Link2 size={14} className="absolute left-3 text-app-muted" />
+                  <input
+                    type="url"
+                    value={zaloGroupLink}
+                    onChange={(e) => setZaloGroupLink(e.target.value)}
+                    placeholder="https://zalo.me/g/..."
+                    className="w-full h-10 pl-8 pr-3 rounded-lg bg-app-surface border border-app-border text-xs text-app-text focus:border-app-primary focus:outline-none"
+                  />
+                </div>
+                <span className="text-[11px] text-app-muted">
+                  Thành viên vãng lai bấm nút trên trang phòng để mở ngay nhóm Zalo trao đổi cách vào sân.
+                </span>
+              </div>
+            )}
+
+            {/* Flow B: Mã Phòng Kín 6 Ký Tự */}
+            {roomType === 'PRIVATE_RATED' && (
+              <div className="p-3 rounded-xl bg-app-background border border-app-streak/30 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-app-streak">
+                    <KeyRound size={15} />
+                    <span>MÃ PHÒNG KÍN (JOIN CODE)</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+                      let rand = '';
+                      for (let i = 0; i < 4; i++) {
+                        rand += chars.charAt(Math.floor(Math.random() * chars.length));
+                      }
+                      const newCode = `XP-${rand}`;
+                      setJoinCode(newCode);
+                      setRoomCode(`#${newCode}`);
+                    }}
+                    className="text-[11px] text-app-primary hover:underline flex items-center gap-1 font-semibold"
+                  >
+                    <RefreshCw size={11} />
+                    <span>Đổi mã</span>
+                  </button>
+                </div>
+                <div className="text-2xl font-mono font-black text-app-streak tracking-widest py-1">
+                  {joinCode}
+                </div>
+                <span className="text-[11px] text-app-muted">
+                  Chia sẻ mã này cho đối thủ hẹn đấu. Chỉ ai nhập đúng mã này tại Sảnh mới có thể xem và tham gia.
                 </span>
               </div>
             )}
@@ -1040,7 +1114,7 @@ export const RoomEditorPage: React.FC = () => {
             <button
               type="submit"
               disabled={busy}
-              className="w-full py-4 px-6 rounded-btn bg-app-primary text-app-on-primary font-black text-base tracking-wide uppercase hover:brightness-105 active:scale-[0.99] disabled:opacity-50 transition-all shadow-md mt-4 flex items-center justify-center gap-2"
+              className="w-full py-4 px-6 rounded-btn bg-emerald-600 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 text-white font-black text-base tracking-wide uppercase transition-all shadow-md mt-4 flex items-center justify-center gap-2"
             >
               {busy ? (
                 <>

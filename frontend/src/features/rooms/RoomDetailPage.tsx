@@ -18,6 +18,8 @@ import {
   HelpCircle,
   LogOut,
   RotateCcw,
+  MessageCircle,
+  Trophy,
 } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import {
@@ -244,7 +246,7 @@ export const RoomDetailPage: React.FC = () => {
                 type="button"
                 disabled={busy}
                 onClick={() => executeAction('publish')}
-                className="flex-1 h-11 rounded-[12px] bg-app-primary text-app-on-primary font-bold text-xs flex items-center justify-center gap-1.5 hover:brightness-105 transition-all shadow-xs"
+                className="flex-1 h-11 rounded-[12px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs"
               >
                 MỞ ĐĂNG KÝ
               </button>
@@ -255,7 +257,7 @@ export const RoomDetailPage: React.FC = () => {
                 type="button"
                 disabled={busy}
                 onClick={() => executeAction('start')}
-                className="w-full h-11 rounded-[12px] bg-app-primary text-app-on-primary font-bold text-xs flex items-center justify-center gap-1.5 hover:brightness-105 transition-all shadow-xs"
+                className="w-full h-11 rounded-[12px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs"
               >
                 <Play size={16} fill="currentColor" />
                 <span>BẮT ĐẦU BUỔI CHƠI</span>
@@ -418,9 +420,21 @@ export const RoomDetailPage: React.FC = () => {
             <BentoCard highlighted={room.status === 'IN_PROGRESS'} doubleBezel courtPattern overflowVisible>
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="px-2.5 py-1 rounded-md bg-app-primary/12 text-app-primary text-xs font-extrabold tracking-wider border border-app-primary/30">
-                    {room.statusLabel.toUpperCase()}
-                  </span>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="px-2.5 py-1 rounded-md bg-app-primary/12 text-app-primary text-xs font-extrabold tracking-wider border border-app-primary/30">
+                      {room.statusLabel.toUpperCase()}
+                    </span>
+                    {room.roomType === 'PRIVATE_RATED' || room.isRated ? (
+                      <span className="px-2 py-0.5 rounded-md bg-app-streak/15 text-app-streak border border-app-streak/40 text-[10px] font-extrabold flex items-center gap-1">
+                        <Trophy size={11} />
+                        <span>KÈO KÍN TÍNH ELO</span>
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-md bg-app-primary/15 text-app-primary border border-app-primary/40 text-[10px] font-extrabold">
+                        GIAO LƯU (UNRATED)
+                      </span>
+                    )}
+                  </div>
 
                   {/* Room Code Badge */}
                   <button
@@ -456,6 +470,31 @@ export const RoomDetailPage: React.FC = () => {
                     {room.address && <span className="mt-0.5">{room.address}</span>}
                   </div>
                 </div>
+
+                {/* Link nhóm Zalo buổi chơi (Flow A) */}
+                {room.zaloGroupLink && (
+                  <a
+                    href={room.zaloGroupLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full mt-1 py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
+                  >
+                    <MessageCircle size={16} />
+                    <span>MỞ NHÓM ZALO BUỔI CHƠI</span>
+                  </a>
+                )}
+
+                {/* Session Matches Entry Button */}
+                {room.status !== 'CANCELLED' && room.status !== 'DRAFT' && (
+                  <button
+                    type="button"
+                    onClick={() => navigate(`/rooms/${room.id}/session`)}
+                    className="w-full mt-2 py-3 px-4 rounded-xl bg-app-surface border border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-xs group"
+                  >
+                    <Trophy size={16} className="text-emerald-600 group-hover:text-white" />
+                    <span>VÀO BUỔI CHƠI & GHI NHẬN TỈ SỐ SET ĐẤU</span>
+                  </button>
+                )}
 
                 {/* Per-event reminder toggle control */}
                 {room.status !== 'CANCELLED' && (
@@ -705,7 +744,7 @@ export const RoomDetailPage: React.FC = () => {
                     expected_revision: room.revision,
                   })
                 }
-                className="flex-2 h-12 rounded-[14px] bg-app-primary text-app-on-primary font-bold text-xs hover:brightness-105 transition-all shadow-xs"
+                className="flex-2 h-12 rounded-[14px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs transition-all shadow-xs"
               >
                 ĐỒNG Ý ĐIỀU KIỆN MỚI
               </button>
@@ -739,7 +778,7 @@ export const RoomDetailPage: React.FC = () => {
                 type="button"
                 disabled={busy}
                 onClick={() => executeAction('publish')}
-                className="flex-1 h-12 rounded-[14px] bg-app-primary text-app-on-primary font-bold text-xs flex items-center justify-center gap-1.5 hover:brightness-105 transition-all shadow-xs"
+                className="flex-1 h-12 rounded-[14px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs"
               >
                 MỞ ĐĂNG KÝ
               </button>
@@ -759,7 +798,7 @@ export const RoomDetailPage: React.FC = () => {
                 type="button"
                 disabled={busy}
                 onClick={() => executeAction('start')}
-                className="flex-2 h-12 rounded-[14px] bg-app-primary text-app-on-primary font-bold text-xs flex items-center justify-center gap-1.5 hover:brightness-105 transition-all shadow-xs"
+                className="flex-2 h-12 rounded-[14px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs"
               >
                 <Play size={16} fill="currentColor" />
                 <span>BẮT ĐẦU BUỔI CHƠI</span>
@@ -809,7 +848,7 @@ export const RoomDetailPage: React.FC = () => {
                 }
                 className={`h-12 px-6 rounded-[14px] font-bold text-xs tracking-wider uppercase transition-all shadow-xs active:scale-[0.99] ${
                   availableSlots > 0
-                    ? 'bg-app-primary text-app-on-primary hover:brightness-105'
+                    ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white'
                     : 'bg-app-streak text-white hover:brightness-105'
                 }`}
               >
@@ -853,7 +892,7 @@ export const RoomDetailPage: React.FC = () => {
           <div className="w-full flex flex-col gap-2 pt-1">
             <button
               onClick={handleShareLink}
-              className="w-full h-12 rounded-[14px] bg-app-primary text-app-on-primary font-bold text-xs tracking-wider uppercase hover:brightness-105 transition-all shadow-xs"
+              className="w-full h-12 rounded-[14px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs tracking-wider uppercase transition-all shadow-xs"
             >
               CHIA SẺ LINK PHÒNG
             </button>

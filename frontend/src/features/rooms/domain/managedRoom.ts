@@ -84,6 +84,10 @@ export interface ManagedRoomData {
   bookingStatus: string;
   viewerId: string | null;
   roomCode: string;
+  roomType: 'PUBLIC_RECRUIT' | 'PRIVATE_RATED';
+  joinCode: string | null;
+  isRated: boolean;
+  zaloGroupLink: string | null;
   members: RoomMember[];
   canRegister: boolean;
   canEdit: boolean;
@@ -110,6 +114,14 @@ export function parseManagedRoom(json: Record<string, unknown>): ManagedRoomData
     (id.length >= 6
       ? `#XP-${id.replace(/-/g, '').substring(0, 4).toUpperCase()}`
       : '#XP-8888');
+
+  const roomType: 'PUBLIC_RECRUIT' | 'PRIVATE_RATED' =
+    String(json.room_type || '') === 'PRIVATE_RATED' || String(json.visibility || '') === 'PRIVATE'
+      ? 'PRIVATE_RATED'
+      : 'PUBLIC_RECRUIT';
+  const joinCode = (json.join_code as string) || (roomType === 'PRIVATE_RATED' ? roomCode.replace(/^#/, '') : null);
+  const isRated = json.is_rated !== undefined ? Boolean(json.is_rated) : roomType === 'PRIVATE_RATED';
+  const zaloGroupLink = (json.zalo_group_link as string) || null;
 
   const members: RoomMember[] = Array.isArray(json.members)
     ? (json.members as Record<string, unknown>[]).map((m) => {
@@ -183,6 +195,10 @@ export function parseManagedRoom(json: Record<string, unknown>): ManagedRoomData
     bookingStatus: String(json.booking_status || 'UNCONFIRMED'),
     viewerId: (json.viewer_id as string) || null,
     roomCode,
+    roomType,
+    joinCode,
+    isRated,
+    zaloGroupLink,
     members,
     canRegister,
     canEdit,

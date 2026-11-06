@@ -140,7 +140,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
               onClick={() => toggleMode(false)}
               className={`flex-1 py-2.5 text-[13px] font-bold rounded-[10px] transition-all select-none ${
                 !isSignUp
-                  ? 'bg-app-primary text-app-on-primary shadow-xs'
+                  ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-app-muted hover:text-app-text'
               }`}
             >
@@ -151,7 +151,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
               onClick={() => toggleMode(true)}
               className={`flex-1 py-2.5 text-[13px] font-bold rounded-[10px] transition-all select-none ${
                 isSignUp
-                  ? 'bg-app-primary text-app-on-primary shadow-xs'
+                  ? 'bg-emerald-600 text-white shadow-xs'
                   : 'text-app-muted hover:text-app-text'
               }`}
             >
@@ -267,7 +267,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
             <button
               type="submit"
               disabled={busy || !supabase}
-              className="w-full h-12 mt-2 rounded-[14px] bg-app-primary text-app-on-primary font-bold tracking-wide text-sm hover:brightness-105 active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 transition-all shadow-xs"
+              className="w-full h-12 mt-2 rounded-[14px] bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold tracking-wide text-sm disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 transition-all shadow-xs"
             >
               {busy ? (
                 <>

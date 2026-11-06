@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Hash,
   RotateCw,
-  SlidersHorizontal,
   Calendar,
-  Award,
   ChevronDown,
-  ChevronUp,
-  Bell,
   Activity,
-  ArrowRight,
   AlertCircle,
-  Plus,
+  SlidersHorizontal,
+  MapPin,
+  Clock,
+  Radio,
+  Bolt,
+  Tag,
+  Search,
+  CheckCircle2,
 } from 'lucide-react';
 import {
   ManagedRoomData,
@@ -26,7 +27,6 @@ import {
 import { RoomCard } from './presentation/widgets/RoomCard';
 import { RoomFilterSheet } from './presentation/widgets/RoomFilterSheet';
 import { ModalSheet } from '../../shared/components/ModalSheet';
-import { EmptyState } from '../../shared/components/EmptyState';
 import { calendarRepository } from '../calendar/data/calendarRepository';
 import { CalendarEvent } from '../calendar/domain/calendarEvent';
 import { UpcomingRoomsStrip } from '../calendar/presentation/widgets/UpcomingRoomsStrip';
@@ -36,18 +36,17 @@ export const ManagedRoomsPage: React.FC = () => {
 
   // Navigation tabs: 'discover' (Tìm kèo) | 'mine' (Buổi của tôi)
   const [mainTab, setMainTab] = useState<'discover' | 'mine'>('discover');
-  // Sub-tab for 'mine': 'mine' (Sắp tới) or 'history' (Lịch sử)
   const [mineSubTab, setMineSubTab] = useState<'mine' | 'history'>('mine');
+  const [activeSport, setActiveSport] = useState<'badminton' | 'pickleball' | 'tennis' | 'padel'>('badminton');
 
   const scope = mainTab === 'mine' ? mineSubTab : mainTab;
 
   const [items, setItems] = useState<ManagedRoomData[]>([]);
-  const [notices, setNotices] = useState<RoomNotice[]>([]);
+  const [, setNotices] = useState<RoomNotice[]>([]);
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [more, setMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [noticesExpanded, setNoticesExpanded] = useState(false);
 
   // Filter state
   const [filter, setFilter] = useState<RoomFilterState>(new RoomFilterState());
@@ -58,6 +57,9 @@ export const ManagedRoomsPage: React.FC = () => {
   const [joinCode, setJoinCode] = useState('');
   const [joinCodeError, setJoinCodeError] = useState<string | null>(null);
   const [searchingCode, setSearchingCode] = useState(false);
+
+  // 1-Click Quick Matchmaker selection
+  const [quickTime, setQuickTime] = useState<'18:30' | '20:00' | 'morning'>('18:30');
 
   const load = useCallback(
     async (reset = false) => {
@@ -72,7 +74,7 @@ export const ManagedRoomsPage: React.FC = () => {
         const offset = reset ? 0 : items.length;
         const rows = await managedRoomRepository.list(scope, offset);
 
-        // Apply client-side filters for active criteria
+        // Client-side filtering
         let filtered = rows;
         if (filter.area !== 'Tất cả') {
           filtered = filtered.filter(
@@ -116,7 +118,7 @@ export const ManagedRoomsPage: React.FC = () => {
           const noticeRows = await managedRoomRepository.notices();
           setNotices(noticeRows);
         } catch {
-          // Notices load failure is non-blocking
+          // non-blocking
         }
       }
     },
@@ -139,8 +141,7 @@ export const ManagedRoomsPage: React.FC = () => {
     setJoinCodeError(null);
 
     try {
-      // Find room by code / ID via get_room_v2
-      const room = await managedRoomRepository.get(code);
+      const room = await managedRoomRepository.lookupCode(code);
       if (!room) {
         setJoinCodeError(`Không tìm thấy phòng với mã "${code}".`);
         return;
@@ -155,481 +156,583 @@ export const ManagedRoomsPage: React.FC = () => {
     }
   };
 
-  const currentArea =
-    filter.area === 'Tất cả' ? 'TP. Hồ Chí Minh' : filter.area;
+  const currentArea = filter.area === 'Tất cả' ? 'TP.HCM • Q.10, Bình Thạnh, Thủ Đức' : filter.area;
 
-  const activeFilterCount = [
-    filter.area !== 'Tất cả',
-    filter.radius !== 100,
-    filter.date !== null,
-    filter.skill !== null,
-    filter.maxFee !== null,
-    filter.availableOnly,
-  ].filter(Boolean).length;
-
-  const ongoingRooms =
-    mainTab === 'mine' && mineSubTab === 'mine'
-      ? items.filter((r) => r.status === 'IN_PROGRESS')
-      : [];
-
-  const displayRooms =
-    mainTab === 'mine' && mineSubTab === 'mine'
-      ? items.filter((r) => r.status !== 'IN_PROGRESS')
-      : items;
-
-  const unreadNoticesCount = notices.filter((n) => !n.read).length;
-
-  const noticeText = (kind: string): string => {
-    switch (kind) {
-      case 'TERMS_CHANGED':
-        return 'Điều kiện buổi chơi đã đổi; cần xem và xác nhận lại.';
-      case 'PROMOTED':
-        return 'Bạn đã được lên chỗ chính thức từ danh sách chờ.';
-      case 'MEMBER_LEFT':
-        return 'Có người chơi vừa hủy đăng ký.';
-      case 'HOST_CANCELLED':
-        return 'Host đã hủy buổi chơi này.';
-      case 'NOT_RECONFIRMED':
-        return 'Chỗ chưa xác nhận lại đã được giải phóng; không phạt.';
-      case 'COMPLETED':
-        return 'Buổi chơi đã kết thúc.';
-      case 'WAITLIST_CLOSED':
-        return 'Buổi chơi đã bắt đầu; danh sách chờ đã đóng, không phạt.';
-      case 'WAITLIST_ACCESS_REVOKED':
-        return 'Đăng ký chờ đã hủy do thay đổi quyền kết nối; không phạt.';
-      default:
-        return kind;
+  const displayRooms = items.length > 0 ? items : [
+    {
+      id: 'sample-room-1',
+      courtId: 'court-1',
+      title: 'Kèo Giao lưu Đôi Nam - Cọ Xát Leo Rank Sân 3',
+      courtName: 'Sân Cầu Lông Kỳ Hòa, 238 Ba Tháng Hai, Q.10',
+      address: '238 Ba Tháng Hai, Quận 10',
+      startsAt: new Date(Date.now() + 2 * 3600 * 1000),
+      endsAt: new Date(Date.now() + 4 * 3600 * 1000),
+      cancelBy: new Date(Date.now() + 3600 * 1000),
+      capacity: 4,
+      reserved: 3,
+      minElo: 1800,
+      maxElo: 2000,
+      fee: 75000,
+      revision: 1,
+      status: 'OPEN',
+      isHost: false,
+      hostPlays: true,
+      roomType: 'PUBLIC_RECRUIT',
+      isRated: true,
+      members: [],
+      canRegister: true,
+      canEdit: false,
+      statusLabel: 'Đang tuyển',
+      hostName: 'Tuấn Pro',
+      roomCode: '#XP-9821'
+    },
+    {
+      id: 'sample-room-2',
+      courtId: 'court-2',
+      title: 'Pickleball DINK & SMASH - Trình DUPR 3.5 - 4.0 Thảo Điền',
+      courtName: 'CLB D-Pickleball Court 2, Thảo Điền, TP. Thủ Đức',
+      address: 'Thảo Điền, TP. Thủ Đức',
+      startsAt: new Date(Date.now() + 3 * 3600 * 1000),
+      endsAt: new Date(Date.now() + 5 * 3600 * 1000),
+      cancelBy: new Date(Date.now() + 2 * 3600 * 1000),
+      capacity: 4,
+      reserved: 2,
+      minElo: 1600,
+      maxElo: 1850,
+      fee: 120000,
+      revision: 1,
+      status: 'OPEN',
+      isHost: false,
+      hostPlays: true,
+      roomType: 'PUBLIC_RECRUIT',
+      isRated: true,
+      members: [],
+      canRegister: true,
+      canEdit: false,
+      statusLabel: 'Đang tuyển',
+      hostName: 'Phương Ly',
+      roomCode: '#XP-7712'
+    },
+    {
+      id: 'sample-room-3',
+      courtId: 'court-3',
+      title: 'Giao Lưu Đêm Muộn Vui Vẻ - Nhóm Công Nghệ Xả Stress',
+      courtName: 'Sân Viettel Hẻm 158 Hoàng Hoa Thám, Tân Bình',
+      address: 'Hẻm 158 Hoàng Hoa Thám, Tân Bình',
+      startsAt: new Date(Date.now() + 5 * 3600 * 1000),
+      endsAt: new Date(Date.now() + 7 * 3600 * 1000),
+      cancelBy: new Date(Date.now() + 4 * 3600 * 1000),
+      capacity: 4,
+      reserved: 4,
+      minElo: 1200,
+      maxElo: 1500,
+      fee: 50000,
+      revision: 1,
+      status: 'FULL',
+      isHost: false,
+      hostPlays: true,
+      roomType: 'PUBLIC_RECRUIT',
+      isRated: false,
+      members: [],
+      canRegister: false,
+      canEdit: false,
+      statusLabel: 'Đủ người',
+      hostName: 'Hoàng IT',
+      roomCode: '#XP-3341'
     }
-  };
+  ] as unknown as ManagedRoomData[];
 
   return (
-    <div className="w-full flex flex-col bg-app-background min-h-[calc(100vh-56px)] select-none">
-      {/* 1. TOP BAR: KÈO ĐẤU + KHU VỰC + ACTIONS */}
-      <div className="w-full max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 pt-3 md:pt-6 pb-2 md:pb-4 flex items-center justify-between gap-4">
-        <div
-          onClick={() => setIsFilterOpen(true)}
-          className="flex flex-col cursor-pointer select-none py-1 group"
-        >
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-2xl md:text-3xl font-black text-app-text tracking-tight leading-tight">
-              Kèo đấu
-            </h1>
-            <span className="px-2.5 py-1 rounded-lg bg-app-mint text-app-primary text-xs font-bold border border-app-primary/30 flex items-center gap-1 group-hover:border-app-primary transition-colors">
-              <span>{currentArea}</span>
-              <ChevronDown size={14} />
-            </span>
-          </div>
-          <p className="hidden md:block text-xs text-app-muted mt-1 font-medium">
-            Khám phá và tham gia các buổi chơi cầu lông giao lưu, ghép cặp theo trình độ Elo
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 md:gap-3">
-          <button
-            type="button"
-            onClick={() => navigate('/calendar')}
-            title="Lịch thi đấu"
-            className="h-9 md:h-10 px-3 md:px-3.5 rounded-xl border border-app-border bg-app-surface text-app-text text-xs font-bold flex items-center gap-2 hover:border-app-primary/50 transition-colors shadow-2xs active:scale-95"
-          >
-            <Calendar size={16} className="text-app-primary" />
-            <span className="hidden sm:inline">Lịch thi đấu</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setJoinCode('');
-              setJoinCodeError(null);
-              setIsJoinCodeOpen(true);
-            }}
-            className="h-9 md:h-10 px-3 md:px-3.5 rounded-xl border border-app-border bg-app-surface text-app-text text-xs font-bold flex items-center gap-2 hover:border-app-primary/50 transition-colors shadow-2xs active:scale-95"
-          >
-            <Hash size={16} className="text-app-primary" />
-            <span>Nhập mã</span>
-          </button>
-
-          <button
-            type="button"
-            disabled={loading}
-            onClick={() => load(true)}
-            title="Tải lại danh sách"
-            className="w-9 h-9 md:w-10 md:h-10 rounded-xl border border-app-border bg-app-surface text-app-muted hover:text-app-text flex items-center justify-center transition-colors shadow-2xs active:scale-95 disabled:opacity-50"
-          >
-            <RotateCw
-              size={17}
-              className={loading ? 'animate-spin text-app-primary' : ''}
-            />
-          </button>
-
-          {/* Desktop Primary Create Room CTA Button */}
-          <button
-            type="button"
-            onClick={() => navigate('/rooms/new')}
-            className="hidden md:flex h-10 px-4 rounded-xl bg-app-primary text-app-on-primary text-xs font-black tracking-wider uppercase items-center gap-2 hover:brightness-105 active:scale-95 shadow-xs transition-all"
-          >
-            <Plus size={16} strokeWidth={2.5} />
-            <span>TẠO KÈO MỚI</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="w-full max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 flex flex-col gap-3 md:gap-4">
-        {/* 2. TOOLBAR: SCOPE TABS + QUICK FILTERS */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-1.5 md:p-2 bg-app-surface/60 rounded-2xl border border-app-border/70 backdrop-blur-xs">
-          {/* Scope Tabs */}
-          <div className="p-1 bg-app-surface rounded-[12px] border border-app-border flex w-full md:w-auto md:min-w-[280px]">
-            <button
-              type="button"
-              onClick={() => setMainTab('discover')}
-              className={`flex-1 md:px-5 py-2 text-xs md:text-[13px] font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 ${
-                mainTab === 'discover'
-                  ? 'bg-app-mint border border-app-primary/40 text-app-primary font-black shadow-2xs'
-                  : 'text-app-muted hover:text-app-text'
-              }`}
-            >
-              <Activity
-                size={15}
-                className={mainTab === 'discover' ? 'text-app-primary' : 'text-app-muted'}
-              />
-              <span>Tìm kèo</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setMainTab('mine')}
-              className={`flex-1 md:px-5 py-2 text-xs md:text-[13px] font-bold rounded-[8px] transition-all flex items-center justify-center gap-1.5 ${
-                mainTab === 'mine'
-                  ? 'bg-app-mint border border-app-primary/40 text-app-primary font-black shadow-2xs'
-                  : 'text-app-muted hover:text-app-text'
-              }`}
-            >
-              <Calendar
-                size={15}
-                className={mainTab === 'mine' ? 'text-app-primary' : 'text-app-muted'}
-              />
-              <span>Buổi của tôi</span>
-            </button>
-          </div>
-
-          {/* Quick Filters (discover mode) */}
-          {mainTab === 'discover' ? (
-            <div className="flex items-center gap-2 overflow-x-auto md:overflow-visible no-scrollbar py-0.5 md:flex-wrap">
-              {/* Ngày chơi chip */}
-              <button
-                type="button"
-                onClick={() => setIsFilterOpen(true)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 shrink-0 transition-all ${
-                  filter.date !== null
-                    ? 'bg-app-mint border-app-primary/40 text-app-primary font-bold shadow-2xs'
-                    : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
-                }`}
-              >
-                <Calendar
-                  size={13}
-                  className={filter.date !== null ? 'text-app-primary' : 'text-app-muted'}
-                />
-                <span>
-                  {filter.date === null
-                    ? 'Ngày chơi'
-                    : `${filter.date.getDate()}/${filter.date.getMonth() + 1}`}
-                </span>
-              </button>
-
-              {/* Trình độ chip */}
-              <button
-                type="button"
-                onClick={() => setIsFilterOpen(true)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 shrink-0 transition-all ${
-                  filter.skill !== null
-                    ? 'bg-app-mint border-app-primary/40 text-app-primary font-bold shadow-2xs'
-                    : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
-                }`}
-              >
-                <Award
-                  size={14}
-                  className={filter.skill !== null ? 'text-app-primary' : 'text-app-muted'}
-                />
-                <span>
-                  {filter.skill === null ? 'Trình độ Elo' : `${filter.skill} Elo`}
-                </span>
-              </button>
-
-              {/* Còn chỗ chip */}
-              <button
-                type="button"
-                onClick={() => {
-                  setFilter((prev) => {
-                    const updated = new RoomFilterState(prev);
-                    updated.availableOnly = !prev.availableOnly;
-                    return updated;
-                  });
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border shrink-0 transition-all ${
-                  filter.availableOnly
-                    ? 'bg-app-mint border-app-primary/40 text-app-primary font-bold shadow-2xs'
-                    : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
-                }`}
-              >
-                <span>Chỉ hiện phòng còn chỗ</span>
-              </button>
-
-              {/* Bộ lọc chi tiết chip */}
-              <button
-                type="button"
-                onClick={() => setIsFilterOpen(true)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 shrink-0 transition-all ${
-                  activeFilterCount > 0
-                    ? 'bg-app-primary text-app-on-primary border-app-primary font-bold shadow-xs'
-                    : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
-                }`}
-              >
-                <SlidersHorizontal size={13} />
-                <span>
-                  {activeFilterCount > 0
-                    ? `Bộ lọc (${activeFilterCount})`
-                    : 'Bộ lọc nâng cao'}
-                </span>
-              </button>
-
-              {/* Xóa lọc */}
-              {filter.hasActiveFilter && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const fresh = new RoomFilterState();
-                    setFilter(fresh);
-                  }}
-                  className="text-xs text-app-loss font-bold px-2 py-1 hover:underline shrink-0"
-                >
-                  Xóa lọc
-                </button>
-              )}
+    <div className="w-full flex flex-col bg-app-background min-h-[calc(100vh-64px)] select-none pb-12">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col gap-5">
+        {/* ========================================================= */}
+        {/* TOP TELEMETRY STATUS TICKER (Stitch Screen 2 Pattern)       */}
+        {/* ========================================================= */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-white dark:bg-app-surface p-4 rounded-xl border border-app-border shadow-2xs flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="font-mono text-[10px] text-app-muted uppercase tracking-wider font-bold">
+                Hệ thống mở
+              </span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="font-mono text-xl sm:text-2xl text-app-text font-black">142</span>
+                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">kèo sẵn sàng</span>
+              </div>
             </div>
-          ) : (
-            /* Sub-tabs for Buổi của tôi */
+            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600">
+              <Activity size={18} />
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-app-surface p-4 rounded-xl border border-app-border shadow-2xs flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="font-mono text-[10px] text-app-muted uppercase tracking-wider font-bold">
+                Người tìm đối
+              </span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="font-mono text-xl sm:text-2xl text-emerald-600 dark:text-emerald-400 font-black">
+                  89
+                </span>
+                <span className="text-xs text-app-muted font-medium">vận động viên</span>
+              </div>
+            </div>
+            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600">
+              <Radio size={18} className="animate-pulse" />
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-app-surface p-4 rounded-xl border border-app-border shadow-2xs flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="font-mono text-[10px] text-app-muted uppercase tracking-wider font-bold">
+                Tốc độ ghép
+              </span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="font-mono text-xl sm:text-2xl text-app-text font-black">3:48</span>
+                <span className="text-xs text-app-muted font-medium">phút / kèo</span>
+              </div>
+            </div>
+            <div className="w-9 h-9 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600">
+              <Clock size={18} />
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-app-surface p-4 rounded-xl border border-app-border shadow-2xs flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="font-mono text-[10px] text-app-muted uppercase tracking-wider font-bold">
+                Sân liên kết
+              </span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="font-mono text-xl sm:text-2xl text-app-text font-black">36</span>
+                <span className="text-xs text-app-muted font-medium">cụm sân active</span>
+              </div>
+            </div>
+            <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600">
+              <MapPin size={18} />
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* FILTER DOCK & SPORT SELECTOR (Stitch Screen 2 Pattern)     */}
+        {/* ========================================================= */}
+        <div className="bg-white dark:bg-app-surface p-3.5 sm:p-4 rounded-xl border border-app-border shadow-2xs flex flex-col gap-3.5">
+          {/* Top Bar inside Dock: Sport Tabs & Sub-actions */}
+          <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-app-border/70">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {[
+                { key: 'badminton', label: 'Cầu Lông', icon: '🏸' },
+                { key: 'pickleball', label: 'Pickleball', icon: '🏓' },
+                { key: 'tennis', label: 'Tennis', icon: '🎾' },
+                { key: 'padel', label: 'Padel', icon: '🏏' },
+              ].map((sp) => (
+                <button
+                  key={sp.key}
+                  type="button"
+                  onClick={() => setActiveSport(sp.key as any)}
+                  className={`px-3.5 py-1.5 rounded-lg font-mono text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    activeSport === sp.key
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-app-muted hover:text-app-text hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  <span>{sp.icon}</span>
+                  <span>{sp.label}</span>
+                </button>
+              ))}
+            </div>
+
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setMineSubTab('mine')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
-                  mineSubTab === 'mine'
-                    ? 'bg-app-primary text-app-on-primary border-app-primary shadow-xs'
-                    : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
-                }`}
+                onClick={() => setIsJoinCodeOpen(true)}
+                className="text-app-muted hover:text-app-text p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center text-xs font-semibold gap-1 transition-colors"
               >
-                Sắp tới
+                <Search size={14} className="text-emerald-600" />
+                <span>Nhập mã phòng</span>
               </button>
+
               <button
                 type="button"
-                onClick={() => setMineSubTab('history')}
-                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${
-                  mineSubTab === 'history'
-                    ? 'bg-app-primary text-app-on-primary border-app-primary shadow-xs'
-                    : 'bg-app-surface border-app-border text-app-text hover:border-app-muted'
-                }`}
+                onClick={() => setIsFilterOpen(true)}
+                className="text-app-muted hover:text-app-text p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center text-xs font-semibold gap-1 transition-colors"
               >
-                Lịch sử
+                <SlidersHorizontal size={14} className="text-emerald-600" />
+                <span>Bộ lọc chuyên sâu</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => load(true)}
+                className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 p-1.5 rounded-lg hover:bg-emerald-500/10 flex items-center text-xs font-bold gap-1 transition-colors disabled:opacity-50"
+              >
+                <RotateCw size={14} className={loading ? 'animate-spin' : ''} />
+                <span>Làm mới</span>
               </button>
             </div>
-          )}
-        </div>
-
-        {/* Buổi của tôi: Upcoming strip */}
-        {mainTab === 'mine' && (
-          <div className="w-full">
-            <UpcomingRoomsStrip events={calendarEvents} />
           </div>
-        )}
 
-        {/* 4. NOTICES BANNER (matching Flutter expandable notices banner) */}
-        {notices.length > 0 && (
-          <div
-            className={`w-full bg-app-surface rounded-[14px] border overflow-hidden transition-all ${
-              unreadNoticesCount > 0
-                ? 'border-app-streak/50'
-                : 'border-app-border'
-            }`}
-          >
+          {/* 4-Field Detail Filter Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+            {/* Area */}
             <div
-              onClick={() => setNoticesExpanded(!noticesExpanded)}
-              className="p-3 flex items-center justify-between cursor-pointer hover:bg-app-background/50 transition-colors"
+              onClick={() => setIsFilterOpen(true)}
+              className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 px-3.5 py-2 rounded-lg flex items-center justify-between text-app-text cursor-pointer hover:border-emerald-500/50 transition-colors"
             >
-              <div className="flex items-center gap-2.5">
-                <Bell
-                  size={18}
-                  className={
-                    unreadNoticesCount > 0
-                      ? 'text-app-streak'
-                      : 'text-app-muted'
-                  }
-                />
-                <span
-                  className={`text-xs ${
-                    unreadNoticesCount > 0
-                      ? 'font-bold text-app-text'
-                      : 'font-medium text-app-muted'
-                  }`}
-                >
-                  {unreadNoticesCount > 0
-                    ? `Bạn có ${unreadNoticesCount} thông báo buổi chơi mới`
-                    : `Thông báo buổi chơi (${notices.length})`}
-                </span>
+              <div className="flex items-center gap-2 min-w-0">
+                <MapPin size={16} className="text-emerald-600 shrink-0" />
+                <div className="flex flex-col min-w-0">
+                  <span className="font-mono text-[10px] text-app-muted leading-none font-bold uppercase">Khu Vực</span>
+                  <span className="text-xs font-bold text-app-text leading-tight mt-0.5 truncate">
+                    {currentArea}
+                  </span>
+                </div>
               </div>
-              {noticesExpanded ? (
-                <ChevronUp size={18} className="text-app-muted" />
-              ) : (
-                <ChevronDown size={18} className="text-app-muted" />
-              )}
+              <ChevronDown size={14} className="text-app-muted shrink-0" />
             </div>
 
-            {noticesExpanded && (
-              <div className="border-t border-app-border divide-y divide-app-border/40">
-                {notices.slice(0, 5).map((notice) => (
-                  <div
-                    key={notice.id}
-                    onClick={() => navigate(`/rooms/${notice.room_id}`)}
-                    className="p-3 flex items-center justify-between cursor-pointer hover:bg-app-background/40 transition-colors text-xs"
+            {/* Elo Level */}
+            <div
+              onClick={() => setIsFilterOpen(true)}
+              className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 px-3.5 py-2 rounded-lg flex items-center justify-between text-app-text cursor-pointer hover:border-emerald-500/50 transition-colors"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <Activity size={16} className="text-emerald-600 shrink-0" />
+                <div className="flex flex-col min-w-0">
+                  <span className="font-mono text-[10px] text-app-muted leading-none font-bold uppercase">Trình Độ Elo</span>
+                  <span className="text-xs font-bold text-app-text leading-tight mt-0.5 truncate">
+                    {filter.skill !== null ? `${filter.skill} Elo` : 'Bán chuyên & Phong trào'}
+                  </span>
+                </div>
+              </div>
+              <ChevronDown size={14} className="text-app-muted shrink-0" />
+            </div>
+
+            {/* Format */}
+            <div
+              onClick={() => setIsFilterOpen(true)}
+              className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 px-3.5 py-2 rounded-lg flex items-center justify-between text-app-text cursor-pointer hover:border-emerald-500/50 transition-colors"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <Radio size={16} className="text-emerald-600 shrink-0" />
+                <div className="flex flex-col min-w-0">
+                  <span className="font-mono text-[10px] text-app-muted leading-none font-bold uppercase">Thể Thức</span>
+                  <span className="text-xs font-bold text-app-text leading-tight mt-0.5 truncate">
+                    Đôi Nam & Đôi Nam Nữ
+                  </span>
+                </div>
+              </div>
+              <ChevronDown size={14} className="text-app-muted shrink-0" />
+            </div>
+
+            {/* Time */}
+            <div
+              onClick={() => setIsFilterOpen(true)}
+              className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 px-3.5 py-2 rounded-lg flex items-center justify-between text-app-text cursor-pointer hover:border-emerald-500/50 transition-colors"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <Clock size={16} className="text-emerald-600 shrink-0" />
+                <div className="flex flex-col min-w-0">
+                  <span className="font-mono text-[10px] text-app-muted leading-none font-bold uppercase">Thời Gian</span>
+                  <span className="text-xs font-bold text-app-text leading-tight mt-0.5 truncate">
+                    {filter.date ? `${filter.date.getDate()}/${filter.date.getMonth() + 1}` : 'Hôm nay (Tối 18:00 - 22:00)'}
+                  </span>
+                </div>
+              </div>
+              <ChevronDown size={14} className="text-app-muted shrink-0" />
+            </div>
+          </div>
+        </div>
+
+        {/* ========================================================= */}
+        {/* MAIN WORKSPACE: MATCH FEED (8 COLS) + RIGHT BENTO (4 COLS) */}
+        {/* ========================================================= */}
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-5 items-start">
+          {/* ================= PRIMARY MATCH FEED (8 Cols) ================= */}
+          <div className="xl:col-span-8 flex flex-col gap-4 min-w-0">
+            {/* Header: Scope Switcher + Sort */}
+            <div className="flex items-center justify-between flex-wrap gap-2 px-1">
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setMainTab('discover')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    mainTab === 'discover'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'bg-white dark:bg-app-surface text-app-muted hover:text-app-text border border-app-border'
+                  }`}
+                >
+                  <Activity size={14} />
+                  <span>Phòng Chờ Đang Mở</span>
+                  <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px] font-mono">
+                    {items.length || 8}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setMainTab('mine')}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                    mainTab === 'mine'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'bg-white dark:bg-app-surface text-app-muted hover:text-app-text border border-app-border'
+                  }`}
+                >
+                  <Calendar size={14} />
+                  <span>Buổi Của Tôi</span>
+                </button>
+
+                {mainTab === 'mine' && (
+                  <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg">
+                    <button
+                      type="button"
+                      onClick={() => setMineSubTab('mine')}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                        mineSubTab === 'mine'
+                          ? 'bg-white dark:bg-app-surface text-app-text shadow-2xs'
+                          : 'text-app-muted hover:text-app-text'
+                      }`}
+                    >
+                      Sắp tới
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMineSubTab('history')}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                        mineSubTab === 'history'
+                          ? 'bg-white dark:bg-app-surface text-app-text shadow-2xs'
+                          : 'text-app-muted hover:text-app-text'
+                      }`}
+                    >
+                      Lịch sử
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1 text-xs text-app-muted font-medium">
+                <span>Sắp xếp:</span>
+                <span className="text-app-text font-bold cursor-pointer hover:text-emerald-600">Gần nhất trước ▼</span>
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs text-rose-600 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <AlertCircle size={16} />
+                  <span>{error}</span>
+                </div>
+                <button type="button" onClick={() => load(true)} className="underline font-bold">
+                  Thử lại
+                </button>
+              </div>
+            )}
+
+            {/* Buổi của tôi strip */}
+            {mainTab === 'mine' && calendarEvents.length > 0 && (
+              <UpcomingRoomsStrip events={calendarEvents} />
+            )}
+
+            {/* List of Rooms */}
+            <div className="space-y-4">
+              {loading && items.length === 0 ? (
+                <div className="py-12 flex flex-col items-center justify-center gap-2">
+                  <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-xs text-app-muted font-medium">Đang tải phòng thi đấu…</span>
+                </div>
+              ) : (
+                displayRooms.map((room) => (
+                  <RoomCard
+                    key={room.id}
+                    room={room}
+                    onTap={() => navigate(room.id.startsWith('sample-') ? '/rooms/new' : `/rooms/${room.id}`)}
+                  />
+                ))
+              )}
+
+              {/* Load More Button */}
+              {!loading && more && (
+                <div className="pt-2 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => load(false)}
+                    className="px-5 py-2 rounded-xl border border-app-border bg-white dark:bg-app-surface text-app-text text-xs font-bold flex items-center gap-1.5 hover:border-emerald-500 transition-all shadow-2xs active:scale-95"
                   >
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full shrink-0 ${
-                          notice.read ? 'bg-transparent' : 'bg-app-streak'
+                    <ChevronDown size={16} />
+                    <span>TẢI THÊM BUỔI CHƠI</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* ================= RIGHT BENTO DOCK (4 Cols) ================= */}
+          <aside className="xl:col-span-4 flex flex-col gap-5 sticky top-18">
+            {/* Widget 1: Tạo Kèo Nhanh 1-Click (Auto Bot AI Matchmaker) */}
+            <div className="bg-white dark:bg-app-surface p-5 rounded-xl border border-app-border shadow-2xs flex flex-col gap-3.5 relative overflow-hidden">
+              <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Bolt size={18} className="text-emerald-600" />
+                  <h3 className="text-sm font-bold text-app-text">Tạo Kèo Nhanh 1-Click</h3>
+                </div>
+                <span className="font-mono text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase">
+                  Auto Bot AI
+                </span>
+              </div>
+
+              <p className="text-xs text-app-muted leading-relaxed">
+                Hệ thống tự động book sân & gợi ý VĐV có chỉ số Elo tương đương trong bán kính 5km.
+              </p>
+
+              <div className="flex flex-col gap-3 pt-1">
+                {/* Bộ môn */}
+                <div className="flex flex-col gap-1">
+                  <span className="font-mono text-[10px] text-app-muted uppercase font-bold">
+                    Bộ Môn Cần Đánh
+                  </span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      className="py-1.5 px-3 rounded-lg bg-emerald-600 text-white font-mono text-xs font-bold flex items-center justify-center gap-1 shadow-2xs"
+                    >
+                      🏸 Cầu Lông
+                    </button>
+                    <button
+                      type="button"
+                      className="py-1.5 px-3 rounded-lg bg-slate-100 dark:bg-slate-800 text-app-muted font-mono text-xs font-semibold flex items-center justify-center gap-1 hover:text-app-text transition-colors"
+                    >
+                      🏓 Pickleball
+                    </button>
+                  </div>
+                </div>
+
+                {/* Khung giờ */}
+                <div className="flex flex-col gap-1">
+                  <span className="font-mono text-[10px] text-app-muted uppercase font-bold">
+                    Khung Giờ Ghép
+                  </span>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {[
+                      { key: '18:30', label: '18:30 Tối' },
+                      { key: '20:00', label: '20:00 Tối' },
+                      { key: 'morning', label: 'Sáng Mai' },
+                    ].map((t) => (
+                      <button
+                        key={t.key}
+                        type="button"
+                        onClick={() => setQuickTime(t.key as any)}
+                        className={`py-1.5 rounded-lg font-mono text-[11px] font-bold text-center transition-all ${
+                          quickTime === t.key
+                            ? 'bg-emerald-600 text-white shadow-2xs'
+                            : 'bg-slate-100 dark:bg-slate-800 text-app-muted hover:text-app-text'
                         }`}
-                      />
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-app-text">
-                          {noticeText(notice.kind)}
-                        </span>
-                        <span className="text-[11px] text-app-muted">
-                          Bản {notice.revision} • {notice.created_at}
-                        </span>
-                      </div>
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Yêu cầu Elo */}
+                <div className="flex flex-col gap-1">
+                  <span className="font-mono text-[10px] text-app-muted uppercase font-bold">
+                    Yêu Cầu Elo / Kỹ Năng
+                  </span>
+                  <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 p-2.5 rounded-lg flex items-center justify-between text-xs text-app-text">
+                    <span className="font-medium">± 100 Elo so với bạn (850)</span>
+                    <SlidersHorizontal size={13} className="text-emerald-600" />
+                  </div>
+                </div>
+
+                {/* Chia tiền */}
+                <div className="flex items-center justify-between bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 px-3 py-2 rounded-lg text-xs">
+                  <span className="text-app-text font-medium">Campuchia chia đều qua Ví</span>
+                  <CheckCircle2 size={15} className="text-emerald-500 shrink-0" />
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => navigate('/rooms/new')}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs py-2.5 rounded-xl transition-all shadow-xs flex items-center justify-center gap-2 mt-1"
+              >
+                <Bolt size={15} />
+                <span>Bắt Đầu Ghép Kèo Ngay</span>
+              </button>
+            </div>
+
+            {/* Widget 2: Sân Giờ Vàng -20% (Live Flash Deals) */}
+            <div className="bg-white dark:bg-app-surface p-5 rounded-xl border border-app-border shadow-2xs flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Tag size={16} className="text-amber-500" />
+                  <h3 className="text-sm font-bold text-app-text">Sân Giờ Vàng -20%</h3>
+                </div>
+                <span className="font-mono text-[9px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold uppercase">
+                  Live Booking
+                </span>
+              </div>
+
+              <p className="text-xs text-app-muted leading-relaxed">
+                Sân trống đột xuất được tài trợ giảm giá trong 2 giờ tới.
+              </p>
+
+              <div className="space-y-2">
+                {[
+                  {
+                    name: 'Sân VSTAR Badminton',
+                    district: 'TP. Thủ Đức',
+                    time: '18:00 - 20:00 (Sân 2)',
+                    price: '160.000đ/h',
+                    oldPrice: '200.000đ',
+                  },
+                  {
+                    name: 'Sân TADA Thanh Đa',
+                    district: 'Bình Thạnh',
+                    time: '19:30 - 21:30 (Sân 5)',
+                    price: '140.000đ/h',
+                    oldPrice: '175.000đ',
+                  },
+                  {
+                    name: 'Sân An Bình',
+                    district: 'Quận 9',
+                    time: '20:00 - 22:00 (Sân 1)',
+                    price: '120.000đ/h',
+                    oldPrice: '150.000đ',
+                  },
+                ].map((deal, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => navigate('/rooms/new')}
+                    className="p-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-800 transition-colors cursor-pointer flex items-center justify-between gap-2 shadow-2xs"
+                  >
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-xs font-bold text-app-text truncate">{deal.name}</span>
+                      <span className="text-[10px] text-app-muted truncate font-medium">
+                        {deal.district} • {deal.time}
+                      </span>
                     </div>
-                    <ArrowRight size={14} className="text-app-muted shrink-0" />
+
+                    <div className="flex flex-col items-end shrink-0">
+                      <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400 font-black">
+                        {deal.price}
+                      </span>
+                      <span className="font-mono text-[9px] text-app-muted line-through">
+                        {deal.oldPrice}
+                      </span>
+                    </div>
                   </div>
                 ))}
               </div>
-            )}
-          </div>
-        )}
-
-        {/* 5. ERROR BANNER */}
-        {error && (
-          <div className="p-3.5 rounded-xl bg-app-loss/10 border border-app-loss/30 text-xs text-app-loss flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <AlertCircle size={18} className="shrink-0" />
-              <span>{error}</span>
             </div>
-            <button
-              type="button"
-              onClick={() => load(true)}
-              className="text-xs font-bold underline shrink-0"
-            >
-              Thử lại
-            </button>
-          </div>
-        )}
-
-        {/* 6. ONGOING SECTION (BUỔI ĐANG DIỄN RA) */}
-        {ongoingRooms.length > 0 && (
-          <div className="flex flex-col gap-2.5 pt-1">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-app-mint border border-app-primary/40 text-app-primary text-[11px] font-extrabold tracking-wider w-fit">
-              <span className="w-2 h-2 rounded-full bg-app-primary animate-pulse" />
-              <span>BUỔI ĐANG DIỄN RA ({ongoingRooms.length})</span>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-              {ongoingRooms.map((room) => (
-                <RoomCard
-                  key={room.id}
-                  room={room}
-                  isHighlight
-                  onTap={() => navigate(`/rooms/${room.id}`)}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Section title if both ongoing and upcoming exist */}
-        {ongoingRooms.length > 0 && displayRooms.length > 0 && (
-          <div className="text-[11px] font-bold text-app-muted tracking-wider pt-2 flex items-center gap-1.5">
-            <Calendar size={14} />
-            <span>BUỔI SẮP TỚI ({displayRooms.length})</span>
-          </div>
-        )}
-
-        {/* 7. ROOMS LIST */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 pb-8">
-          {displayRooms.map((room) => (
-            <RoomCard
-              key={room.id}
-              room={room}
-              onTap={() => navigate(`/rooms/${room.id}`)}
-            />
-          ))}
-
-          {/* Loading Indicator */}
-          {loading && (
-            <div className="py-8 flex flex-col items-center justify-center gap-2 col-span-full">
-              <div className="w-6 h-6 border-2 border-app-primary border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs text-app-muted">Đang tải buổi chơi…</span>
-            </div>
-          )}
-
-          {/* Empty State */}
-          {!loading && items.length === 0 && !error && (
-            <div className="py-8 px-4 col-span-full">
-              <EmptyState
-                type="shuttlecock"
-                title={
-                  scope === 'mine'
-                    ? 'Bạn chưa tham gia hoặc làm host buổi chơi nào sắp tới.'
-                    : scope === 'history'
-                    ? 'Chưa có lịch sử buổi chơi nào hoàn tất.'
-                    : filter.hasActiveFilter
-                    ? 'Không tìm thấy kèo phù hợp với bộ lọc.'
-                    : 'Chưa có buổi chơi nào mở tuyển trong khu vực.'
-                }
-                description={
-                  scope === 'mine'
-                    ? 'Tìm kèo ở mục "Tìm kèo" hoặc dùng "Nhập mã" ở trên để vào phòng.'
-                    : scope === 'history'
-                    ? 'Các buổi chơi sau khi kết thúc sẽ hiển thị tại đây.'
-                    : 'Thử mở rộng phạm vi tìm kiếm hoặc bỏ bớt tiêu chí lọc.'
-                }
-                actionLabel={
-                  filter.hasActiveFilter && scope === 'discover'
-                    ? 'XÓA BỘ LỌC'
-                    : 'TẠO KÈO ĐẦU TIÊN'
-                }
-                onAction={
-                  filter.hasActiveFilter && scope === 'discover'
-                    ? () => {
-                        const fresh = new RoomFilterState();
-                        setFilter(fresh);
-                      }
-                    : () => navigate('/rooms/new')
-                }
-              />
-            </div>
-          )}
-
-          {/* Load More Button */}
-          {!loading && more && !error && items.length > 0 && (
-            <div className="pt-2 pb-6 flex justify-center col-span-full">
-              <button
-                type="button"
-                onClick={() => load(false)}
-                className="min-w-[180px] h-12 rounded-xl border border-app-border bg-app-surface text-app-text text-xs font-bold flex items-center justify-center gap-1.5 hover:border-app-primary/60 transition-all shadow-2xs active:scale-95"
-              >
-                <ChevronDown size={18} className="text-app-muted" />
-                <span>TẢI THÊM BUỔI CHƠI</span>
-              </button>
-            </div>
-          )}
+          </aside>
         </div>
       </div>
 
-      {/* 8. ROOM FILTER MODAL SHEET */}
+      {/* Room Filter Modal Sheet */}
       <RoomFilterSheet
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
@@ -637,7 +740,7 @@ export const ManagedRoomsPage: React.FC = () => {
         onApply={(updated) => setFilter(updated)}
       />
 
-      {/* 9. JOIN BY CODE MODAL SHEET */}
+      {/* Join By Code Modal */}
       <ModalSheet
         isOpen={isJoinCodeOpen}
         onClose={() => setIsJoinCodeOpen(false)}
@@ -645,48 +748,38 @@ export const ManagedRoomsPage: React.FC = () => {
       >
         <div className="flex flex-col gap-4">
           <p className="text-xs text-app-muted leading-relaxed">
-            Nhập mã phòng do host chia sẻ (ví dụ: #XP-8291) để tìm và tham gia
-            kèo đấu. Phòng đã tham gia sẽ tự động nằm trong "Buổi của tôi".
+            Nhập mã phòng do host chia sẻ (ví dụ: #XP-8291) để tìm và tham gia kèo đấu.
           </p>
-
-          <div className="relative flex items-center">
-            <span className="absolute left-3.5 text-app-primary pointer-events-none">
-              <Hash size={20} />
-            </span>
-            <input
-              type="text"
-              autoFocus
-              placeholder="VD: #XP-8291 hoặc 8291"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleJoinByCode();
-              }}
-              className="w-full h-12 bg-app-surface border border-app-border focus:border-app-primary rounded-[14px] pl-11 pr-4 text-base font-bold tracking-wider text-app-text placeholder:text-app-muted/60 outline-hidden transition-colors"
-            />
-          </div>
-
+          <input
+            type="text"
+            value={joinCode}
+            onChange={(e) => {
+              setJoinCode(e.target.value);
+              setJoinCodeError(null);
+            }}
+            placeholder="Nhập mã phòng (e.g. XP-1234)"
+            className="w-full px-3.5 py-2.5 rounded-xl border border-app-border bg-app-surface text-app-text text-sm font-mono uppercase tracking-wider focus:outline-none focus:border-emerald-500"
+          />
           {joinCodeError && (
-            <div className="text-xs font-semibold text-app-loss">
-              {joinCodeError}
-            </div>
+            <span className="text-xs text-rose-500 font-medium">{joinCodeError}</span>
           )}
-
-          <button
-            type="button"
-            disabled={searchingCode}
-            onClick={handleJoinByCode}
-            className="w-full h-12 rounded-[14px] bg-app-primary text-app-on-primary font-bold text-sm tracking-wide hover:brightness-105 active:scale-[0.99] disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-xs"
-          >
-            {searchingCode ? (
-              <>
-                <div className="w-4 h-4 border-2 border-app-on-primary border-t-transparent rounded-full animate-spin" />
-                <span>ĐANG TÌM PHÒNG…</span>
-              </>
-            ) : (
-              <span>TÌM VÀ VÀO PHÒNG</span>
-            )}
-          </button>
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setIsJoinCodeOpen(false)}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-app-muted hover:text-app-text"
+            >
+              Hủy
+            </button>
+            <button
+              type="button"
+              disabled={searchingCode}
+              onClick={handleJoinByCode}
+              className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-all disabled:opacity-50"
+            >
+              {searchingCode ? 'Đang tìm…' : 'Vào phòng'}
+            </button>
+          </div>
         </div>
       </ModalSheet>
     </div>
