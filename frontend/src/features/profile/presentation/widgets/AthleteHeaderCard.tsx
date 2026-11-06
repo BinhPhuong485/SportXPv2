@@ -144,15 +144,14 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
               {(player.zaloLink || player.zaloPhone || player.facebookLink) && (
                 <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                   {(player.zaloLink || player.zaloPhone) && (
-                    <a
-                      href={player.zaloLink || `https://zalo.me/${player.zaloPhone?.replace(/[^0-9]/g, '')}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold flex items-center gap-1 border border-blue-500/20 hover:bg-blue-500/20 transition-all"
+                    <button
+                      type="button"
+                      onClick={() => alert('Tính năng liên hệ Zalo đang được phát triển.')}
+                      className="px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-bold flex items-center gap-1 border border-blue-500/20 hover:bg-blue-500/20 transition-all cursor-pointer"
                     >
                       <MessageCircle size={11} />
                       <span>Zalo</span>
-                    </a>
+                    </button>
                   )}
                   {player.facebookLink && (
                     <a
@@ -348,15 +347,14 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
             {(player.zaloLink || player.zaloPhone || player.facebookLink) && (
               <div className="flex flex-wrap items-center gap-2 mt-1">
                 {(player.zaloLink || player.zaloPhone) && (
-                  <a
-                    href={player.zaloLink || `https://zalo.me/${player.zaloPhone?.replace(/[^0-9]/g, '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center gap-1.5 border border-blue-500/20 hover:bg-blue-500/20 transition-all"
+                  <button
+                    type="button"
+                    onClick={() => alert('Tính năng liên hệ Zalo đang được phát triển.')}
+                    className="px-3 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center gap-1.5 border border-blue-500/20 hover:bg-blue-500/20 transition-all cursor-pointer"
                   >
                     <MessageCircle size={13} />
                     <span>Chat Zalo</span>
-                  </a>
+                  </button>
                 )}
                 {player.facebookLink && (
                   <a

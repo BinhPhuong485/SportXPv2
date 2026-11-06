@@ -53,6 +53,12 @@ export const RoomDetailPage: React.FC = () => {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
 
   const load = useCallback(async () => {
     if (!roomId) return;
@@ -108,7 +114,7 @@ export const RoomDetailPage: React.FC = () => {
   const handleCopyCode = () => {
     if (!room) return;
     navigator.clipboard.writeText(room.roomCode);
-    alert(`Đã sao chép mã phòng ${room.roomCode}`);
+    showToast(`Đã sao chép mã phòng #${room.roomCode}`);
   };
 
   const roomLink = `${window.location.origin}/#/rooms/${roomId}`;
@@ -126,7 +132,7 @@ export const RoomDetailPage: React.FC = () => {
       }
     } else {
       navigator.clipboard.writeText(roomLink);
-      alert('Đã sao chép link tham gia phòng.');
+      showToast('Đã sao chép link tham gia phòng.');
     }
   };
 
@@ -343,7 +349,15 @@ export const RoomDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-app-background flex flex-col select-none antialiased">
+    <div className="min-h-screen w-full bg-app-background flex flex-col select-none antialiased relative">
+      {/* Toast Notification Banner */}
+      {toastMessage && (
+        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-60 flex items-center gap-2 px-4 py-2.5 rounded-full bg-stone-900/95 text-white text-xs font-bold shadow-2xl backdrop-blur-md border border-white/10 animate-fade-in pointer-events-none">
+          <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
+          <span>{toastMessage}</span>
+        </div>
+      )}
+
       {/* Top Header */}
       <header className="sticky top-0 z-30 w-full bg-app-surface/95 backdrop-blur-md border-b border-app-border">
         <div className="w-full max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
@@ -495,17 +509,18 @@ export const RoomDetailPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Link nhóm Zalo buổi chơi (Flow A) */}
+                {/* Link nhóm Zalo buổi chơi (Flow A - Mock cho prototype) */}
                 {room.zaloGroupLink && (
-                  <a
-                    href={room.zaloGroupLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full mt-1 py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs"
+                  <button
+                    type="button"
+                    onClick={() => {
+                      showToast('Tính năng kết nối nhóm Zalo đang được phát triển.');
+                    }}
+                    className="w-full mt-1 py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer"
                   >
                     <MessageCircle size={16} />
                     <span>MỞ NHÓM ZALO BUỔI CHƠI</span>
-                  </a>
+                  </button>
                 )}
 
                 {/* Session Matches Entry Button */}
