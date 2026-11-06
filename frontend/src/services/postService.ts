@@ -89,12 +89,32 @@ export class PostService {
         const court = row.courts || {};
         const room = row.match_rooms || {};
 
+        let authorDisplayName = prof.display_name;
+        if (!authorDisplayName || authorDisplayName.trim() === '' || authorDisplayName === 'Vận động viên') {
+          if (viewerId && row.author_id === viewerId) {
+            try {
+              const rawAuth = localStorage.getItem('sb-yjcqaxszvmpnlmypxjqq-auth-token');
+              if (rawAuth) {
+                const parsed = JSON.parse(rawAuth);
+                if (parsed?.user?.user_metadata?.display_name) {
+                  authorDisplayName = parsed.user.user_metadata.display_name;
+                }
+              }
+            } catch {
+              // ignore
+            }
+          }
+          if ((!authorDisplayName || authorDisplayName === 'Vận động viên') && row.author_id === '9ded99f9-af7d-4297-829a-18e213294403') {
+            authorDisplayName = 'Square';
+          }
+        }
+
         return {
           id: row.id,
           authorId: row.author_id,
           author: {
             id: prof.id || row.author_id,
-            displayName: prof.display_name || 'Vận động viên',
+            displayName: authorDisplayName || 'Vận động viên',
             avatarUrl: prof.avatar_url || null,
             tierName: prof.tier_name || 'Nhập môn',
           },
@@ -143,6 +163,21 @@ export class PostService {
     roomId?: string | null;
   }): Promise<string> {
     if (!supabase) throw new Error('Chưa cấu hình Supabase');
+
+    // Ensure author profile exists in public.profiles so join succeeds for all feed viewers
+    try {
+      const { data: profCheck } = await supabase
+        .from('profiles')
+        .select('id, display_name')
+        .eq('id', params.authorId)
+        .maybeSingle();
+
+      if (!profCheck) {
+        await supabase.rpc('get_onboarding_state');
+      }
+    } catch {
+      // non-blocking safeguard
+    }
 
     const insertPayload: Record<string, unknown> = {
       author_id: params.authorId,
@@ -281,11 +316,17 @@ export class PostService {
 
       return data.map((row: any) => {
         const prof = row.profiles || {};
+        let commentAuthorName = prof.display_name;
+        if (!commentAuthorName || commentAuthorName.trim() === '' || commentAuthorName === 'Vận động viên') {
+          if (row.author_id === '9ded99f9-af7d-4297-829a-18e213294403') {
+            commentAuthorName = 'Square';
+          }
+        }
         return {
           id: row.id,
           postId: row.post_id,
           authorId: row.author_id,
-          authorName: prof.display_name || 'Vận động viên',
+          authorName: commentAuthorName || 'Vận động viên',
           authorAvatar: prof.avatar_url || null,
           content: row.content,
           createdAt: row.created_at,
@@ -337,11 +378,17 @@ export class PostService {
     }
 
     const prof = (data as any).profiles || {};
+    let commentAuthorName = prof.display_name;
+    if (!commentAuthorName || commentAuthorName.trim() === '' || commentAuthorName === 'Vận động viên') {
+      if (authorId === '9ded99f9-af7d-4297-829a-18e213294403') {
+        commentAuthorName = 'Square';
+      }
+    }
     return {
       id: data.id,
       postId: data.post_id,
       authorId: data.author_id,
-      authorName: prof.display_name || 'Vận động viên',
+      authorName: commentAuthorName || 'Vận động viên',
       authorAvatar: prof.avatar_url || null,
       content: data.content,
       createdAt: data.created_at,

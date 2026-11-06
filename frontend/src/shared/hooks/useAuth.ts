@@ -78,7 +78,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
     set({ profileLoading: true });
     try {
-      const p = await profileRepository.currentProfile();
+      let p = await profileRepository.currentProfile();
+      if (!p && supabase) {
+        try {
+          await supabase.rpc('get_onboarding_state');
+          p = await profileRepository.currentProfile();
+        } catch {
+          // non-blocking fallback
+        }
+      }
       set({ profile: p, profileLoading: false });
       return p;
     } catch (err) {
