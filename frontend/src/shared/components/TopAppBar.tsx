@@ -75,8 +75,8 @@ export const TopAppBar: React.FC = () => {
               </span>
             </div>
 
-            {/* LinkedIn-style Search Box (Compact width to prevent encroaching on function bar) */}
-            <div className="flex items-center gap-2 h-9 px-3 rounded-lg bg-app-background border border-app-border/80 focus-within:border-emerald-500 focus-within:bg-app-surface focus-within:ring-2 focus-within:ring-emerald-500/10 text-xs text-app-muted transition-all w-36 sm:w-44 md:w-48 lg:w-52">
+            {/* LinkedIn-style Search Box (Hidden on mobile < sm to keep mobile header clean) */}
+            <div className="hidden sm:flex items-center gap-2 h-9 px-3 rounded-lg bg-app-background border border-app-border/80 focus-within:border-emerald-500 focus-within:bg-app-surface focus-within:ring-2 focus-within:ring-emerald-500/10 text-xs text-app-muted transition-all sm:w-44 md:w-48 lg:w-52">
               <Search size={14} className="text-app-muted shrink-0" />
               <input
                 type="text"

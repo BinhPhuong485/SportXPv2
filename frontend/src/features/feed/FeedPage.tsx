@@ -63,7 +63,7 @@ export const FeedPage: React.FC = () => {
         calendarRepository.loadUserCalendarEvents(),
         leaderboardRepository.getCourts(),
         leaderboardRepository.getLeaderboard({ scope: 'national', limit: 5 }),
-        managedRoomRepository.list('public').catch(() => [] as ManagedRoomData[]),
+        managedRoomRepository.list('discover').catch(() => [] as ManagedRoomData[]),
       ]);
       setPosts(postList);
       setUpcomingEvents(events);

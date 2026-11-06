@@ -14,6 +14,9 @@ import {
   Tag,
   Search,
   CheckCircle2,
+  KeyRound,
+  Plus,
+  Users,
 } from 'lucide-react';
 import {
   ManagedRoomData,
@@ -158,167 +161,106 @@ export const ManagedRoomsPage: React.FC = () => {
 
   const currentArea = filter.area === 'Tất cả' ? 'TP.HCM • Q.10, Bình Thạnh, Thủ Đức' : filter.area;
 
-  const displayRooms = items.length > 0 ? items : [
-    {
-      id: 'sample-room-1',
-      courtId: 'court-1',
-      title: 'Kèo Giao lưu Đôi Nam - Cọ Xát Leo Rank Sân 3',
-      courtName: 'Sân Cầu Lông Kỳ Hòa, 238 Ba Tháng Hai, Q.10',
-      address: '238 Ba Tháng Hai, Quận 10',
-      startsAt: new Date(Date.now() + 2 * 3600 * 1000),
-      endsAt: new Date(Date.now() + 4 * 3600 * 1000),
-      cancelBy: new Date(Date.now() + 3600 * 1000),
-      capacity: 4,
-      reserved: 3,
-      minElo: 1800,
-      maxElo: 2000,
-      fee: 75000,
-      revision: 1,
-      status: 'OPEN',
-      isHost: false,
-      hostPlays: true,
-      roomType: 'PUBLIC_RECRUIT',
-      isRated: true,
-      members: [],
-      canRegister: true,
-      canEdit: false,
-      statusLabel: 'Đang tuyển',
-      hostName: 'Tuấn Pro',
-      roomCode: '#XP-9821'
-    },
-    {
-      id: 'sample-room-2',
-      courtId: 'court-2',
-      title: 'Pickleball DINK & SMASH - Trình DUPR 3.5 - 4.0 Thảo Điền',
-      courtName: 'CLB D-Pickleball Court 2, Thảo Điền, TP. Thủ Đức',
-      address: 'Thảo Điền, TP. Thủ Đức',
-      startsAt: new Date(Date.now() + 3 * 3600 * 1000),
-      endsAt: new Date(Date.now() + 5 * 3600 * 1000),
-      cancelBy: new Date(Date.now() + 2 * 3600 * 1000),
-      capacity: 4,
-      reserved: 2,
-      minElo: 1600,
-      maxElo: 1850,
-      fee: 120000,
-      revision: 1,
-      status: 'OPEN',
-      isHost: false,
-      hostPlays: true,
-      roomType: 'PUBLIC_RECRUIT',
-      isRated: true,
-      members: [],
-      canRegister: true,
-      canEdit: false,
-      statusLabel: 'Đang tuyển',
-      hostName: 'Phương Ly',
-      roomCode: '#XP-7712'
-    },
-    {
-      id: 'sample-room-3',
-      courtId: 'court-3',
-      title: 'Giao Lưu Đêm Muộn Vui Vẻ - Nhóm Công Nghệ Xả Stress',
-      courtName: 'Sân Viettel Hẻm 158 Hoàng Hoa Thám, Tân Bình',
-      address: 'Hẻm 158 Hoàng Hoa Thám, Tân Bình',
-      startsAt: new Date(Date.now() + 5 * 3600 * 1000),
-      endsAt: new Date(Date.now() + 7 * 3600 * 1000),
-      cancelBy: new Date(Date.now() + 4 * 3600 * 1000),
-      capacity: 4,
-      reserved: 4,
-      minElo: 1200,
-      maxElo: 1500,
-      fee: 50000,
-      revision: 1,
-      status: 'FULL',
-      isHost: false,
-      hostPlays: true,
-      roomType: 'PUBLIC_RECRUIT',
-      isRated: false,
-      members: [],
-      canRegister: false,
-      canEdit: false,
-      statusLabel: 'Đủ người',
-      hostName: 'Hoàng IT',
-      roomCode: '#XP-3341'
-    }
-  ] as unknown as ManagedRoomData[];
+  // Real rooms loaded from database - no mock data
+  const displayRooms = items;
 
   return (
     <div className="w-full flex flex-col bg-app-background min-h-[calc(100vh-64px)] select-none pb-12">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col gap-5">
         {/* ========================================================= */}
-        {/* TOP TELEMETRY STATUS TICKER (Stitch Screen 2 Pattern)       */}
+        {/* MOBILE COMPACT FILTER DOCK (< md) - No search bar         */}
         {/* ========================================================= */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-          <div className="bg-white dark:bg-app-surface p-4 rounded-xl border border-app-border shadow-2xs flex items-center justify-between">
-            <div className="flex flex-col">
-              <span className="font-mono text-[10px] text-app-muted uppercase tracking-wider font-bold">
-                Hệ thống mở
-              </span>
-              <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="font-mono text-xl sm:text-2xl text-app-text font-black">142</span>
-                <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">kèo sẵn sàng</span>
-              </div>
-            </div>
-            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600">
-              <Activity size={18} />
-            </div>
+        <div className="md:hidden flex flex-col gap-2">
+          {/* Row 1: Direct action buttons (Clean mobile UI, no search bar) */}
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsJoinCodeOpen(true)}
+              className="flex-1 h-9 px-3 rounded-xl border border-app-border bg-white dark:bg-app-surface text-app-text text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs hover:border-emerald-500/50 transition-colors active:scale-95"
+            >
+              <KeyRound size={14} className="text-emerald-600" />
+              <span>Nhập mã phòng</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsFilterOpen(true)}
+              className={`h-9 px-3.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold shadow-2xs shrink-0 transition-all active:scale-95 ${
+                filter.area !== 'Tất cả' || filter.skill !== null || filter.date !== null
+                  ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500 text-emerald-600 dark:text-emerald-400'
+                  : 'bg-white dark:bg-app-surface border-app-border text-app-text hover:border-emerald-500/50'
+              }`}
+            >
+              <SlidersHorizontal size={14} className="text-emerald-600" />
+              <span>Bộ lọc</span>
+              {(filter.area !== 'Tất cả' || filter.skill !== null || filter.date !== null) && (
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              )}
+            </button>
+
+            <button
+              type="button"
+              disabled={loading}
+              onClick={() => load(true)}
+              className="h-9 w-9 rounded-xl bg-white dark:bg-app-surface border border-app-border text-emerald-600 flex items-center justify-center shadow-2xs shrink-0 disabled:opacity-50 hover:bg-emerald-500/10 transition-colors active:scale-95"
+              title="Làm mới"
+            >
+              <RotateCw size={14} className={loading ? 'animate-spin' : ''} />
+            </button>
           </div>
 
-          <div className="bg-white dark:bg-app-surface p-4 rounded-xl border border-app-border shadow-2xs flex items-center justify-between">
-            <div className="flex flex-col">
-              <span className="font-mono text-[10px] text-app-muted uppercase tracking-wider font-bold">
-                Người tìm đối
-              </span>
-              <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="font-mono text-xl sm:text-2xl text-emerald-600 dark:text-emerald-400 font-black">
-                  89
-                </span>
-                <span className="text-xs text-app-muted font-medium">vận động viên</span>
-              </div>
-            </div>
-            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600">
-              <Radio size={18} className="animate-pulse" />
-            </div>
-          </div>
+          {/* Row 2: Horizontal Scrollable Filter Chips */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 -mx-1 px-1">
+            <button
+              type="button"
+              onClick={() => setIsFilterOpen(true)}
+              className="h-7 px-2.5 rounded-full bg-white dark:bg-app-surface border border-app-border text-[11px] font-semibold text-app-text flex items-center gap-1 shrink-0 whitespace-nowrap shadow-2xs hover:border-emerald-500 transition-colors"
+            >
+              <MapPin size={11} className="text-emerald-600" />
+              <span className="max-w-[130px] truncate">{filter.area === 'Tất cả' ? 'Khu vực: Tất cả' : filter.area}</span>
+              <ChevronDown size={11} className="text-app-muted" />
+            </button>
 
-          <div className="bg-white dark:bg-app-surface p-4 rounded-xl border border-app-border shadow-2xs flex items-center justify-between">
-            <div className="flex flex-col">
-              <span className="font-mono text-[10px] text-app-muted uppercase tracking-wider font-bold">
-                Tốc độ ghép
-              </span>
-              <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="font-mono text-xl sm:text-2xl text-app-text font-black">3:48</span>
-                <span className="text-xs text-app-muted font-medium">phút / kèo</span>
-              </div>
-            </div>
-            <div className="w-9 h-9 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600">
-              <Clock size={18} />
-            </div>
-          </div>
+            <button
+              type="button"
+              onClick={() => setIsFilterOpen(true)}
+              className="h-7 px-2.5 rounded-full bg-white dark:bg-app-surface border border-app-border text-[11px] font-semibold text-app-text flex items-center gap-1 shrink-0 whitespace-nowrap shadow-2xs hover:border-emerald-500 transition-colors"
+            >
+              <Clock size={11} className="text-emerald-600" />
+              <span>{filter.date ? `${filter.date.getDate()}/${filter.date.getMonth() + 1}` : 'Hôm nay'}</span>
+              <ChevronDown size={11} className="text-app-muted" />
+            </button>
 
-          <div className="bg-white dark:bg-app-surface p-4 rounded-xl border border-app-border shadow-2xs flex items-center justify-between">
-            <div className="flex flex-col">
-              <span className="font-mono text-[10px] text-app-muted uppercase tracking-wider font-bold">
-                Sân liên kết
-              </span>
-              <div className="flex items-baseline gap-1 mt-0.5">
-                <span className="font-mono text-xl sm:text-2xl text-app-text font-black">36</span>
-                <span className="text-xs text-app-muted font-medium">cụm sân active</span>
-              </div>
-            </div>
-            <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-600">
-              <MapPin size={18} />
-            </div>
+            <button
+              type="button"
+              onClick={() => setIsFilterOpen(true)}
+              className="h-7 px-2.5 rounded-full bg-white dark:bg-app-surface border border-app-border text-[11px] font-semibold text-app-text flex items-center gap-1 shrink-0 whitespace-nowrap shadow-2xs hover:border-emerald-500 transition-colors"
+            >
+              <Activity size={11} className="text-emerald-600" />
+              <span>{filter.skill !== null ? `${filter.skill} Elo` : 'Trình độ'}</span>
+              <ChevronDown size={11} className="text-app-muted" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsFilterOpen(true)}
+              className="h-7 px-2.5 rounded-full bg-white dark:bg-app-surface border border-app-border text-[11px] font-semibold text-app-text flex items-center gap-1 shrink-0 whitespace-nowrap shadow-2xs hover:border-emerald-500 transition-colors"
+            >
+              <Radio size={11} className="text-emerald-600" />
+              <span>Thể thức: Đôi</span>
+              <ChevronDown size={11} className="text-app-muted" />
+            </button>
           </div>
         </div>
 
         {/* ========================================================= */}
-        {/* FILTER DOCK & SPORT SELECTOR (Stitch Screen 2 Pattern)     */}
+        {/* DESKTOP FILTER DOCK (Visible on md and up)               */}
         {/* ========================================================= */}
-        <div className="bg-white dark:bg-app-surface p-3.5 sm:p-4 rounded-xl border border-app-border shadow-2xs flex flex-col gap-3.5">
+        <div className="hidden md:flex bg-white dark:bg-app-surface p-3.5 sm:p-4 rounded-xl border border-app-border shadow-2xs flex-col gap-3.5">
           {/* Top Bar inside Dock: Sport Tabs & Sub-actions */}
           <div className="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-app-border/70">
-            <div className="flex items-center gap-1.5 flex-wrap">
+            {/* Sport Tabs on Desktop */}
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900/60 p-1 rounded-lg">
               {[
                 { key: 'badminton', label: 'Cầu Lông', icon: '🏸' },
                 { key: 'pickleball', label: 'Pickleball', icon: '🏓' },
@@ -329,10 +271,10 @@ export const ManagedRoomsPage: React.FC = () => {
                   key={sp.key}
                   type="button"
                   onClick={() => setActiveSport(sp.key as any)}
-                  className={`px-3.5 py-1.5 rounded-lg font-mono text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-md font-mono text-xs font-bold transition-all flex items-center gap-1.5 ${
                     activeSport === sp.key
-                      ? 'bg-emerald-600 text-white shadow-xs'
-                      : 'text-app-muted hover:text-app-text hover:bg-slate-100 dark:hover:bg-slate-800'
+                      ? 'bg-emerald-600 text-white shadow-2xs'
+                      : 'text-app-muted hover:text-app-text hover:bg-white/60 dark:hover:bg-slate-800'
                   }`}
                 >
                   <span>{sp.icon}</span>
@@ -373,7 +315,7 @@ export const ManagedRoomsPage: React.FC = () => {
           </div>
 
           {/* 4-Field Detail Filter Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
             {/* Area */}
             <div
               onClick={() => setIsFilterOpen(true)}
@@ -465,7 +407,7 @@ export const ManagedRoomsPage: React.FC = () => {
                   <Activity size={14} />
                   <span>Phòng Chờ Đang Mở</span>
                   <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px] font-mono">
-                    {items.length || 8}
+                    {items.length}
                   </span>
                 </button>
 
@@ -541,12 +483,32 @@ export const ManagedRoomsPage: React.FC = () => {
                   <div className="w-8 h-8 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
                   <span className="text-xs text-app-muted font-medium">Đang tải phòng thi đấu…</span>
                 </div>
+              ) : displayRooms.length === 0 ? (
+                <div className="py-14 px-4 bg-white dark:bg-app-surface border border-dashed border-app-border rounded-2xl flex flex-col items-center justify-center text-center gap-3 shadow-2xs">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                    <Users size={28} />
+                  </div>
+                  <div className="max-w-xs space-y-1">
+                    <h3 className="text-sm font-bold text-app-text">Chưa có phòng thi đấu nào</h3>
+                    <p className="text-xs text-app-muted leading-relaxed">
+                      Chưa có phòng nào đang mở trong khu vực này. Bạn có thể mở rộng bộ lọc hoặc tạo phòng cọ xát ngay!
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => navigate('/rooms/new')}
+                    className="mt-1 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5"
+                  >
+                    <Plus size={15} />
+                    <span>Tạo phòng đấu ngay</span>
+                  </button>
+                </div>
               ) : (
                 displayRooms.map((room) => (
                   <RoomCard
                     key={room.id}
                     room={room}
-                    onTap={() => navigate(room.id.startsWith('sample-') ? '/rooms/new' : `/rooms/${room.id}`)}
+                    onTap={() => navigate(`/rooms/${room.id}`)}
                   />
                 ))
               )}
@@ -567,8 +529,8 @@ export const ManagedRoomsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* ================= RIGHT BENTO DOCK (4 Cols) ================= */}
-          <aside className="xl:col-span-4 flex flex-col gap-5 sticky top-18">
+          {/* ================= RIGHT BENTO DOCK (4 Cols) - Desktop Only ================= */}
+          <aside className="hidden xl:flex xl:col-span-4 flex-col gap-5 sticky top-18">
             {/* Widget 1: Tạo Kèo Nhanh 1-Click (Auto Bot AI Matchmaker) */}
             <div className="bg-white dark:bg-app-surface p-5 rounded-xl border border-app-border shadow-2xs flex flex-col gap-3.5 relative overflow-hidden">
               <div className="absolute -top-12 -right-12 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none"></div>
