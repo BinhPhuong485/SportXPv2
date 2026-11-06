@@ -207,3 +207,4 @@ export const LeaderboardPodium: React.FC<LeaderboardPodiumProps> = ({
     </div>
   );
 };
+

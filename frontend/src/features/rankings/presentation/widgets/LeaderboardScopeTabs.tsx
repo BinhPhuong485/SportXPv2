@@ -58,3 +58,4 @@ export const LeaderboardScopeTabs: React.FC<LeaderboardScopeTabsProps> = ({
     </div>
   );
 };
+

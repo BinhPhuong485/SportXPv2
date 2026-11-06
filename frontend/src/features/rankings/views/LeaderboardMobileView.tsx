@@ -207,10 +207,10 @@ export const LeaderboardMobileView: React.FC<LeaderboardViewProps> = ({
         </>
       )}
 
-      {/* Floating Sticky Bar on Mobile */}
+      {/* Floating Sticky Bar on Mobile (Raised above BottomNav with comfortable breathing room) */}
       {userRankSummary && currentUserProfile && (
-        <div className="fixed bottom-18 left-0 right-0 z-30 pointer-events-none px-3 sm:px-4">
-          <div className="max-w-md mx-auto pointer-events-auto shadow-2xl">
+        <div className="fixed bottom-[104px] md:bottom-[114px] left-0 right-0 z-30 pointer-events-none px-3.5 sm:px-4">
+          <div className="max-w-md mx-auto pointer-events-auto">
             <MyFixedStandingBar
               userProfile={currentUserProfile}
               rankSummary={userRankSummary}

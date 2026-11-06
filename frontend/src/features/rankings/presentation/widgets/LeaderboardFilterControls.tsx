@@ -66,3 +66,4 @@ export const LeaderboardFilterControls: React.FC<LeaderboardFilterControlsProps>
     </div>
   );
 };
+

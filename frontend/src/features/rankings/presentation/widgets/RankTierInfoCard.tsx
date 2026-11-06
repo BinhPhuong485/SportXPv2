@@ -47,3 +47,4 @@ export const RankTierInfoCard: React.FC = () => {
     </div>
   );
 };
+
