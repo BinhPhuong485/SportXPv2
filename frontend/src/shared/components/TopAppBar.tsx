@@ -54,8 +54,8 @@ export const TopAppBar: React.FC = () => {
 
       {/* Top Application Bar (LinkedIn Top Navigation Architecture - Centered Nav) */}
       <header className="sticky top-0 z-40 w-full bg-white dark:bg-app-surface border-b border-app-border/80 shadow-2xs transition-colors select-none">
-        <div className="relative w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 h-14 flex items-center justify-between gap-2 sm:gap-4">
-          {/* 1. LEFT SECTION: Logo & Search Input */}
+        <div className="relative w-full px-4 sm:px-6 lg:px-8 xl:px-10 h-14 flex items-center justify-between">
+          {/* 1. LEFT SECTION: Logo & Search Input (Aligned Left with plenty of breathing room) */}
           <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 z-10">
             {/* SportXP Monogram Logo */}
             <div
@@ -75,12 +75,12 @@ export const TopAppBar: React.FC = () => {
               </span>
             </div>
 
-            {/* LinkedIn-style Search Box */}
-            <div className="flex items-center gap-2 h-9 px-3 rounded-lg bg-app-background border border-app-border/80 focus-within:border-emerald-500 focus-within:bg-app-surface focus-within:ring-2 focus-within:ring-emerald-500/10 text-xs text-app-muted transition-all w-40 sm:w-52 md:w-64 lg:w-72">
+            {/* LinkedIn-style Search Box (Compact width to prevent encroaching on function bar) */}
+            <div className="flex items-center gap-2 h-9 px-3 rounded-lg bg-app-background border border-app-border/80 focus-within:border-emerald-500 focus-within:bg-app-surface focus-within:ring-2 focus-within:ring-emerald-500/10 text-xs text-app-muted transition-all w-36 sm:w-44 md:w-48 lg:w-52">
               <Search size={14} className="text-app-muted shrink-0" />
               <input
                 type="text"
-                placeholder="Tìm kiếm..."
+                placeholder="Tìm kiếm VĐV, sân cầu, giải đấu..."
                 className="bg-transparent text-xs text-app-text placeholder:text-app-muted outline-none w-full font-medium"
               />
             </div>
@@ -96,15 +96,25 @@ export const TopAppBar: React.FC = () => {
                   to={item.to}
                   end={item.end}
                   className={({ isActive }) =>
-                    `h-full flex flex-col items-center justify-center px-3 text-[10px] font-semibold border-b-2 transition-all min-w-[64px] ${
-                      isActive
-                        ? 'border-emerald-600 text-slate-900 dark:text-white font-black'
-                        : 'border-transparent text-app-muted hover:text-app-text'
+                    `h-full flex flex-col items-center justify-center px-3.5 text-[10px] font-semibold border-b-2 transition-all min-w-[64px] ${isActive
+                      ? 'border-emerald-600 text-slate-900 dark:text-white font-black'
+                      : 'border-transparent text-app-muted hover:text-app-text'
                     }`
                   }
                 >
-                  <Icon size={19} className="shrink-0" />
-                  <span className="mt-0.5 tracking-tight">{item.label}</span>
+                  {({ isActive }) => (
+                    <>
+                      <Icon
+                        size={19}
+                        fill={isActive ? 'currentColor' : 'none'}
+                        className={`shrink-0 transition-transform ${isActive
+                            ? 'fill-current text-slate-900 dark:text-white scale-105 stroke-[2.2]'
+                            : 'fill-none text-app-muted stroke-[1.8]'
+                          }`}
+                      />
+                      <span className="mt-0.5 tracking-tight">{item.label}</span>
+                    </>
+                  )}
                 </NavLink>
               );
             })}
@@ -113,11 +123,21 @@ export const TopAppBar: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsNoticeOpen(true)}
-              className="h-full flex flex-col items-center justify-center px-3 text-[10px] font-semibold text-app-muted hover:text-app-text border-b-2 border-transparent transition-all relative min-w-[64px]"
+              className={`h-full flex flex-col items-center justify-center px-3 text-[10px] font-semibold border-b-2 transition-all relative min-w-[64px] ${isNoticeOpen
+                  ? 'border-emerald-600 text-slate-900 dark:text-white font-black'
+                  : 'border-transparent text-app-muted hover:text-app-text'
+                }`}
               title="Thông báo"
             >
               <div className="relative">
-                <Bell size={19} />
+                <Bell
+                  size={19}
+                  fill={isNoticeOpen ? 'currentColor' : 'none'}
+                  className={`shrink-0 transition-transform ${isNoticeOpen
+                      ? 'fill-current text-slate-900 dark:text-white scale-105 stroke-[2.2]'
+                      : 'fill-none text-app-muted stroke-[1.8]'
+                    }`}
+                />
                 {unreadCount > 0 && (
                   <span className="absolute -top-1 -right-2 min-w-4 h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-black flex items-center justify-center ring-2 ring-app-surface leading-none shadow-xs">
                     {unreadCount > 9 ? '9+' : unreadCount}
@@ -150,11 +170,10 @@ export const TopAppBar: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setIsUserMenuOpen((prev) => !prev)}
-                className={`h-full flex flex-col items-center justify-center px-2 sm:px-2.5 transition-colors cursor-pointer ${
-                  isUserMenuOpen
+                className={`h-full flex flex-col items-center justify-center px-2 sm:px-2.5 transition-colors cursor-pointer ${isUserMenuOpen
                     ? 'text-emerald-600 dark:text-emerald-400 font-bold'
                     : 'text-app-muted hover:text-app-text'
-                }`}
+                  }`}
                 title={profile?.displayName || 'Hồ sơ cá nhân'}
               >
                 <Avatar src={profile?.avatarUrl} alt={profile?.displayName} size="xs" className="w-6 h-6 shadow-2xs" />
