@@ -153,7 +153,7 @@ export const RoomDetailPage: React.FC = () => {
           Phòng có thể đã bị hủy hoặc bạn không có quyền truy cập vào phòng riêng tư này.
         </p>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/rooms')}
           className="px-5 py-2.5 rounded-xl bg-app-primary text-app-on-primary text-xs font-bold shadow-xs active:scale-95"
         >
           QUAY LẠI TÌM KÈO

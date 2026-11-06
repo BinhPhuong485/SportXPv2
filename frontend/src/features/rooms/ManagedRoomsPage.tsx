@@ -169,17 +169,35 @@ export const ManagedRoomsPage: React.FC = () => {
   // Flow separation: Public discover feed only shows Casual Pickup (FLOW A).
   // Private Rated Match Lobbies (FLOW B) are private by definition and accessed via PIN code / QR or "Buổi Của Tôi".
   const displayRooms = useMemo(() => {
+    let list = items;
     if (mainTab === 'discover') {
-      return items.filter(
+      list = list.filter(
         (r) =>
           r.roomType !== 'PRIVATE_RATED' &&
           r.visibility !== 'PRIVATE' &&
           r.status === 'OPEN' &&
           new Date(r.endsAt).getTime() > Date.now()
       );
+
+      if (activeSport === 'pickleball') {
+        const pb = list.filter(
+          (r) => r.title.toLowerCase().includes('pickleball') || r.courtName.toLowerCase().includes('pickleball')
+        );
+        if (pb.length > 0) return pb;
+      } else if (activeSport === 'tennis') {
+        const tn = list.filter(
+          (r) => r.title.toLowerCase().includes('tennis') || r.courtName.toLowerCase().includes('tennis')
+        );
+        if (tn.length > 0) return tn;
+      } else if (activeSport === 'badminton') {
+        const bm = list.filter(
+          (r) => !r.title.toLowerCase().includes('pickleball') && !r.title.toLowerCase().includes('tennis')
+        );
+        if (bm.length > 0) return bm;
+      }
     }
-    return items;
-  }, [items, mainTab]);
+    return list;
+  }, [items, mainTab, activeSport]);
 
   return (
     <div className="w-full flex flex-col bg-app-background min-h-[calc(100vh-64px)] select-none pb-12">

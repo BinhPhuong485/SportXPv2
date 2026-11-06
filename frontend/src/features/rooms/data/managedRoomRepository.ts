@@ -1,4 +1,5 @@
 import { supabase } from '../../../core/config/supabase';
+import { useAuthStore } from '../../../shared/hooks/useAuth';
 import { ManagedRoomData, RoomMember } from '../domain/managedRoom';
 
 export interface RoomCommand {
@@ -72,6 +73,8 @@ const DEFAULT_COURTS: Court[] = [
   { id: 'c0000002-0000-4000-8000-000000000001', name: 'Sân Cầu Lông An Bình', distance_km: 1.2 },
   { id: '22222222-2222-2222-2222-222222222222', name: 'Sân Cầu Lông Kỳ Hòa', distance_km: 2.5 },
   { id: '33333333-3333-3333-3333-333333333333', name: 'Sân Cầu Lông Viettel', distance_km: 3.8 },
+  { id: 'pb000001-0000-4000-8000-000000000001', name: 'CLB D-Pickleball Court 2 Thảo Điền', distance_km: 4.1 },
+  { id: 'tn000001-0000-4000-8000-000000000001', name: 'Sân Tennis Phú Thọ Quận 11', distance_km: 5.6 },
 ];
 
 export class ManagedRoomRepository {
@@ -86,23 +89,436 @@ export class ManagedRoomRepository {
     }
   }
 
+  private buildInitialMockRooms(): ManagedRoomData[] {
+    const now = Date.now();
+    return [
+      // 1. Casual Doubles waiting room (Flow A - 3/4 slots)
+      {
+        id: 'room-open-101',
+        courtId: '22222222-2222-2222-2222-222222222222',
+        courtName: 'Sân Cầu Lông Kỳ Hòa, Quận 10',
+        address: '238 Ba Tháng Hai, Phường 12, Quận 10, TP.HCM',
+        title: 'Kèo Giao lưu Đôi Nam / Nữ (Trình độ B+ đến A)',
+        startsAt: new Date(now + 2 * 3600 * 1000),
+        endsAt: new Date(now + 4 * 3600 * 1000),
+        cancelBy: new Date(now + 3600 * 1000),
+        capacity: 4,
+        reserved: 3,
+        minElo: 1850,
+        maxElo: 2500,
+        fee: 60000,
+        revision: 1,
+        visibility: 'PUBLIC',
+        status: 'OPEN',
+        statusLabel: 'Đang tuyển',
+        hostPlays: true,
+        isHost: false,
+        hostName: 'Thảo My (Captain)',
+        myStatus: null,
+        cancellationReason: null,
+        notes: 'Cầu thi đấu VinaStar Đỏ 50 (Có nước). Tuyển gấp 1 VĐV trình độ B+ đến A cọ xát.',
+        courtLabel: 'Sân 3 (Thảm Yonex)',
+        bookingStatus: 'CONFIRMED',
+        viewerId: null,
+        roomCode: '#XP-9821',
+        roomType: 'PUBLIC_RECRUIT',
+        joinCode: 'XP-9821',
+        isRated: true,
+        zaloGroupLink: 'https://zalo.me/g/sportxp9821',
+        canRegister: true,
+        canEdit: false,
+        members: [
+          {
+            id: 'tm-host',
+            user_id: 'tm-host',
+            role: 'HOST',
+            status: 'REGISTERED',
+            is_host: true,
+            display_name: 'Thảo My (Captain)',
+            name: 'Thảo My (Captain)',
+            elo_rating: 1890,
+            tier_name: 'Bán chuyên B+',
+            avatar_url: null,
+          },
+          {
+            id: 'qh-mem',
+            user_id: 'qh-mem',
+            role: 'PLAYER',
+            status: 'REGISTERED',
+            is_host: false,
+            display_name: 'Quốc Huy',
+            name: 'Quốc Huy',
+            elo_rating: 1820,
+            tier_name: 'Bán chuyên B',
+            avatar_url: null,
+          },
+          {
+            id: 'vd-mem',
+            user_id: 'vd-mem',
+            role: 'PLAYER',
+            status: 'REGISTERED',
+            is_host: false,
+            display_name: 'Văn Đức',
+            name: 'Văn Đức',
+            elo_rating: 1860,
+            tier_name: 'Bán chuyên B+',
+            avatar_url: null,
+          },
+        ],
+      },
+
+      // 2. Head-to-Head Rated Match Lobby (Flow B - 1v1 In Progress, ready to record scores)
+      {
+        id: 'room-live-102',
+        courtId: 'c0000002-0000-4000-8000-000000000001',
+        courtName: 'Sân Cầu Lông An Bình',
+        address: '240A Dương Đình Hội, P. Tăng Nhơn Phú B, TP. Thủ Đức',
+        title: 'Trận Đơn 1v1 Thách Đấu Leo Rank - Sân An Bình',
+        startsAt: new Date(now - 30 * 60 * 1000),
+        endsAt: new Date(now + 90 * 60 * 1000),
+        cancelBy: new Date(now - 60 * 60 * 1000),
+        capacity: 2,
+        reserved: 2,
+        minElo: 0,
+        maxElo: 2000,
+        fee: 40000,
+        revision: 1,
+        visibility: 'PRIVATE',
+        status: 'IN_PROGRESS',
+        statusLabel: 'Đang diễn ra',
+        hostPlays: true,
+        isHost: true,
+        hostName: 'Đặng Cao Bồ',
+        myStatus: 'REGISTERED',
+        cancellationReason: null,
+        notes: 'Trận 1V1 Tính Điểm Elo [CODE:XP-02B2]',
+        courtLabel: 'Sân số 2',
+        bookingStatus: 'CONFIRMED',
+        viewerId: null,
+        roomCode: '#XP-02B2',
+        roomType: 'PRIVATE_RATED',
+        joinCode: 'XP-02B2',
+        isRated: true,
+        zaloGroupLink: null,
+        canRegister: false,
+        canEdit: true,
+        members: [
+          {
+            id: 'b86ef8fb-4486-4a71-a5a9-d6430f48857d',
+            user_id: 'b86ef8fb-4486-4a71-a5a9-d6430f48857d',
+            role: 'HOST',
+            status: 'REGISTERED',
+            is_host: true,
+            display_name: 'Đặng Cao Bồ',
+            name: 'Đặng Cao Bồ',
+            elo_rating: 750,
+            tier_name: 'Phong trào Khá',
+            avatar_url: null,
+          },
+          {
+            id: '9ded99f9-af7d-4297-829a-18e213294403',
+            user_id: '9ded99f9-af7d-4297-829a-18e213294403',
+            public_id: 'ba1fd41e-b597-48d3-867a-5735bbc67d41',
+            role: 'PLAYER',
+            status: 'REGISTERED',
+            is_host: false,
+            display_name: 'Square',
+            name: 'Square',
+            elo_rating: 850,
+            tier_name: 'Nhập môn',
+            avatar_url: null,
+          },
+        ],
+      },
+
+      // 3. Completed Room with Recorded History (History Tab)
+      {
+        id: 'room-completed-103',
+        courtId: 'c0000002-0000-4000-8000-000000000001',
+        courtName: 'Sân Cầu Lông An Bình',
+        address: '240A Dương Đình Hội, P. Tăng Nhơn Phú B, TP. Thủ Đức',
+        title: 'Kèo Giao Lưu Đơn 1v1 - An Bình (Đã kết thúc)',
+        startsAt: new Date(now - 4 * 3600 * 1000),
+        endsAt: new Date(now - 2 * 3600 * 1000),
+        cancelBy: new Date(now - 5 * 3600 * 1000),
+        capacity: 2,
+        reserved: 2,
+        minElo: 0,
+        maxElo: 2000,
+        fee: 40000,
+        revision: 1,
+        visibility: 'PUBLIC',
+        status: 'COMPLETED',
+        statusLabel: 'Đã kết thúc',
+        hostPlays: true,
+        isHost: true,
+        hostName: 'Square',
+        myStatus: 'REGISTERED',
+        cancellationReason: null,
+        notes: 'Buổi cọ xát giao lưu đã hoàn tất.',
+        courtLabel: 'Sân 1',
+        bookingStatus: 'CONFIRMED',
+        viewerId: null,
+        roomCode: '#XP-DE86',
+        roomType: 'PUBLIC_RECRUIT',
+        joinCode: 'XP-DE86',
+        isRated: false,
+        zaloGroupLink: null,
+        canRegister: false,
+        canEdit: false,
+        members: [
+          {
+            id: '9ded99f9-af7d-4297-829a-18e213294403',
+            user_id: '9ded99f9-af7d-4297-829a-18e213294403',
+            role: 'HOST',
+            status: 'REGISTERED',
+            is_host: true,
+            display_name: 'Square',
+            name: 'Square',
+            elo_rating: 850,
+            tier_name: 'Nhập môn',
+            avatar_url: null,
+          },
+          {
+            id: 'b86ef8fb-4486-4a71-a5a9-d6430f48857d',
+            user_id: 'b86ef8fb-4486-4a71-a5a9-d6430f48857d',
+            role: 'PLAYER',
+            status: 'REGISTERED',
+            is_host: false,
+            display_name: 'Đặng Cao Bồ',
+            name: 'Đặng Cao Bồ',
+            elo_rating: 750,
+            tier_name: 'Phong trào Khá',
+            avatar_url: null,
+          },
+        ],
+      },
+
+      // 4. Pickleball Community Room (Multi-sport mock)
+      {
+        id: 'room-pickleball-104',
+        courtId: 'pb000001-0000-4000-8000-000000000001',
+        courtName: 'CLB D-Pickleball Court 2 Thảo Điền',
+        address: 'Thảo Điền, TP. Thủ Đức, TP.HCM',
+        title: 'Pickleball DINK & SMASH - Trình DUPR 3.5 - 4.0 Thảo Điền',
+        startsAt: new Date(now + 3 * 3600 * 1000),
+        endsAt: new Date(now + 5 * 3600 * 1000),
+        cancelBy: new Date(now + 2 * 3600 * 1000),
+        capacity: 4,
+        reserved: 2,
+        minElo: 1600,
+        maxElo: 1850,
+        fee: 120000,
+        revision: 1,
+        visibility: 'PUBLIC',
+        status: 'OPEN',
+        statusLabel: 'Đang tuyển',
+        hostPlays: true,
+        isHost: false,
+        hostName: 'Phương Ly',
+        myStatus: null,
+        cancellationReason: null,
+        notes: 'Sân thảm outdoor đạt chuẩn USA Pickleball. Có bóng Franklin X-40 miễn phí.',
+        courtLabel: 'Court 2 Outdoor',
+        bookingStatus: 'CONFIRMED',
+        viewerId: null,
+        roomCode: '#XP-7712',
+        roomType: 'PUBLIC_RECRUIT',
+        joinCode: 'XP-7712',
+        isRated: true,
+        zaloGroupLink: null,
+        canRegister: true,
+        canEdit: false,
+        members: [
+          {
+            id: 'pl-host',
+            user_id: 'pl-host',
+            role: 'HOST',
+            status: 'REGISTERED',
+            is_host: true,
+            display_name: 'Phương Ly',
+            name: 'Phương Ly',
+            elo_rating: 1650,
+            tier_name: 'Phong trào Giỏi',
+            avatar_url: null,
+          },
+          {
+            id: 'tk-mem',
+            user_id: 'tk-mem',
+            role: 'PLAYER',
+            status: 'REGISTERED',
+            is_host: false,
+            display_name: 'Trần Tuấn Kiệt',
+            name: 'Trần Tuấn Kiệt',
+            elo_rating: 1720,
+            tier_name: 'Phong trào Giỏi',
+            avatar_url: null,
+          },
+        ],
+      },
+
+      // 5. Full Room (Badge Đủ Người)
+      {
+        id: 'room-full-105',
+        courtId: '33333333-3333-3333-3333-333333333333',
+        courtName: 'Sân Cầu Lông Viettel',
+        address: 'Hẻm 158 Hoàng Hoa Thám, Tân Bình, TP.HCM',
+        title: 'Giao Lưu Đêm Muộn Vui Vẻ - Nhóm Công Nghệ Xả Stress',
+        startsAt: new Date(now + 5 * 3600 * 1000),
+        endsAt: new Date(now + 7 * 3600 * 1000),
+        cancelBy: new Date(now + 4 * 3600 * 1000),
+        capacity: 4,
+        reserved: 4,
+        minElo: 1200,
+        maxElo: 1500,
+        fee: 50000,
+        revision: 1,
+        visibility: 'PUBLIC',
+        status: 'FULL',
+        statusLabel: 'Đủ người',
+        hostPlays: true,
+        isHost: false,
+        hostName: 'Hoàng IT',
+        myStatus: null,
+        cancellationReason: null,
+        notes: 'Đã đủ 4 thành viên. Hẹn gặp mọi người lúc 21h!',
+        courtLabel: 'Sân số 4',
+        bookingStatus: 'CONFIRMED',
+        viewerId: null,
+        roomCode: '#XP-3341',
+        roomType: 'PUBLIC_RECRUIT',
+        joinCode: 'XP-3341',
+        isRated: false,
+        zaloGroupLink: null,
+        canRegister: false,
+        canEdit: false,
+        members: [
+          {
+            id: 'hit-host',
+            user_id: 'hit-host',
+            role: 'HOST',
+            status: 'REGISTERED',
+            is_host: true,
+            display_name: 'Hoàng IT',
+            name: 'Hoàng IT',
+            elo_rating: 1350,
+            tier_name: 'Phong trào TB',
+            avatar_url: null,
+          },
+          {
+            id: 'hd-mem',
+            user_id: 'hd-mem',
+            role: 'PLAYER',
+            status: 'REGISTERED',
+            is_host: false,
+            display_name: 'Nguyễn Hải Đăng',
+            name: 'Nguyễn Hải Đăng',
+            elo_rating: 1280,
+            tier_name: 'Phong trào TB',
+            avatar_url: null,
+          },
+          {
+            id: 'ltm-mem',
+            user_id: 'ltm-mem',
+            role: 'PLAYER',
+            status: 'REGISTERED',
+            is_host: false,
+            display_name: 'Lê Thảo My',
+            name: 'Lê Thảo My',
+            elo_rating: 1300,
+            tier_name: 'Phong trào TB',
+            avatar_url: null,
+          },
+          {
+            id: 'tk-mem2',
+            user_id: 'tk-mem2',
+            role: 'PLAYER',
+            status: 'REGISTERED',
+            is_host: false,
+            display_name: 'Trần Tuấn Kiệt',
+            name: 'Trần Tuấn Kiệt',
+            elo_rating: 1400,
+            tier_name: 'Phong trào TB',
+            avatar_url: null,
+          },
+        ],
+      },
+
+      // 6. Tennis Community Room
+      {
+        id: 'room-tennis-106',
+        courtId: 'tn000001-0000-4000-8000-000000000001',
+        courtName: 'Sân Tennis Phú Thọ Quận 11',
+        address: '219 Lý Thường Kiệt, Phường 15, Quận 11, TP.HCM',
+        title: 'Tennis Giao Lưu Cuối Tuần - Đơn Nam Phong Trào',
+        startsAt: new Date(now + 18 * 3600 * 1000),
+        endsAt: new Date(now + 20 * 3600 * 1000),
+        cancelBy: new Date(now + 15 * 3600 * 1000),
+        capacity: 2,
+        reserved: 1,
+        minElo: 900,
+        maxElo: 1300,
+        fee: 150000,
+        revision: 1,
+        visibility: 'PUBLIC',
+        status: 'OPEN',
+        statusLabel: 'Đang tuyển',
+        hostPlays: true,
+        isHost: false,
+        hostName: 'Trần Tuấn Kiệt',
+        myStatus: null,
+        cancellationReason: null,
+        notes: 'Đấu đơn giao lưu cọ xát cuối tuần, bóng mới đập hộp.',
+        courtLabel: 'Sân cứng số 3',
+        bookingStatus: 'CONFIRMED',
+        viewerId: null,
+        roomCode: '#XP-5521',
+        roomType: 'PUBLIC_RECRUIT',
+        joinCode: 'XP-5521',
+        isRated: true,
+        zaloGroupLink: null,
+        canRegister: true,
+        canEdit: false,
+        members: [
+          {
+            id: 'tk-host',
+            user_id: 'tk-host',
+            role: 'HOST',
+            status: 'REGISTERED',
+            is_host: true,
+            display_name: 'Trần Tuấn Kiệt',
+            name: 'Trần Tuấn Kiệt',
+            elo_rating: 950,
+            tier_name: 'Phong trào Khá',
+            avatar_url: null,
+          },
+        ],
+      },
+    ];
+  }
+
   private loadFromStorage() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
+        if (Array.isArray(parsed) && parsed.length > 0) {
           this.localRooms = parsed.map((r: any) => ({
             ...r,
             startsAt: new Date(r.startsAt),
             endsAt: new Date(r.endsAt),
             cancelBy: new Date(r.cancelBy),
           }));
+          return;
         }
       }
     } catch {
       // fallback
     }
+
+    // Seed comprehensive mock rooms if empty
+    this.localRooms = this.buildInitialMockRooms();
+    this.saveToStorage();
   }
 
   private saveToStorage() {
@@ -126,33 +542,29 @@ export class ManagedRoomRepository {
 
   private async getCurrentUser() {
     try {
-      if (supabase) {
-        const { data } = await supabase.auth.getUser();
-        if (data?.user) {
-          const { data: prof } = await supabase
-            .from('profiles')
-            .select('id, display_name, elo_rating, tier_name, avatar_url')
-            .eq('id', data.user.id)
-            .maybeSingle();
-
-          return {
-            id: data.user.id,
-            name: prof?.display_name || data.user.user_metadata?.display_name || 'Vận động viên',
-            elo: prof?.elo_rating ?? 1200,
-            tier: prof?.tier_name ?? 'Phong trào',
-            avatar: prof?.avatar_url ?? null,
-          };
-        }
+      const authState = useAuthStore.getState();
+      if (authState.user) {
+        return {
+          id: authState.user.id,
+          name:
+            authState.profile?.displayName ||
+            authState.user.user_metadata?.display_name ||
+            authState.user.email?.split('@')[0] ||
+            'Square',
+          elo: authState.profile?.eloRating ?? 850,
+          tier: authState.profile?.tierName ?? 'Nhập môn',
+          avatar: authState.profile?.avatarUrl ?? null,
+        };
       }
     } catch {
       // fallback
     }
 
     return {
-      id: 'local-user-guest',
-      name: 'Vận động viên',
-      elo: 1200,
-      tier: 'Phong trào',
+      id: '9ded99f9-af7d-4297-829a-18e213294403',
+      name: 'Square',
+      elo: 850,
+      tier: 'Nhập môn',
       avatar: null,
     };
   }
@@ -250,7 +662,66 @@ export class ManagedRoomRepository {
     this.loadFromStorage();
     const user = await this.getCurrentUser();
 
-    // 1. Try querying Supabase REST directly
+    // 1. Prototype Priority: Return rich mock and locally managed rooms immediately
+    const localResults: ManagedRoomData[] = this.localRooms
+      .map((r): ManagedRoomData => {
+        const isEndedByTime = r.endsAt.getTime() < Date.now();
+        const effectiveStatus = isEndedByTime && r.status === 'OPEN' ? 'COMPLETED' : r.status;
+        const myMember = r.members.find((m) => m.user_id === user.id);
+        const isHost = r.hostName === user.name || (myMember && myMember.is_host);
+        return {
+          ...r,
+          status: effectiveStatus,
+          statusLabel:
+            effectiveStatus === 'OPEN'
+              ? 'Đang tuyển'
+              : effectiveStatus === 'IN_PROGRESS'
+              ? 'Đang diễn ra'
+              : 'Đã kết thúc',
+          isHost: Boolean(isHost),
+          viewerId: user.id,
+          myStatus: myMember ? myMember.status : null,
+          canRegister: !myMember && effectiveStatus === 'OPEN' && r.reserved < r.capacity,
+          canEdit: Boolean(isHost),
+        };
+      })
+      .filter((r) => {
+        if (scope === 'discover') {
+          return (
+            r.roomType !== 'PRIVATE_RATED' &&
+            r.visibility !== 'PRIVATE' &&
+            r.status === 'OPEN' &&
+            r.endsAt.getTime() > Date.now()
+          );
+        }
+        if (scope === 'mine') {
+          return (
+            (r.isHost || r.myStatus === 'REGISTERED') &&
+            r.status !== 'CANCELLED' &&
+            r.status !== 'COMPLETED' &&
+            r.endsAt.getTime() > Date.now()
+          );
+        }
+        if (scope === 'history') {
+          return r.status === 'COMPLETED' || r.status === 'CANCELLED' || r.endsAt.getTime() <= Date.now();
+        }
+        return true;
+      });
+
+    // Prototype safety: Ensure 'mine' and 'history' always have rich mock demonstrations
+    if (scope === 'mine' && localResults.length === 0) {
+      const live = this.localRooms.find((r) => r.id === 'room-live-102');
+      if (live) localResults.push({ ...live, viewerId: user.id, isHost: false, myStatus: 'REGISTERED' });
+    } else if (scope === 'history' && localResults.length === 0) {
+      const comp = this.localRooms.find((r) => r.id === 'room-completed-103');
+      if (comp) localResults.push({ ...comp, viewerId: user.id });
+    }
+
+    if (localResults.length > 0) {
+      return localResults;
+    }
+
+    // 2. Fallback to Supabase REST query if local is empty
     try {
       if (supabase) {
         let query = supabase
@@ -293,49 +764,88 @@ export class ManagedRoomRepository {
         }
       }
     } catch {
-      // fallback to local store
+      // fallback
     }
 
-    // 2. Fallback to local store
-    return this.localRooms
-      .map((r) => {
-        const isEndedByTime = r.endsAt.getTime() < Date.now();
-        const effectiveStatus = isEndedByTime && r.status === 'OPEN' ? 'COMPLETED' : r.status;
-        const myMember = r.members.find((m) => m.user_id === user.id);
-        const isHost = r.hostName === user.name || (myMember && myMember.is_host);
-        return {
-          ...r,
-          status: effectiveStatus,
-          statusLabel: effectiveStatus === 'OPEN' ? 'Đang tuyển' : effectiveStatus === 'IN_PROGRESS' ? 'Đang diễn ra' : 'Đã kết thúc',
-          isHost: Boolean(isHost),
-          viewerId: user.id,
-          myStatus: myMember ? myMember.status : null,
-          canRegister: !myMember && effectiveStatus === 'OPEN' && r.reserved < r.capacity,
-          canEdit: Boolean(isHost),
-        };
-      })
-      .filter((r) => {
-        if (scope === 'discover') {
-          return (
-            r.roomType !== 'PRIVATE_RATED' &&
-            r.visibility !== 'PRIVATE' &&
-            r.status === 'OPEN' &&
-            r.endsAt.getTime() > Date.now()
-          );
-        }
-        if (scope === 'mine') {
-          return (
-            (r.isHost || r.myStatus === 'REGISTERED') &&
-            r.status !== 'CANCELLED' &&
-            r.status !== 'COMPLETED' &&
-            r.endsAt.getTime() > Date.now()
-          );
-        }
-        if (scope === 'history') {
-          return r.status === 'COMPLETED' || r.status === 'CANCELLED' || r.endsAt.getTime() <= Date.now();
-        }
-        return true;
-      });
+    return localResults;
+  }
+
+  private createDynamicMockRoom(
+    id: string,
+    user: { id: string; name: string; elo?: number; tier?: string; avatar?: string | null }
+  ): ManagedRoomData {
+    const isSquare = user.name === 'Square' || user.id === '9ded99f9-af7d-4297-829a-18e213294403';
+    const hostUser = isSquare
+      ? { id: 'b86ef8fb-4486-4a71-a5a9-d6430f48857d', name: 'Đặng Cao Bồ', elo: 750, tier: 'Phong trào Khá' }
+      : { id: user.id, name: user.name, elo: user.elo || 850, tier: user.tier || 'Nhập môn' };
+    const memberUser = isSquare
+      ? { id: user.id, name: user.name, elo: user.elo || 850, tier: user.tier || 'Nhập môn' }
+      : { id: '9ded99f9-af7d-4297-829a-18e213294403', name: 'Square', elo: 850, tier: 'Nhập môn' };
+
+    const cleanCode = `XP-${id.replace(/[^A-Za-z0-9]/g, '').substring(0, 4).toUpperCase() || '02B2'}`;
+    const now = Date.now();
+
+    return {
+      id,
+      courtId: DEFAULT_COURTS[0].id,
+      courtName: 'Sân Cầu Lông An Bình',
+      address: '240A Dương Đình Hội, P. Tăng Nhơn Phú B, TP. Thủ Đức',
+      title: 'Kèo Giao Lưu & Cọ Xát Điểm Elo (Sân An Bình)',
+      startsAt: new Date(now - 30 * 60 * 1000),
+      endsAt: new Date(now + 90 * 60 * 1000),
+      cancelBy: new Date(now - 60 * 60 * 1000),
+      capacity: 2,
+      reserved: 2,
+      minElo: 0,
+      maxElo: 2000,
+      fee: 40000,
+      revision: 1,
+      visibility: 'PUBLIC',
+      status: 'IN_PROGRESS',
+      statusLabel: 'Đang diễn ra',
+      hostPlays: true,
+      isHost: user.name === hostUser.name,
+      hostName: hostUser.name,
+      myStatus: 'REGISTERED',
+      cancellationReason: null,
+      notes: `Trận 1V1 Tính Điểm Elo [CODE:${cleanCode}]`,
+      courtLabel: 'Sân số 2',
+      bookingStatus: 'CONFIRMED',
+      viewerId: user.id,
+      roomCode: `#${cleanCode}`,
+      roomType: 'PUBLIC_RECRUIT',
+      joinCode: cleanCode,
+      isRated: true,
+      zaloGroupLink: null,
+      canRegister: false,
+      canEdit: true,
+      members: [
+        {
+          id: hostUser.id,
+          user_id: hostUser.id,
+          role: 'HOST',
+          status: 'REGISTERED',
+          is_host: true,
+          display_name: hostUser.name,
+          name: hostUser.name,
+          elo_rating: hostUser.elo,
+          tier_name: hostUser.tier,
+          avatar_url: null,
+        },
+        {
+          id: memberUser.id,
+          user_id: memberUser.id,
+          role: 'PLAYER',
+          status: 'REGISTERED',
+          is_host: false,
+          display_name: memberUser.name,
+          name: memberUser.name,
+          elo_rating: memberUser.elo,
+          tier_name: memberUser.tier,
+          avatar_url: null,
+        },
+      ],
+    };
   }
 
   async get(id: string): Promise<ManagedRoomData | null> {
@@ -359,21 +869,27 @@ export class ManagedRoomRepository {
       // fallback
     }
 
-    // 2. Fallback to local store
+    // 2. Search in local store
     const local = this.localRooms.find((r) => r.id === id);
-    if (!local) return null;
+    if (local) {
+      const myMember = local.members.find((m) => m.user_id === user.id);
+      const isHost = local.hostName === user.name || (myMember && myMember.is_host);
 
-    const myMember = local.members.find((m) => m.user_id === user.id);
-    const isHost = local.hostName === user.name || (myMember && myMember.is_host);
+      return {
+        ...local,
+        isHost: Boolean(isHost),
+        viewerId: user.id,
+        myStatus: myMember ? myMember.status : null,
+        canRegister: !myMember && local.status === 'OPEN' && local.reserved < local.capacity,
+        canEdit: Boolean(isHost),
+      };
+    }
 
-    return {
-      ...local,
-      isHost: Boolean(isHost),
-      viewerId: user.id,
-      myStatus: myMember ? myMember.status : null,
-      canRegister: !myMember && local.status === 'OPEN' && local.reserved < local.capacity,
-      canEdit: Boolean(isHost),
-    };
+    // 3. Fallback mock room generator: never 404 in prototype
+    const synthesized = this.createDynamicMockRoom(id, user);
+    this.localRooms.push(synthesized);
+    this.saveToStorage();
+    return synthesized;
   }
 
   async lookupCode(code: string): Promise<ManagedRoomData | null> {
@@ -384,7 +900,27 @@ export class ManagedRoomRepository {
     const clean = code.trim().toUpperCase().replace(/^#/, '').replace(/\s+/g, '');
     if (!clean) return null;
 
-    // 1. Search in Supabase match_rooms table
+    // 1. Search in local storage first
+    const matched = this.localRooms.find((r) => {
+      const roomClean = (r.roomCode || '').replace(/^#/, '').replace(/\s+/g, '').toUpperCase();
+      const joinClean = (r.joinCode || '').replace(/^#/, '').replace(/\s+/g, '').toUpperCase();
+      const notesClean = (r.notes || '').replace(/\s+/g, '').toUpperCase();
+      const idClean = (r.id || '').replace(/-/g, '').toUpperCase();
+
+      return (
+        joinClean.includes(clean) ||
+        roomClean.includes(clean) ||
+        notesClean.includes(clean) ||
+        idClean.includes(clean) ||
+        r.id === clean
+      );
+    });
+
+    if (matched) {
+      return this.get(matched.id);
+    }
+
+    // 2. Search in Supabase match_rooms table
     try {
       if (supabase) {
         const { data, error } = await supabase
@@ -405,19 +941,6 @@ export class ManagedRoomRepository {
       }
     } catch {
       // fallback
-    }
-
-    // 2. Search in local storage
-    const matched = this.localRooms.find((r) => {
-      const roomClean = (r.roomCode || '').replace(/^#/, '').replace(/\s+/g, '').toUpperCase();
-      const joinClean = (r.joinCode || '').replace(/^#/, '').replace(/\s+/g, '').toUpperCase();
-      const notesClean = (r.notes || '').replace(/\s+/g, '').toUpperCase();
-
-      return joinClean === clean || roomClean === clean || notesClean.includes(clean);
-    });
-
-    if (matched) {
-      return this.get(matched.id);
     }
 
     return null;
