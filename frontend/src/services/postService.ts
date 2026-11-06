@@ -36,78 +36,6 @@ export interface PostCommentItem {
   createdAt: string;
 }
 
-export const SEED_COMMUNITY_POSTS: PostItem[] = [
-  {
-    id: 'seed-match-recap-1',
-    authorId: 'seed-user-1',
-    author: {
-      id: 'seed-user-1',
-      displayName: 'Trần Minh Quân',
-      avatarUrl: null,
-      tierName: 'Trung bình khá · 950 Elo',
-    },
-    postType: 'match_recap',
-    content: 'Trận chung kết giao lưu tối thứ 4 siêu kịch tính cùng cặp đôi Tuấn & Huy tại Sân Kỳ Hòa! Bị dẫn 18-20 ở set 2 nhưng anh em bọc lót smash chuẩn lội ngược dòng 22-20 nghẹt thở 🔥 Cảm ơn 2 bạn đã cống hiến trận cầu mãn nhãn.',
-    mediaUrls: ['/assets/demo/badminton_match.jpg'],
-    rating: null,
-    courtId: 'court-1',
-    courtName: 'Sân Cầu Lông Kỳ Hòa (Sân 3)',
-    courtAddress: '238 Đường 3/2, Phường 12, Quận 10',
-    roomId: 'room-1',
-    roomTitle: 'Kèo Đôi Nam Giao Lưu TBK [19:30 - 21:30]',
-    likesCount: 32,
-    commentsCount: 8,
-    isLiked: false,
-    createdAt: new Date(Date.now() - 3600 * 1000 * 3).toISOString(),
-  },
-  {
-    id: 'seed-court-review-1',
-    authorId: 'seed-user-2',
-    author: {
-      id: 'seed-user-2',
-      displayName: 'Lê Thu Trang',
-      avatarUrl: null,
-      tierName: 'Khá · 1200 Elo',
-    },
-    postType: 'court_review',
-    content: 'Review nhanh sân Đào Duy Anh (Phú Nhuận) sau buổi tập sáng nay:\n• Mặt thảm: Thảm Yonex mới tinh, độ nảy và độ bám giày đạt 9.5/10, hạn chế chấn thương cổ chân.\n• Hệ thống đèn: Đèn LED treo bên hông chống chói rất tốt khi ngửa cổ bắt cầu smash.\n• Dịch vụ: Trần cao 10m cực thoáng, bãi đậu xe ô tô rộng rãi, quầy nước đầy đủ.',
-    mediaUrls: ['/assets/demo/court_hall.jpg'],
-    rating: 5,
-    courtId: 'court-2',
-    courtName: 'Sân Cầu Lông Đào Duy Anh',
-    courtAddress: '21 Đào Duy Anh, Phường 9, Quận Phú Nhuận',
-    roomId: null,
-    roomTitle: null,
-    likesCount: 45,
-    commentsCount: 14,
-    isLiked: true,
-    createdAt: new Date(Date.now() - 3600 * 1000 * 7).toISOString(),
-  },
-  {
-    id: 'seed-general-1',
-    authorId: 'seed-user-3',
-    author: {
-      id: 'seed-user-3',
-      displayName: 'Nguyễn Tiến Đạt',
-      avatarUrl: null,
-      tierName: 'Trung bình · 750 Elo',
-    },
-    postType: 'general',
-    content: 'Tối mai (thứ 5) khung giờ 19:30 - 21:30 sân Viettel Tân Bình nhóm mình đang thiếu 1 bạn trình độ TB- đến TB để đánh đôi nam/nam nữ giao lưu vui vẻ. Tiền sân chia đều ~45k/người. Anh em nào rảnh vào ghép kèo nhé!',
-    mediaUrls: ['/assets/demo/court_view.jpg'],
-    rating: null,
-    courtId: 'court-3',
-    courtName: 'Sân Cầu Lông Viettel',
-    courtAddress: '158 Hoàng Hoa Thám, Tân Bình',
-    roomId: null,
-    roomTitle: 'Giao lưu cầu lông tối thứ 5',
-    likesCount: 18,
-    commentsCount: 6,
-    isLiked: false,
-    createdAt: new Date(Date.now() - 3600 * 1000 * 12).toISOString(),
-  },
-];
-
 export class PostService {
   /**
    * Fetch all feed posts (general, match_recap, court_review)
@@ -192,13 +120,10 @@ export class PostService {
         };
       });
 
-      // Augment with rich badminton showcase posts if feed has few items to display full layout variety
-      const existingIds = new Set(mappedPosts.map((p) => p.id));
-      const supplementaryPosts = SEED_COMMUNITY_POSTS.filter((p) => !existingIds.has(p.id));
-      return [...mappedPosts, ...supplementaryPosts];
+      return mappedPosts;
     } catch (err) {
-      console.warn('Failed to load posts, using seed fallback:', err);
-      return SEED_COMMUNITY_POSTS;
+      console.warn('Failed to load posts from Supabase:', err);
+      return [];
     }
   }
 
