@@ -70,7 +70,40 @@ export class ManagedRoomRepository {
     });
     if (error) throw error;
     if (!Array.isArray(data)) return [];
-    return data.map((row) => parseManagedRoom(row as Record<string, unknown>));
+    let rooms = data.map((row) => parseManagedRoom(row as Record<string, unknown>));
+
+    // When viewing 'mine' (Sắp tới), filter out any room where viewer has cancelled registration (and is not host)
+    if (scope === 'mine') {
+      rooms = rooms.filter((r) => r.isHost || (r.myStatus && r.myStatus !== 'CANCELLED' && r.myStatus !== 'LEAVE'));
+    }
+
+    // Enrich all member profiles in listed rooms
+    const allMembers: RoomMember[] = [];
+    for (const r of rooms) {
+      if (r.members && r.members.length > 0) {
+        allMembers.push(...r.members);
+      }
+    }
+    if (allMembers.length > 0) {
+      await this.enrichMembersWithProfiles(allMembers);
+    }
+
+    // Resolve accurate hostName for each room
+    for (const r of rooms) {
+      if (!r.hostName || r.hostName === 'Vận động viên' || r.hostName === 'VĐV' || r.hostName === 'Host') {
+        const rawHostId = (data.find((d: any) => d.id === r.id) as any)?.host_id;
+        if (rawHostId === '9ded99f9-af7d-4297-829a-18e213294403') {
+          r.hostName = 'Square';
+        } else {
+          const hostMember = r.members.find((m) => m.is_host);
+          if (hostMember?.display_name && hostMember.display_name !== 'Vận động viên' && hostMember.display_name !== 'VĐV') {
+            r.hostName = hostMember.display_name;
+          }
+        }
+      }
+    }
+
+    return rooms;
   }
 
   async enrichMembersWithProfiles(members: RoomMember[]): Promise<void> {
@@ -129,9 +162,15 @@ export class ManagedRoomRepository {
           (m.id ? profileMap.get(m.id as string) : undefined);
 
         if (p) {
-          if (p.display_name) {
-            m.display_name = p.display_name;
-            m.name = p.display_name;
+          let resolvedName = p.display_name;
+          if (!resolvedName || resolvedName === 'Vận động viên' || resolvedName === 'VĐV' || resolvedName === 'Người chơi') {
+            if (p.id === '9ded99f9-af7d-4297-829a-18e213294403' || m.user_id === '9ded99f9-af7d-4297-829a-18e213294403') {
+              resolvedName = 'Square';
+            }
+          }
+          if (resolvedName) {
+            m.display_name = resolvedName;
+            m.name = resolvedName;
           }
           if (p.elo_rating !== undefined && p.elo_rating !== null) {
             m.elo_rating = p.elo_rating;
@@ -144,6 +183,12 @@ export class ManagedRoomRepository {
           }
           if (p.id) {
             m.user_id = p.id;
+            m.id = p.id;
+          }
+        } else {
+          if (m.user_id === '9ded99f9-af7d-4297-829a-18e213294403' || m.id === '9ded99f9-af7d-4297-829a-18e213294403') {
+            m.display_name = 'Square';
+            m.name = 'Square';
           }
         }
       }
@@ -162,6 +207,15 @@ export class ManagedRoomRepository {
     const room = parseManagedRoom(data as Record<string, unknown>);
     if (room.members.length > 0) {
       await this.enrichMembersWithProfiles(room.members);
+    }
+    const rawHostId = (data as any)?.host_id;
+    if (rawHostId === '9ded99f9-af7d-4297-829a-18e213294403') {
+      room.hostName = 'Square';
+    } else if (!room.hostName || room.hostName === 'Vận động viên' || room.hostName === 'VĐV' || room.hostName === 'Host') {
+      const hostMember = room.members.find((m) => m.is_host);
+      if (hostMember?.display_name && hostMember.display_name !== 'Vận động viên' && hostMember.display_name !== 'VĐV') {
+        room.hostName = hostMember.display_name;
+      }
     }
     try {
       const { data: extra } = await supabase
@@ -183,6 +237,27 @@ export class ManagedRoomRepository {
 
   async execute(command: RoomCommand): Promise<string> {
     if (!supabase) throw new Error('Chưa cấu hình Supabase.');
+
+    // Ensure user profile exists in public.profiles before creating or joining a room
+    if (command.action === 'create' || command.action === 'register') {
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        if (authData?.user) {
+          const { data: profCheck } = await supabase
+            .from('profiles')
+            .select('id, display_name')
+            .eq('id', authData.user.id)
+            .maybeSingle();
+
+          if (!profCheck) {
+            await supabase.rpc('get_onboarding_state');
+          }
+        }
+      } catch {
+        // non-blocking safeguard
+      }
+    }
+
     const { data, error } = await supabase.rpc('room_command_v2', {
       p_request_id: command.requestId,
       p_action: command.action,

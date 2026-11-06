@@ -20,7 +20,7 @@ export class ProfileRepository {
     if (!user) return null;
 
     try {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('profiles')
         .select(`
           id,
@@ -51,7 +51,60 @@ export class ProfileRepository {
         .maybeSingle();
 
       if (error) throw error;
+
+      // If profile does not exist yet in public.profiles, initialize it via get_onboarding_state
+      if (!data) {
+        try {
+          await supabase.rpc('get_onboarding_state');
+          const retry = await supabase
+            .from('profiles')
+            .select(`
+              id,
+              public_id,
+              social_visibility,
+              display_name,
+              avatar_url,
+              elo_rating,
+              tier_name,
+              trust_score,
+              win_streak,
+              home_court_id,
+              district,
+              city,
+              zalo_phone,
+              zalo_link,
+              facebook_link,
+              bio,
+              created_at,
+              onboarding_step,
+              courts (
+                id,
+                name,
+                distance_km
+              )
+            `)
+            .eq('id', user.id)
+            .maybeSingle();
+          data = retry.data;
+        } catch {
+          // non-blocking
+        }
+      }
+
       if (!data) return null;
+
+      // Sync display_name if DB profile has empty/fallback name but user_metadata has a chosen name
+      if (user.user_metadata?.display_name && (!data.display_name || data.display_name === 'Vận động viên')) {
+        try {
+          await supabase
+            .from('profiles')
+            .update({ display_name: user.user_metadata.display_name.trim() })
+            .eq('id', user.id);
+          data.display_name = user.user_metadata.display_name.trim();
+        } catch {
+          // non-blocking
+        }
+      }
 
       const rawCourt = Array.isArray(data.courts) ? data.courts[0] : data.courts;
       const court = rawCourt as unknown as { id: string; name: string; distance_km?: number } | null;
@@ -104,13 +157,39 @@ export class ProfileRepository {
       };
     } catch {
       // Fallback query if relation or specific columns differ
-      const { data: fbData } = await supabase
+      let { data: fbData } = await supabase
         .from('profiles')
         .select('id, display_name, avatar_url, elo_rating, tier_name, trust_score, win_streak, home_court_id, district, city, zalo_phone, zalo_link, facebook_link, bio, created_at, onboarding_step')
         .eq('id', user.id)
         .maybeSingle();
 
+      if (!fbData) {
+        try {
+          await supabase.rpc('get_onboarding_state');
+          const retry = await supabase
+            .from('profiles')
+            .select('id, display_name, avatar_url, elo_rating, tier_name, trust_score, win_streak, home_court_id, district, city, zalo_phone, zalo_link, facebook_link, bio, created_at, onboarding_step')
+            .eq('id', user.id)
+            .maybeSingle();
+          fbData = retry.data;
+        } catch {
+          // non-blocking
+        }
+      }
+
       if (!fbData) return null;
+
+      if (user.user_metadata?.display_name && (!fbData.display_name || fbData.display_name === 'Vận động viên')) {
+        try {
+          await supabase
+            .from('profiles')
+            .update({ display_name: user.user_metadata.display_name.trim() })
+            .eq('id', user.id);
+          fbData.display_name = user.user_metadata.display_name.trim();
+        } catch {
+          // non-blocking
+        }
+      }
 
       let fallbackCourtName: string | null = null;
       if (fbData.home_court_id) {
