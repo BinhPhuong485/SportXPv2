@@ -22,8 +22,9 @@ export const FeedPage: React.FC = () => {
 
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<CalendarEvent[]>([]);
-  const [, setCourts] = useState<Court[]>([]);
-  const [, setTopPlayers] = useState<PlayerProfile[]>([]);
+  const [courts, setCourts] = useState<Court[]>([]);
+  const [topPlayers, setTopPlayers] = useState<PlayerProfile[]>([]);
+  const [urgentRoom, setUrgentRoom] = useState<ManagedRoomData | null>(null);
   const [, setMyRooms] = useState<ManagedRoomData[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -57,19 +58,32 @@ export const FeedPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const [postList, events, courtList, leaderboard] = await Promise.all([
+      const [postList, events, courtList, leaderboard, publicRooms] = await Promise.all([
         postService.listPosts(user?.id || null),
         calendarRepository.loadUserCalendarEvents(),
         leaderboardRepository.getCourts(),
         leaderboardRepository.getLeaderboard({ scope: 'national', limit: 5 }),
+        managedRoomRepository.list('public').catch(() => [] as ManagedRoomData[]),
       ]);
       setPosts(postList);
       setUpcomingEvents(events);
       setCourts(courtList);
-      setTopPlayers(leaderboard);
+      setTopPlayers(leaderboard as unknown as PlayerProfile[]);
       if (courtList.length > 0) {
         setSelectedCourtId((prev) => prev || courtList[0].id);
       }
+
+      // Filter open rooms with available slots
+      const openRooms = (publicRooms || []).filter(
+        (r) => r.status === 'OPEN' && r.reserved < r.capacity
+      );
+      openRooms.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+      const selectedUrgent = openRooms.length > 0 ? openRooms[0] : null;
+
+      if (selectedUrgent && selectedUrgent.members && selectedUrgent.members.length > 0) {
+        await managedRoomRepository.enrichMembersWithProfiles(selectedUrgent.members).catch(() => {});
+      }
+      setUrgentRoom(selectedUrgent);
     } catch {
       setError('Chưa tải được bảng tin thể thao mới nhất.');
     } finally {
@@ -233,6 +247,9 @@ export const FeedPage: React.FC = () => {
     onOpenCreateModal: handleOpenCreateModal,
     onRefreshFeed: loadFeed,
     onShowToast: showToast,
+    urgentRoom,
+    suggestedPlayers: topPlayers,
+    courts,
   };
 
   return (
