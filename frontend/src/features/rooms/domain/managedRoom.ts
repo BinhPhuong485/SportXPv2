@@ -115,12 +115,28 @@ export function parseManagedRoom(json: Record<string, unknown>): ManagedRoomData
       ? `#XP-${id.replace(/-/g, '').substring(0, 4).toUpperCase()}`
       : '#XP-8888');
 
-  const roomType: 'PUBLIC_RECRUIT' | 'PRIVATE_RATED' =
-    String(json.room_type || '') === 'PRIVATE_RATED' || String(json.visibility || '') === 'PRIVATE'
-      ? 'PRIVATE_RATED'
-      : 'PUBLIC_RECRUIT';
-  const joinCode = (json.join_code as string) || (roomType === 'PRIVATE_RATED' ? roomCode.replace(/^#/, '') : null);
-  const isRated = json.is_rated !== undefined ? Boolean(json.is_rated) : roomType === 'PRIVATE_RATED';
+  // Robust detection for Flow B Private Rated Match Lobby
+  const notesStr = String(json.notes || '');
+  const codeMatch = notesStr.match(/\[CODE:([A-Za-z0-9_-]+)\]/);
+  const isExplicitPrivate =
+    String(json.room_type || '') === 'PRIVATE_RATED' ||
+    String(json.visibility || '') === 'PRIVATE' ||
+    Boolean(codeMatch) ||
+    String(json.title || '').toLowerCase().includes('tính elo') ||
+    String(json.title || '').toLowerCase().includes('1vs1') ||
+    String(json.title || '').toLowerCase().includes('2vs2');
+
+  const roomType: 'PUBLIC_RECRUIT' | 'PRIVATE_RATED' = isExplicitPrivate
+    ? 'PRIVATE_RATED'
+    : 'PUBLIC_RECRUIT';
+  const joinCode =
+    (json.join_code as string) ||
+    (codeMatch ? codeMatch[1] : null) ||
+    (roomType === 'PRIVATE_RATED' ? roomCode.replace(/^#/, '') : null);
+  const isRated =
+    json.is_rated !== undefined && json.is_rated !== null
+      ? Boolean(json.is_rated)
+      : roomType === 'PRIVATE_RATED';
   const zaloGroupLink = (json.zalo_group_link as string) || null;
 
   const members: RoomMember[] = Array.isArray(json.members)

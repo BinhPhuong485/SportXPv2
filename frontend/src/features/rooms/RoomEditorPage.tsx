@@ -353,7 +353,9 @@ export const RoomEditorPage: React.FC = () => {
       zalo_group_link:
         roomType === 'PUBLIC_RECRUIT' && zaloGroupLink.trim() ? zaloGroupLink.trim() : null,
       host_plays: true, // auto host inside room
-      notes: isPrivateRated ? `Trận ${matchFormat.toUpperCase()} Tính Điểm Elo` : notes,
+      notes: isPrivateRated
+        ? `Trận ${matchFormat.toUpperCase()} Tính Điểm Elo [CODE:${effectiveJoinCode}]`
+        : notes,
       court_label: courtLabel.trim(),
       draft: isPrivateRated ? false : isDraft, // NEVER draft for private match
       room_code: roomCode,

@@ -36,6 +36,7 @@ import { PageContent } from '../../shared/components/PageContent';
 import { BentoCard } from '../../shared/components/BentoCard';
 import { ModalSheet } from '../../shared/components/ModalSheet';
 import { EventReminderToggle } from '../reminders/presentation/widgets/EventReminderToggle';
+import { PrivateGameLobbyPage } from './presentation/pages/PrivateGameLobbyPage';
 
 export const RoomDetailPage: React.FC = () => {
   const { roomId } = useParams<{ roomId: string }>();
@@ -45,6 +46,7 @@ export const RoomDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // Sheets and dialogs
   const [showQrSheet, setShowQrSheet] = useState(false);
@@ -76,7 +78,7 @@ export const RoomDetailPage: React.FC = () => {
   ) => {
     if (busy || !room) return;
     setBusy(true);
-    setError(null);
+    setActionError(null);
     try {
       const cmd = createRoomCommand(action, {
         roomId: room.id,
@@ -85,7 +87,7 @@ export const RoomDetailPage: React.FC = () => {
       await managedRoomRepository.execute(cmd);
       await load();
     } catch (err) {
-      setError(roomFailure(err));
+      setActionError(roomFailure(err));
     } finally {
       setBusy(false);
     }
@@ -139,7 +141,8 @@ export const RoomDetailPage: React.FC = () => {
     );
   }
 
-  if (!room || error) {
+  // Fatal 404: Only when room is truly null (not found / permission denied)
+  if (!room) {
     return (
       <div className="min-h-screen w-full bg-app-background flex flex-col items-center justify-center p-4 text-center">
         <HelpCircle size={48} className="text-app-muted mb-3" />
@@ -157,6 +160,15 @@ export const RoomDetailPage: React.FC = () => {
         </button>
       </div>
     );
+  }
+
+  // ==============================================================
+  // FLOW B: DEDICATED PRIVATE RATED GAME LOBBY
+  // If this is a private match or rated head-to-head game,
+  // delegate to PrivateGameLobbyPage for visual court & instant match flow
+  // ==============================================================
+  if (room.roomType === 'PRIVATE_RATED' || room.visibility === 'PRIVATE') {
+    return <PrivateGameLobbyPage room={room} onReload={load} />;
   }
 
   const availableSlots = Math.max(0, room.capacity - room.reserved);
@@ -391,10 +403,21 @@ export const RoomDetailPage: React.FC = () => {
       {/* Main Content */}
       <PageContent>
         {/* Error Notification Banner */}
-        {error && (
-          <div className="p-3.5 rounded-xl bg-app-loss/12 border border-app-loss/35 text-xs text-app-loss font-semibold flex items-center gap-2">
-            <AlertTriangle size={16} className="shrink-0" />
-            <span>{error}</span>
+        {(error || actionError) && (
+          <div className="p-3.5 rounded-xl bg-app-loss/12 border border-app-loss/35 text-xs text-app-loss font-semibold flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <AlertTriangle size={16} className="shrink-0" />
+              <span>{actionError || error}</span>
+            </div>
+            {actionError && (
+              <button
+                type="button"
+                onClick={() => setActionError(null)}
+                className="text-app-loss hover:text-app-text font-bold text-xs p-1"
+              >
+                ✕
+              </button>
+            )}
           </div>
         )}
 
@@ -425,7 +448,7 @@ export const RoomDetailPage: React.FC = () => {
                     <span className="px-2.5 py-1 rounded-md bg-app-primary/12 text-app-primary text-xs font-extrabold tracking-wider border border-app-primary/30">
                       {room.statusLabel.toUpperCase()}
                     </span>
-                    {room.roomType === 'PRIVATE_RATED' || room.isRated ? (
+                    {room.isRated ? (
                       <span className="px-2 py-0.5 rounded-md bg-app-streak/15 text-app-streak border border-app-streak/40 text-[10px] font-extrabold flex items-center gap-1">
                         <Trophy size={11} />
                         <span>KÈO KÍN TÍNH ELO</span>
@@ -527,8 +550,8 @@ export const RoomDetailPage: React.FC = () => {
                           )}
                           <span>
                             {isCompleted
-                              ? 'VÀO XEM KẾT QUẢ & TỈ SỐ BUỔI CHƠI'
-                              : 'VÀO BUỔI CHƠI & GHI NHẬN TỈ SỐ SET ĐẤU'}
+                              ? 'VÀO XEM THÔNG TIN BUỔI GIAO LƯU'
+                              : 'VÀO BUỔI CHƠI & ĐIỂM DANH CÓ MẶT'}
                           </span>
                         </button>
                         {helperMessage && (

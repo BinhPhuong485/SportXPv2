@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   RotateCw,
@@ -166,8 +166,20 @@ export const ManagedRoomsPage: React.FC = () => {
 
   const currentArea = filter.area === 'Tất cả' ? 'TP.HCM • Q.10, Bình Thạnh, Thủ Đức' : filter.area;
 
-  // Real rooms loaded from database - no mock data
-  const displayRooms = items;
+  // Flow separation: Public discover feed only shows Casual Pickup (FLOW A).
+  // Private Rated Match Lobbies (FLOW B) are private by definition and accessed via PIN code / QR or "Buổi Của Tôi".
+  const displayRooms = useMemo(() => {
+    if (mainTab === 'discover') {
+      return items.filter(
+        (r) =>
+          r.roomType !== 'PRIVATE_RATED' &&
+          r.visibility !== 'PRIVATE' &&
+          r.status === 'OPEN' &&
+          new Date(r.endsAt).getTime() > Date.now()
+      );
+    }
+    return items;
+  }, [items, mainTab]);
 
   return (
     <div className="w-full flex flex-col bg-app-background min-h-[calc(100vh-64px)] select-none pb-12">
@@ -412,7 +424,7 @@ export const ManagedRoomsPage: React.FC = () => {
                   <Activity size={14} />
                   <span>Phòng Chờ Đang Mở</span>
                   <span className="px-1.5 py-0.2 rounded-full bg-white/20 text-[10px] font-mono">
-                    {items.length}
+                    {displayRooms.length}
                   </span>
                 </button>
 
@@ -528,7 +540,7 @@ export const ManagedRoomsPage: React.FC = () => {
                   </button>
                 </div>
               ) : (
-                displayRooms.map((room) => (
+                displayRooms.map((room: ManagedRoomData) => (
                   <RoomCard
                     key={room.id}
                     room={room}

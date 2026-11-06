@@ -17,6 +17,7 @@ import {
   Check,
   ShieldAlert,
   Lock,
+  Sparkles,
 } from 'lucide-react';
 import { useAuthStore } from '../../shared/hooks/useAuth';
 import { ManagedRoomData, RoomMember } from './domain/managedRoom';
@@ -581,7 +582,24 @@ export const RoomSessionPage: React.FC = () => {
           </div>
         )}
 
-        {/* MATCHES SECTION */}
+        {/* FLOW A INFO BANNER FOR CASUAL MEETUP */}
+        {!isRoomRated && (
+          <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3 shadow-xs">
+            <Sparkles size={20} className="text-emerald-600 shrink-0 mt-0.5" />
+            <div className="flex flex-col gap-1">
+              <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
+                Buổi Giao Lưu Vãng Lai (Flow A — Casual Meetup)
+              </span>
+              <p className="text-[11px] text-emerald-700/90 dark:text-emerald-400/90 leading-relaxed">
+                Buổi chơi mang tính chất giao lưu học hỏi, không tính điểm Elo xếp hạng.
+                Host và thành viên điểm danh có mặt ở danh sách bên dưới để sắp xếp vào sân thi đấu.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* FLOW B MATCHES SECTION (ONLY FOR RATED MATCHES) */}
+        {isRoomRated && (
         <section className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -892,6 +910,7 @@ export const RoomSessionPage: React.FC = () => {
             })
           )}
         </section>
+        )}
 
         {/* ATTENDANCE SECTION */}
         <section className="bg-app-surface rounded-[20px] p-4 border border-app-border flex flex-col gap-3 shadow-xs">
