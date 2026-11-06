@@ -189,7 +189,10 @@ export const SocialProfilePage: React.FC = () => {
 
       {/* Toast Alert */}
       {toastMessage && (
-        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl bg-app-surface text-app-text border border-app-border shadow-xl text-xs font-bold animate-in fade-in slide-in-from-top duration-200">
+        <div
+          style={{ zIndex: 999999 }}
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-[99999] px-5 py-3 rounded-2xl bg-stone-900/95 text-white shadow-2xl text-xs sm:text-sm font-bold border border-white/20 animate-in fade-in slide-in-from-top-3 duration-200 pointer-events-none max-w-[92vw] text-center"
+        >
           {toastMessage}
         </div>
       )}

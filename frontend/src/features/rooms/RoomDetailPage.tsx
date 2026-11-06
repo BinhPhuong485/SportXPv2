@@ -54,10 +54,11 @@ export const RoomDetailPage: React.FC = () => {
   const [cancelReason, setCancelReason] = useState('');
   const [showLeaveDialog, setShowLeaveDialog] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [zaloClicked, setZaloClicked] = useState(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
   const load = useCallback(async () => {
@@ -350,11 +351,18 @@ export const RoomDetailPage: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full bg-app-background flex flex-col select-none antialiased relative">
-      {/* Toast Notification Banner */}
+      {/* Toast Notification Banner - Always on top of all headers, sheets and modals */}
       {toastMessage && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-60 flex items-center gap-2 px-4 py-2.5 rounded-full bg-stone-900/95 text-white text-xs font-bold shadow-2xl backdrop-blur-md border border-white/10 animate-fade-in pointer-events-none">
-          <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />
-          <span>{toastMessage}</span>
+        <div
+          style={{ zIndex: 999999 }}
+          className="fixed top-20 left-1/2 -translate-x-1/2 z-[99999] flex items-center gap-2.5 px-5 py-3 rounded-2xl bg-stone-900/95 text-white text-xs sm:text-sm font-bold shadow-2xl backdrop-blur-md border border-white/20 animate-in fade-in slide-in-from-top-3 duration-200 pointer-events-none max-w-[92vw] text-center"
+        >
+          {toastMessage.includes('Zalo') ? (
+            <MessageCircle size={16} className="text-blue-400 shrink-0" />
+          ) : (
+            <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+          )}
+          <span className="leading-tight">{toastMessage}</span>
         </div>
       )}
 
@@ -511,16 +519,26 @@ export const RoomDetailPage: React.FC = () => {
 
                 {/* Link nhóm Zalo buổi chơi (Flow A - Mock cho prototype) */}
                 {room.zaloGroupLink && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      showToast('Tính năng kết nối nhóm Zalo đang được phát triển.');
-                    }}
-                    className="w-full mt-1 py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer"
-                  >
-                    <MessageCircle size={16} />
-                    <span>MỞ NHÓM ZALO BUỔI CHƠI</span>
-                  </button>
+                  <div className="w-full flex flex-col gap-1.5 mt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setZaloClicked(true);
+                        setTimeout(() => setZaloClicked(false), 3500);
+                        showToast('Tính năng kết nối nhóm Zalo đang được phát triển.');
+                      }}
+                      className="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-xs cursor-pointer"
+                    >
+                      <MessageCircle size={16} />
+                      <span>{zaloClicked ? 'ĐANG PHÁT TRIỂN...' : 'MỞ NHÓM ZALO BUỔI CHƠI'}</span>
+                    </button>
+                    {zaloClicked && (
+                      <div className="w-full py-2 px-3 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-600 dark:text-blue-400 text-xs font-semibold flex items-center justify-center gap-1.5 animate-in fade-in duration-150">
+                        <MessageCircle size={14} className="shrink-0 text-blue-500" />
+                        <span>Tính năng kết nối nhóm Zalo đang được phát triển.</span>
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {/* Session Matches Entry Button */}
