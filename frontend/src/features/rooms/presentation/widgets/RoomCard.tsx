@@ -3,16 +3,16 @@ import {
   Users,
   MapPin,
   Clock,
-  Lock,
   ChevronRight,
-  AlertTriangle,
-  Play,
   Activity,
   Trophy,
-  MessageCircle,
+  ShieldCheck,
+  Plus,
+  Sparkles,
 } from 'lucide-react';
 import { ManagedRoomData } from '../../domain/managedRoom';
 import { RoomUiFormatters } from './roomUiFormatters';
+import { Avatar } from '../../../../shared/components/Avatar';
 
 interface RoomCardProps {
   room: ManagedRoomData;
@@ -34,12 +34,10 @@ export const RoomCard: React.FC<RoomCardProps> = ({
     return parts[parts.length - 1] || 'Host';
   })();
 
-  const hostInitial = hostShortName.charAt(0).toUpperCase() || 'H';
-
   const renderSlotBadge = () => {
     if (room.status === 'CANCELLED') {
       return (
-        <span className="px-2.5 py-0.5 rounded-full bg-app-loss/12 text-app-loss border border-app-loss/40 text-[10px] font-black tracking-wide">
+        <span className="px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-600 border border-rose-500/20 text-[10px] font-mono font-bold tracking-wide">
           ĐÃ HỦY
         </span>
       );
@@ -47,7 +45,7 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
     if (room.status === 'IN_PROGRESS') {
       return (
-        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-black tracking-wide flex items-center gap-1">
+        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold tracking-wide flex items-center gap-1">
           <Activity size={11} className="animate-pulse" />
           <span>ĐANG ĐẤU</span>
         </span>
@@ -56,23 +54,15 @@ export const RoomCard: React.FC<RoomCardProps> = ({
 
     if (room.status === 'COMPLETED') {
       return (
-        <span className="px-2.5 py-0.5 rounded-full bg-app-background text-app-muted border border-app-border text-[10px] font-bold">
+        <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-app-muted border border-app-border text-[10px] font-mono font-bold">
           ĐÃ KẾT THÚC
-        </span>
-      );
-    }
-
-    if (room.status === 'DRAFT') {
-      return (
-        <span className="px-2.5 py-0.5 rounded-full bg-app-background text-app-muted border border-app-border text-[10px] font-bold">
-          BẢN NHÁP
         </span>
       );
     }
 
     if (availableSlots > 0) {
       return (
-        <span className="px-2.5 py-0.5 rounded-full bg-app-mint text-app-primary border border-app-primary/20 text-[10px] font-black tracking-wide flex items-center gap-1 tabular-nums">
+        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold tracking-wide flex items-center gap-1 tabular-nums">
           <Users size={11} />
           <span>
             CÒN {availableSlots}/{room.capacity} CHỖ
@@ -82,46 +72,10 @@ export const RoomCard: React.FC<RoomCardProps> = ({
     }
 
     return (
-      <span className="px-2.5 py-0.5 rounded-full bg-app-background text-app-muted border border-app-border text-[10px] font-bold tabular-nums">
+      <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-app-muted border border-app-border text-[10px] font-mono font-bold tabular-nums">
         ĐỦ NGƯỜI ({room.capacity}/{room.capacity})
       </span>
     );
-  };
-
-  const renderRegistrationBadge = () => {
-    if (room.isHost) {
-      return (
-        <span className="px-2 py-0.5 rounded-full bg-app-primary/10 text-app-primary border border-app-primary/20 text-[10px] font-black">
-          HOST
-        </span>
-      );
-    }
-
-    if (room.myStatus === 'REGISTERED') {
-      return (
-        <span className="px-2 py-0.5 rounded-full bg-app-mint text-app-primary border border-app-primary/25 text-[10px] font-black">
-          ĐÃ VÀO
-        </span>
-      );
-    }
-
-    if (room.myStatus === 'WAITLIST') {
-      return (
-        <span className="px-2 py-0.5 rounded-full bg-app-streak/15 text-app-streak border border-app-streak/40 text-[10px] font-black">
-          CHỜ CHỖ
-        </span>
-      );
-    }
-
-    if (room.myStatus === 'RECONFIRM') {
-      return (
-        <span className="px-2 py-0.5 rounded-full bg-app-loss/15 text-app-loss border border-app-loss/40 text-[10px] font-black">
-          CẦN XÁC NHẬN
-        </span>
-      );
-    }
-
-    return null;
   };
 
   const active = room.status === 'IN_PROGRESS' || isHighlight;
@@ -130,113 +84,181 @@ export const RoomCard: React.FC<RoomCardProps> = ({
   return (
     <div
       onClick={onTap}
-      className={`group w-full bg-app-surface rounded-[26px] p-5 border cursor-pointer select-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-app-primary/40 active:scale-[0.99] flex flex-col gap-3 shadow-xs ${
+      className={`group w-full bg-white dark:bg-app-surface rounded-xl p-4 sm:p-5 border cursor-pointer select-none transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-emerald-500/50 active:scale-[0.99] flex flex-col gap-3.5 shadow-2xs ${
         needsConfirm
-          ? 'border-app-loss ring-1 ring-app-loss/30'
+          ? 'border-rose-500 ring-1 ring-rose-500/30'
           : active
-          ? 'border-app-primary shadow-xs'
+          ? 'border-emerald-500 shadow-xs'
           : 'border-app-border/80'
       }`}
     >
-      {/* Top Badges Row */}
-      <div className="flex flex-wrap items-center gap-1.5">
-        {renderSlotBadge()}
-        {renderRegistrationBadge()}
-        {room.roomType === 'PRIVATE_RATED' || room.isRated ? (
-          <span className="px-2 py-0.5 rounded-full bg-app-streak/10 text-app-streak border border-app-streak/25 text-[10px] font-black flex items-center gap-1">
-            <Trophy size={11} />
-            <span>TÍNH ELO</span>
-          </span>
-        ) : (
-          <span className="px-2 py-0.5 rounded-full bg-app-background text-app-muted border border-app-border text-[10px] font-bold">
-            GIAO LƯU
-          </span>
-        )}
-        {room.zaloGroupLink && (
-          <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-[10px] font-bold flex items-center gap-1">
-            <MessageCircle size={10} />
-            <span>Zalo</span>
-          </span>
-        )}
-        {room.visibility === 'PRIVATE' && (
-          <div className="flex items-center gap-1 text-[11px] text-app-muted ml-auto">
-            <Lock size={12} />
-            <span>Kèo riêng tư</span>
-          </div>
-        )}
-      </div>
-
-      {/* Room Title */}
-      <h3 className="text-base sm:text-[17px] font-black text-app-text tracking-tight leading-snug group-hover:text-app-primary transition-colors">
-        {room.title}
-      </h3>
-
-      {/* Date & Schedule */}
-      <div className="flex items-center gap-2 text-xs sm:text-[13px] font-bold text-app-text">
-        <Clock size={15} className="text-app-primary shrink-0" />
-        <span className="tabular-nums">
-          {RoomUiFormatters.dateRange(room.startsAt, room.endsAt)}
-        </span>
-      </div>
-
-      {/* Court Location */}
-      <div className="flex items-start gap-2 text-xs text-app-muted">
-        <MapPin size={15} className="text-app-muted shrink-0 mt-0.5" />
-        <span className="line-clamp-1">
-          {room.courtLabel ? `${room.courtName} · ${room.courtLabel}` : room.courtName}
-        </span>
-      </div>
-
-      {/* Skill Range & Fee Box */}
-      <div className="p-3 rounded-xl bg-app-background/70 border border-app-border/60 flex items-center justify-between gap-2 mt-0.5">
-        <span className="text-xs font-bold text-app-text">
-          {RoomUiFormatters.skillRange(room.minElo, room.maxElo)}
-        </span>
-        <span className="text-sm font-black text-app-primary tabular-nums">
-          {RoomUiFormatters.currency(room.fee)} / người
-        </span>
-      </div>
-
-      {/* Host Row */}
-      <div className="flex items-center gap-2 pt-1 border-t border-app-border/50 text-xs text-app-muted">
-        <div className="w-6 h-6 rounded-full bg-app-mint text-app-primary flex items-center justify-center font-bold text-[11px] shrink-0">
-          {hostInitial}
-        </div>
-        <span className="flex-1 truncate text-xs text-app-muted">
-          Host: <span className="font-bold text-app-text">{hostShortName}</span>
-        </span>
-        <ChevronRight size={16} className="text-app-muted group-hover:translate-x-0.5 transition-transform" />
-      </div>
-
-      {/* Call to action if needs reconfirm or in progress */}
-      {(needsConfirm || room.status === 'IN_PROGRESS') && (
-        <div className="pt-1">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onTap();
-            }}
-            className={`w-full h-11 rounded-xl font-black text-xs tracking-wider uppercase flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98] ${
-              needsConfirm
-                ? 'bg-app-loss text-white hover:brightness-105'
-                : 'bg-app-primary text-app-on-primary hover:brightness-105'
-            }`}
-          >
-            {needsConfirm ? (
-              <>
-                <AlertTriangle size={15} />
-                <span>CẦN XÁC NHẬN ĐIỀU KIỆN MỚI</span>
-              </>
-            ) : (
-              <>
-                <Play size={15} fill="currentColor" />
-                <span>VÀO PHÒNG ĐẤU</span>
-              </>
+      {/* Top Header: Category Chips, Time, and Price */}
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="flex flex-col gap-1 min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="font-mono text-[10px] px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 uppercase font-bold">
+              Cầu Lông
+            </span>
+            <span className="font-mono text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-app-text border border-app-border font-medium">
+              Elo {room.minElo} - {room.maxElo} ({RoomUiFormatters.skillRange(room.minElo, room.maxElo)})
+            </span>
+            <span className="font-mono text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-app-muted border border-app-border font-medium">
+              Đôi Nam / Nữ
+            </span>
+            {renderSlotBadge()}
+            {room.isRated && (
+              <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/25 text-[10px] font-mono font-bold flex items-center gap-1">
+                <Trophy size={10} />
+                <span>TÍNH ELO</span>
+              </span>
             )}
-          </button>
+          </div>
+
+          {/* Title */}
+          <h3 className="text-sm sm:text-base font-bold text-app-text group-hover:text-emerald-600 transition-colors mt-1 leading-snug">
+            {room.title}
+          </h3>
+
+          {/* Venue & Time Location */}
+          <div className="flex items-center gap-2 text-xs text-app-muted flex-wrap">
+            <span className="flex items-center gap-1 font-medium">
+              <MapPin size={13} className="text-emerald-600" />
+              <span className="truncate">{room.courtName}</span>
+            </span>
+            <span className="text-app-muted/60">•</span>
+            <span className="flex items-center gap-1 font-medium">
+              <Clock size={13} className="text-emerald-600" />
+              <span>{RoomUiFormatters.dateRange(room.startsAt, room.endsAt)}</span>
+            </span>
+          </div>
         </div>
-      )}
+
+        {/* Price Tag */}
+        <div className="flex flex-col items-end shrink-0">
+          <div className="font-mono text-base sm:text-lg text-emerald-600 dark:text-emerald-400 font-black leading-none">
+            {room.fee > 0 ? `${room.fee.toLocaleString('vi-VN')}đ` : 'Miễn phí'}
+            <span className="text-[11px] text-app-muted font-normal ml-0.5">/người</span>
+          </div>
+          <span className="font-mono text-[10px] text-app-muted mt-1 font-medium">
+            Bao gồm cầu & nước
+          </span>
+        </div>
+      </div>
+
+      {/* Lobby Slot Visualizer: Team A vs Team B (Stitch Screen 2 Pattern) */}
+      <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 p-3 rounded-xl flex flex-col md:flex-row items-center justify-between gap-3">
+        {/* Team A */}
+        <div className="flex items-center gap-2.5 w-full md:w-auto">
+          <span className="font-mono text-[10px] text-app-muted uppercase font-bold w-11 shrink-0">Đội A</span>
+          <div className="flex items-center gap-2">
+            {/* Slot 1: Host */}
+            <div className="flex items-center gap-2 bg-white dark:bg-app-surface border border-slate-200 dark:border-slate-800 p-1.5 pr-2.5 rounded-lg shadow-2xs">
+              <div className="relative">
+                <Avatar size="sm" className="w-7 h-7 rounded-full ring-1 ring-emerald-500/40" />
+                <span className="absolute -bottom-1 -right-1 bg-emerald-600 text-white text-[7px] font-black rounded px-0.5 leading-tight">
+                  HOST
+                </span>
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-bold text-app-text leading-tight truncate max-w-[70px]">
+                  {hostShortName}
+                </span>
+                <span className="font-mono text-[9px] text-emerald-600 dark:text-emerald-400 font-bold">
+                  {room.minElo} Elo
+                </span>
+              </div>
+            </div>
+
+            {/* Slot 2 */}
+            {room.reserved >= 2 ? (
+              <div className="flex items-center gap-2 bg-white dark:bg-app-surface border border-slate-200 dark:border-slate-800 p-1.5 pr-2.5 rounded-lg shadow-2xs">
+                <Avatar size="sm" className="w-7 h-7 rounded-full ring-1 ring-slate-200 dark:ring-slate-700" />
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-bold text-app-text leading-tight truncate max-w-[70px]">
+                    VĐV Đội A
+                  </span>
+                  <span className="font-mono text-[9px] text-app-muted font-medium">Đã vào</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-1 bg-emerald-500/10 border border-dashed border-emerald-500/40 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-lg h-[38px] text-[11px] font-bold">
+                <Plus size={13} />
+                <span>Slot 2</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* VS Connector */}
+        <div className="font-mono text-[10px] px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 uppercase font-black tracking-widest shrink-0">
+          VS
+        </div>
+
+        {/* Team B */}
+        <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
+          <div className="flex items-center gap-2">
+            {/* Slot 3 */}
+            {room.reserved >= 3 ? (
+              <div className="flex items-center gap-2 bg-white dark:bg-app-surface border border-slate-200 dark:border-slate-800 p-1.5 pr-2.5 rounded-lg shadow-2xs">
+                <Avatar size="sm" className="w-7 h-7 rounded-full ring-1 ring-slate-200 dark:ring-slate-700" />
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-bold text-app-text leading-tight truncate max-w-[70px]">
+                    VĐV Đội B
+                  </span>
+                  <span className="font-mono text-[9px] text-app-muted font-medium">Đã vào</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-1 bg-emerald-500/10 border border-dashed border-emerald-500/40 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 rounded-lg h-[38px] text-[11px] font-bold">
+                <Plus size={13} />
+                <span>Slot 3</span>
+              </div>
+            )}
+
+            {/* Slot 4 */}
+            {room.reserved >= 4 ? (
+              <div className="flex items-center gap-2 bg-white dark:bg-app-surface border border-slate-200 dark:border-slate-800 p-1.5 pr-2.5 rounded-lg shadow-2xs">
+                <Avatar size="sm" className="w-7 h-7 rounded-full ring-1 ring-slate-200 dark:ring-slate-700" />
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-bold text-app-text leading-tight truncate max-w-[70px]">
+                    VĐV Đội B
+                  </span>
+                  <span className="font-mono text-[9px] text-app-muted font-medium">Đã vào</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-1 bg-emerald-500/10 border border-dashed border-emerald-500/60 text-emerald-700 dark:text-emerald-300 px-2.5 py-1 rounded-lg h-[38px] text-[11px] font-bold animate-pulse">
+                <Plus size={13} />
+                <span>Slot 4 trống</span>
+              </div>
+            )}
+          </div>
+          <span className="font-mono text-[10px] text-app-muted uppercase font-bold w-11 text-right shrink-0">Đội B</span>
+        </div>
+      </div>
+
+      {/* Perks and Action Bar */}
+      <div className="flex items-center justify-between pt-1 border-t border-app-border/60">
+        <div className="flex items-center gap-3 text-app-muted text-xs font-medium">
+          <span className="flex items-center gap-1">
+            <ShieldCheck size={14} className="text-emerald-600" />
+            <span>Trọng tài tính điểm app</span>
+          </span>
+          <span className="hidden sm:flex items-center gap-1">
+            <Sparkles size={14} className="text-emerald-600" />
+            <span>Sân thảm mới</span>
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={onTap}
+          className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs active:scale-95 shrink-0"
+        >
+          <span>Vào phòng đấu</span>
+          <ChevronRight size={14} />
+        </button>
+      </div>
     </div>
   );
 };
