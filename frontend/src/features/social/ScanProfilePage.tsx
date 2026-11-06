@@ -119,7 +119,7 @@ export const ScanProfilePage: React.FC = () => {
 
             <button
               onClick={() => handleOpenProfile(profileInput)}
-              className="w-full py-3 rounded-xl bg-app-primary text-app-background font-black text-xs tracking-wider uppercase hover:brightness-105 transition-all"
+              className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs tracking-wider uppercase transition-all shadow-xs"
             >
               MỞ HỒ SƠ
             </button>

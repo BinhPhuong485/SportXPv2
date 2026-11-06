@@ -353,7 +353,7 @@ export const SocialProfilePage: React.FC = () => {
                   type="button"
                   disabled={actionLoading}
                   onClick={handleSendFriendRequest}
-                  className="w-full py-3 rounded-xl bg-app-primary text-app-on-primary font-black text-xs tracking-wider uppercase hover:brightness-105 active:scale-[0.99] transition-all shadow-xs flex items-center justify-center gap-2"
+                  className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs tracking-wider uppercase transition-all shadow-xs flex items-center justify-center gap-2"
                 >
                   <UserPlus size={16} />
                   <span>{actionLoading ? 'ĐANG GỬI...' : 'GỬI YÊU CẦU KẾT NỐI'}</span>

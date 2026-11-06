@@ -105,7 +105,7 @@ export const CalendarPage: React.FC = () => {
             type="button"
             onClick={handleExportIcs}
             disabled={events.length === 0}
-            className="h-9 px-3 rounded-xl bg-app-primary text-app-on-primary text-xs font-bold flex items-center gap-1.5 hover:brightness-105 active:scale-95 transition-all shadow-2xs disabled:opacity-50"
+            className="h-9 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs disabled:opacity-50"
             title="Tải file .ics đồng bộ Google Calendar, Apple Calendar, Outlook"
           >
             <Download size={14} />

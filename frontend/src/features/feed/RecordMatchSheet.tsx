@@ -208,7 +208,7 @@ export const RecordMatchSheet: React.FC<RecordMatchSheetProps> = ({
           <button
             type="submit"
             disabled={busy}
-            className="w-full h-12 mt-2 rounded-xl bg-app-primary text-app-on-primary font-black text-xs tracking-wider uppercase flex items-center justify-center gap-2 hover:brightness-105 active:scale-[0.99] transition-all disabled:opacity-50"
+            className="w-full h-12 mt-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black text-xs tracking-wider uppercase flex items-center justify-center gap-2 transition-all disabled:opacity-50 shadow-xs"
           >
             {busy ? 'ĐANG GHI NHẬN…' : 'LƯU KẾT QUẢ'}
           </button>
