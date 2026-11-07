@@ -1,6 +1,6 @@
 # Đặc Tả Kiến Trúc & Kế Hoạch Triển Khai Backend Modular Monolith (Spring Boot 3) — SportXPv2
 
-> Cập nhật: 03/11/2026 — **v2.1 PATCHED** (vá 6 Critical Flaws sau Senior Tech Lead Review).
+> Cập nhật: 07/11/2026 — **v2.2 UPDATED** (Cập nhật đồng bộ các tinh chỉnh nghiệp vụ Flow A/B, Join Code Normalization, Auto-Expiry và loại bỏ Stored Procedure).
 > Tài liệu thiết kế kỹ thuật toàn diện cho dịch vụ Backend (thư mục `backend/`) xây dựng theo kiến trúc **Modular Monolith (Package by Feature)** bằng **Java 17/21 + Spring Boot 3.x**, kết nối cơ sở dữ liệu **Supabase PostgreSQL**.
 
 ---
@@ -153,12 +153,45 @@ spring:
 
 ### 4.1 Module Kèo Đấu (`room/`)
 
-*   **Định vị cốt lõi:** Quản lý **Flow A: Sảnh Tuyển Người Công Khai / Lấp Slot Buổi Chơi (`PUBLIC_RECRUIT`)**.
-    - Đây là công cụ kết nối các hội nhóm phong trào đang thiếu chân.
-    - Mặc định **`is_rated = false` (Unrated)**, không gắn bộ máy tính điểm Elo vào phòng này để tránh áp lực trình độ cho người tham gia vãng lai.
+*   **Định vị cốt lõi:** Quản lý **Flow A: Sảnh Tuyển Người Công Khai / Lấp Slot Buổi Chơi (`PUBLIC_RECRUIT`)** và hỗ trợ cấp phát phòng cho **Flow B: Kèo Kín (`PRIVATE_RATED`)**.
+    - **Kiến trúc Decoupling (Loại bỏ RPC cũ):** Tuyệt đối không gọi qua các Stored Procedure PostgreSQL cũ (`room_command_v2`, `list_rooms_v2`, `get_room_v2`) để tránh lỗi chữ ký PostgREST (`PGRST202`). Toàn bộ Business Logic do Spring Boot Service điều phối trực tiếp qua JPA trên `match_rooms` và `room_members`.
+    - Mặc định Flow A là **`is_rated = false` (Unrated)**, không gắn bộ máy tính điểm Elo vào phòng này để tránh áp lực trình độ cho người tham gia vãng lai.
     - Người tham gia chỉ cần xem: *Sân nào, Mấy giờ, Số slot trống, Dải trình độ tham khảo (TB, Khá...), Phí dự kiến*.
     - Tích hợp sẵn `zalo_group_link` do Host đính kèm để thành viên bấm 1 nút mở ngay app Zalo trao đổi trực tiếp.
-    - **Lưu ý:** Module Room không quản lý các trận đấu tính Elo lồng bên trong. Ai muốn thách đấu tính rank sẽ qua Module Match (Flow B).
+    - **Lưu ý:** Flow A không quản lý các trận đấu tính Elo lồng bên trong. Ai muốn thách đấu tính rank sẽ qua Module Match (Flow B).
+
+*   **Chuẩn hóa Tra cứu Mã Phòng (Join Code Normalization) — *[MỚI - v2.2]*:**
+    - Người dùng có thể nhập hoặc dán mã phòng với nhiều định dạng: `XP-AVR2`, `XP - AVR2`, `#XP-AVR2`, `xp-avr2`.
+    - **Tối ưu B-Tree Index Scan (Tránh `CAST(r.id AS string)` Anti-pattern):**
+      Việc ép kiểu `CAST(r.id AS string)` trong SQL query sẽ vô hiệu hóa chỉ mục Primary Key và gây Full Table Scan. Do đó, logic phân tách được xử lý gọn gàng ngay tại tầng Service:
+      ```java
+      // room/service/impl/RoomServiceImpl.java
+      public Optional<MatchRoom> lookupRoom(String rawCode) {
+          if (rawCode == null || rawCode.isBlank()) return Optional.empty();
+          String cleanCode = rawCode.trim().toUpperCase().replaceAll("^#", "").replaceAll("\\s+", "");
+          
+          // Phân nhánh tra cứu chuẩn chỉ mục O(1)
+          if (isValidUUID(cleanCode)) {
+              return matchRoomRepository.findById(UUID.fromString(cleanCode)); // Index Scan PK O(1)
+          }
+          return matchRoomRepository.findByJoinCode(cleanCode); // Index Scan O(1) trên idx_match_rooms_join_code
+      }
+      ```
+
+*   **Cơ chế Tự động Dọn Phòng Quá Hạn Khỏi Public Feed (Auto-Exclusion) — *[MỚI - v2.2]*:**
+    - **Vấn đề thực tế:** Khi buổi chơi đã kết thúc thời gian thi đấu nhưng Host chưa bấm "Kết thúc", phòng vẫn giữ trạng thái `OPEN` và nằm trơ trơ trên bảng tin Public.
+    - **Giải pháp:**
+      1. Truy vấn Public Feed (`GET /api/rooms?scope=discover`) bắt buộc áp dụng điều kiện lọc thời gian thực:
+         ```sql
+         WHERE r.visibility = 'PUBLIC' 
+           AND r.room_type = 'PUBLIC_RECRUIT' 
+           AND r.status = 'OPEN' 
+           AND r.end_time > CURRENT_TIMESTAMP
+         ```
+      2. Bổ sung `RoomAutoExpireScheduler` (chạy mỗi 10 phút): Quét các phòng `status = 'OPEN'` có `end_time < NOW()` và tự động chuyển `status = 'COMPLETED'` để lưu vào Lịch sử.
+
+*   **Quy chuẩn Khởi chạy Kèo Đấu (Bypass Time-gating cho Flow B) — *[MỚI - v2.2]*:**
+    - Đối với Flow B (`PRIVATE_RATED`), bỏ qua ràng buộc khung giờ đặt sân (`OUTSIDE_START_WINDOW`). Host có thể kích hoạt `POST /api/rooms/{id}/start` ngay lập tức để chuyển sang `IN_PROGRESS` phục vụ thi đấu trực tiếp.
 
 *   **Quản lý Slot & Waitlist FIFO *(đã vá Fix #1)*:**
 
@@ -231,7 +264,22 @@ spring:
     - Đơn (1v1): Cả 2 VĐV cùng bấm xác nhận tỉ số.
     - Đôi (2v2): Ít nhất 1 đại diện bên A **và** 1 đại diện bên B bấm xác nhận.
     - Nếu có khiếu nại → Chuyển thành `disputed`, khóa điểm Elo.
+    - **Chống Race Condition Double-Settlement *(Pessimistic Lock trên Trận đấu)*:**
+      Khi VĐV bấm Confirm, service bắt buộc dùng `SELECT ... FOR UPDATE` trên dòng `session_matches`:
+      ```java
+      // match/repository/SessionMatchRepository.java
+      @Lock(LockModeType.PESSIMISTIC_WRITE)
+      @Query("SELECT m FROM SessionMatch m WHERE m.id = :id")
+      Optional<SessionMatch> findByIdForUpdate(@Param("id") UUID id);
+      ```
+      Nếu luồng 1 đã xử lý chuyển `status = confirmed` và cộng điểm Elo xong, luồng 2 đọc thấy `m.status == CONFIRMED` sẽ lập tức trả về kết quả thành công mà không tính điểm lần thứ 2.
     - **Auto-confirm Timeout:** Mỗi trận có `confirmed_deadline = created_at + 24 giờ`. Nếu sau 24h đối thủ không bấm xác nhận hay khiếu nại → hệ thống tự động chuyển `pending → confirmed` và tính Elo.
+    - **Tự động Hoàn tất Phòng (Auto-Closure có điều kiện) — *[MỚI - v2.2]*:** 
+      - Chỉ áp dụng tự động đóng phòng khi `room.room_type == RoomType.PRIVATE_RATED`: Trận đấu chốt kết quả xong thì phòng kết thúc `match_rooms.status = 'COMPLETED'`.
+      - Với Flow A (`PUBLIC_RECRUIT`), buổi chơi gồm nhiều trận đấu liên tục giữa các thành viên, phòng **không bị đóng tự động** mà chỉ kết thúc khi Host bấm Finish hoặc Scheduler quét hết giờ.
+
+*   **Quy chuẩn Điểm số Thể thức Best-of-3 (BO3) — *[MỚI - v2.2]*:**
+    - Hỗ trợ thi đấu 2 set hoặc 3 set (BO3), áp dụng luật cầu lông BWF: Mỗi set 21 điểm (cách biệt 2 điểm), tối đa chạm trần 30 điểm.
 
 *   **Bộ máy tính Elo (`EloEngine`) & Phân bổ 1v1 / 2v2:**
     - **Đánh Đơn (1v1):** `Elo_TeamA = Elo_PlayerA`, `Elo_TeamB = Elo_PlayerB`.
@@ -380,8 +428,18 @@ spring:
 
 ---
 
-## 7. Changelog v2.0 → v2.1 (Tóm tắt thay đổi)
+## 7. Changelog v2.0 → v2.2 (Lịch sử cập nhật kiến trúc)
 
+### Bản cập nhật v2.2 (07/11/2026):
+| Hạng mục | Vấn đề thực tế | Giải pháp Kiến trúc v2.2 |
+| :------- | :------------- | :----------------------- |
+| **Bỏ RPC cũ** | Stored Procedure Postgres (`room_command_v2`) bị lỗi PostgREST `PGRST202` | Tách biệt triệt để khỏi RPC database; toàn bộ nghiệp vụ phòng/trận đấu do Spring Boot Service điều phối trực tiếp qua JPA / Hibernate. |
+| **Join Code Normalization** | Nhập mã có khoảng trắng (`XP - AVR2`) bị báo không tìm thấy phòng | Thêm middleware/service sanitize chuỗi: loại bỏ khoảng trắng, dấu `#`, uppercase trước khi query. Hỗ trợ query cả `join_code` và fallback UUID `id`. |
+| **Dọn phòng quá hạn** | Phòng đã hết giờ đấu vẫn nằm ở sảnh chờ Public "Phòng Chờ Đang Mở" | Query `GET /api/rooms` bắt buộc lọc `end_time > CURRENT_TIMESTAMP`; thêm `RoomAutoExpireScheduler` tự động đóng phòng quá hạn. |
+| **Flow B Instant Start** | Host bị time-gating chặn không cho bắt đầu trận đấu khi chưa tới giờ sân | Cho phép phòng `PRIVATE_RATED` kích hoạt `IN_PROGRESS` ngay lập tức để phục vụ thi đấu & demo. |
+| **Auto-Closure Match** | Đấu xong không tự kết thúc phòng | Khi trận đấu được 2 bên xác nhận (`status = 'confirmed'`), hệ thống tự động hoàn tất `match_rooms.status = 'COMPLETED'`. |
+
+### Bản cập nhật v2.1 (03/11/2026):
 | Fix | Hạng mục | Thay đổi |
 | :-- | :------- | :------- |
 | **#1** | Race Condition (room/) | Thêm Pessimistic Lock vào `findByIdForUpdate()`; đổi flow Waitlist → `INVITED` + TTL 15 phút + `claim-slot` API + `WaitlistExpiryScheduler` |
