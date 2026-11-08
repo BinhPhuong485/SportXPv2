@@ -4,9 +4,7 @@ import {
   Image as ImageIcon,
   Users,
   MapPin,
-  Clock,
   Shield,
-  Activity,
   Flame,
   Plus,
   RefreshCw,
@@ -15,16 +13,14 @@ import {
   Star,
   Swords,
   TrendingUp,
-  UserCheck,
-  Radio,
   CheckCircle2,
   Calendar,
 } from 'lucide-react';
 import { FeedViewProps } from '../types';
 import { PostCard } from '../components/PostCard';
 import { PostSkeleton } from '../components/PostSkeleton';
+import { UrgentRoomCard } from '../components/UrgentRoomCard';
 import { Avatar } from '../../../shared/components/Avatar';
-import { RoomUiFormatters } from '../../rooms/presentation/widgets/roomUiFormatters';
 import { getNextTierProgress } from '../../profile/domain/playerProfile';
 
 export const FeedDesktopView: React.FC<FeedViewProps> = ({
@@ -398,186 +394,10 @@ export const FeedDesktopView: React.FC<FeedViewProps> = ({
             </button>
           </div>
 
-          {/* 3. Featured Urgent Matchmaking Broadcast (Stitch Screen 3 Pattern) */}
-          {(activeTab === 'all' || activeTab === 'general') &&
-            (urgentRoom ? (
-              <article className="bg-white dark:bg-app-surface border border-emerald-500/40 rounded-xl p-4 sm:p-5 shadow-2xs space-y-3.5 relative overflow-hidden">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                      src={urgentRoom.members.find((m) => m.is_host)?.avatar_url}
-                      alt={urgentRoom.hostName}
-                      size="md"
-                      className="w-10 h-10 ring-1 ring-app-border"
-                    />
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-app-text">
-                          {urgentRoom.hostName || 'Chủ phòng'}
-                        </span>
-                        <span className="px-2 py-0.2 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-[10px] font-bold">
-                          Host
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5 text-xs text-app-muted font-medium">
-                        <span>{urgentRoom.courtName}</span>
-                        <span>•</span>
-                        <span>Sắp diễn ra</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 font-mono text-[10px] font-bold border border-rose-500/20">
-                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-                    CẦN TUYỂN GẤP
-                  </span>
-                </div>
-
-                {/* Lobby Brief Box */}
-                <div className="p-3.5 bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 rounded-xl space-y-3">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <h3 className="text-xs sm:text-sm font-bold text-app-text">
-                      {urgentRoom.title || 'Kèo giao lưu cầu lông tuyển slot'}
-                    </h3>
-                    <span className="font-mono text-sm sm:text-base text-emerald-600 dark:text-emerald-400 font-black">
-                      {RoomUiFormatters.currency(urgentRoom.fee)}{' '}
-                      <span className="text-xs text-app-muted font-normal">/ slot</span>
-                    </span>
-                  </div>
-
-                  {/* Court & Slot Metadata 2x2 Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-app-muted font-medium">
-                    <div className="flex items-center gap-2 bg-white dark:bg-app-surface border border-slate-200/70 dark:border-slate-800 p-2.5 rounded-lg shadow-2xs">
-                      <Clock size={16} className="text-emerald-500 shrink-0" />
-                      <div>
-                        <span className="text-app-muted/70 block text-[10px] font-mono font-bold">THỜI GIAN</span>
-                        <span className="text-app-text font-bold">
-                          {RoomUiFormatters.dateRange(urgentRoom.startsAt, urgentRoom.endsAt)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 bg-white dark:bg-app-surface border border-slate-200/70 dark:border-slate-800 p-2.5 rounded-lg shadow-2xs">
-                      <MapPin size={16} className="text-emerald-500 shrink-0" />
-                      <div>
-                        <span className="text-app-muted/70 block text-[10px] font-mono font-bold">ĐỊA ĐIỂM</span>
-                        <span className="text-app-text font-bold">
-                          {urgentRoom.courtName} {urgentRoom.address ? `• ${urgentRoom.address}` : ''}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 bg-white dark:bg-app-surface border border-slate-200/70 dark:border-slate-800 p-2.5 rounded-lg shadow-2xs">
-                      <Shield size={16} className="text-emerald-500 shrink-0" />
-                      <div>
-                        <span className="text-app-muted/70 block text-[10px] font-mono font-bold">YÊU CẦU TRÌNH ĐỘ</span>
-                        <span className="text-app-text font-bold">
-                          {RoomUiFormatters.skillRange(urgentRoom.minElo, urgentRoom.maxElo)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 bg-white dark:bg-app-surface border border-slate-200/70 dark:border-slate-800 p-2.5 rounded-lg shadow-2xs">
-                      <Radio size={16} className="text-emerald-500 shrink-0" />
-                      <div>
-                        <span className="text-app-muted/70 block text-[10px] font-mono font-bold">CẦU / GHI CHÚ</span>
-                        <span className="text-app-text font-bold truncate max-w-[200px]" title={urgentRoom.notes}>
-                          {urgentRoom.notes || 'Cầu lông tiêu chuẩn'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Rosters & Visual Slot Indicator */}
-                  <div className="pt-1">
-                    <div className="flex items-center justify-between text-app-muted font-mono text-[10px] mb-2 font-bold uppercase">
-                      <span>
-                        DANH SÁCH LOBBY ({urgentRoom.reserved}/{urgentRoom.capacity} VĐV)
-                      </span>
-                      <span className="text-emerald-600 dark:text-emerald-400 font-bold">
-                        {urgentRoom.capacity - urgentRoom.reserved > 0
-                          ? `CHỈ CÒN ${urgentRoom.capacity - urgentRoom.reserved} SLOT`
-                          : 'ĐÃ ĐỦ CHỖ'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      {urgentRoom.members.map((member, idx) => (
-                        <div
-                          key={member.user_id || idx}
-                          className="flex items-center gap-2 bg-white dark:bg-app-surface border border-slate-200 dark:border-slate-800 px-2.5 py-1.5 rounded-lg shadow-2xs"
-                        >
-                          <Avatar
-                            src={member.avatar_url}
-                            alt={member.display_name || member.name}
-                            size="sm"
-                            className="w-6 h-6 rounded-full"
-                          />
-                          <span className="text-xs font-bold text-app-text">
-                            {member.display_name || member.name || `VĐV ${idx + 1}`}
-                          </span>
-                        </div>
-                      ))}
-
-                      {Array.from({
-                        length: Math.max(0, urgentRoom.capacity - urgentRoom.reserved),
-                      }).map((_, slotIdx) => (
-                        <button
-                          key={`empty-${slotIdx}`}
-                          type="button"
-                          onClick={() => navigate('/rooms')}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-dashed border-emerald-500 text-emerald-600 dark:text-emerald-400 font-bold text-xs transition-all active:scale-95"
-                        >
-                          <Plus size={14} />
-                          <span>Slot trống (Nhấn vào)</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Lobby Join Action CTA */}
-                <div className="flex items-center justify-between pt-1">
-                  <div className="flex items-center gap-2 text-xs text-app-muted font-medium">
-                    <Activity size={14} className="text-emerald-500" />
-                    <span>Đang mở đăng ký cho mọi VĐV đủ điều kiện Elo</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => navigate('/rooms')}
-                    className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5"
-                  >
-                    <UserCheck size={14} />
-                    <span>
-                      Tham gia ngay (Còn {urgentRoom.capacity - urgentRoom.reserved} slot)
-                    </span>
-                  </button>
-                </div>
-              </article>
-            ) : (
-              <article className="bg-white dark:bg-app-surface border border-dashed border-emerald-500/30 rounded-xl p-4 sm:p-5 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-bold shrink-0">
-                    <Radio size={20} className="animate-pulse" />
-                  </div>
-                  <div>
-                    <h3 className="text-xs sm:text-sm font-bold text-app-text">
-                      Chưa có kèo tuyển gấp nào đang mở
-                    </h3>
-                    <p className="text-xs text-app-muted">
-                      Bạn đang thiếu người ghép đội? Tạo kèo ngay để tuyển đồng đội trong khu vực!
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => navigate('/rooms')}
-                  className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 shrink-0"
-                >
-                  <Plus size={14} />
-                  <span>Tạo kèo mới</span>
-                </button>
-              </article>
-            ))}
+          {/* 3. Featured Urgent Matchmaking Broadcast (Atomic Organism) */}
+          {(activeTab === 'all' || activeTab === 'general') && (
+            <UrgentRoomCard urgentRoom={urgentRoom} />
+          )}
 
           {/* 4. Stream of Post Cards */}
           <div className="space-y-4">
