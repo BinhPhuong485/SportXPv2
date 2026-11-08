@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Zap, Eye, EyeOff, AlertTriangle, AlertCircle, CheckCircle2, AtSign, Lock, IdCard, Calendar } from 'lucide-react';
+import { Zap, Eye, EyeOff, AlertTriangle, AlertCircle, CheckCircle2, AtSign, Lock, IdCard } from 'lucide-react';
 import { supabase, startupError } from '../../core/config/supabase';
 import { ForgotPasswordSheet } from './ForgotPasswordSheet';
 
@@ -14,8 +14,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [gender, setGender] = useState<'male' | 'female' | 'other'>('male');
-  const [age, setAge] = useState<string>('');
   const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -53,10 +51,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
         setError('Nhập ít nhất 2 ký tự cho tên hiển thị.');
         return;
       }
-      if (!age.trim() || isNaN(parseInt(age, 10)) || parseInt(age, 10) < 6 || parseInt(age, 10) > 100) {
-        setError('Vui lòng nhập độ tuổi hợp lệ (từ 6 đến 100 tuổi).');
-        return;
-      }
       if (password.length < 6) {
         setError('Vui lòng nhập mật khẩu ít nhất 6 ký tự.');
         return;
@@ -74,19 +68,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
 
     try {
       if (isSignUp) {
-        const parsedAge = age ? parseInt(age, 10) : null;
-        const currentYear = new Date().getFullYear();
-        const calculatedBirthYear = parsedAge ? currentYear - parsedAge : null;
-
         const { data, error: signUpError } = await supabase.auth.signUp({
           email: trimmedEmail,
           password,
           options: {
             data: {
               display_name: displayName.trim(),
-              gender,
-              age: parsedAge,
-              birth_year: calculatedBirthYear,
             },
           },
         });
@@ -104,9 +91,6 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
               .from('profiles')
               .update({
                 display_name: displayName.trim(),
-                gender,
-                age: parsedAge,
-                birth_year: calculatedBirthYear,
               })
               .eq('id', data.session.user.id);
           } catch {
@@ -205,91 +189,23 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {/* Display Name Field (SignUp only) */}
             {isSignUp && (
-              <>
-                <div className="flex flex-col gap-1 animate-fade-in">
-                  <label className="text-xs font-medium text-app-muted">Tên hiển thị *</label>
-                  <div className="relative flex items-center">
-                    <span className="absolute left-3.5 text-app-muted pointer-events-none">
-                      <IdCard size={20} />
-                    </span>
-                    <input
-                      type="text"
-                      maxLength={60}
-                      disabled={busy}
-                      placeholder="Nhập tên của bạn trên sân"
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      className="w-full h-12 bg-app-surface border border-app-border focus:border-app-primary rounded-[14px] pl-11 pr-4 text-sm text-app-text placeholder:text-app-muted/60 outline-hidden transition-colors"
-                    />
-                  </div>
+              <div className="flex flex-col gap-1 animate-fade-in">
+                <label className="text-xs font-medium text-app-muted">Tên hiển thị *</label>
+                <div className="relative flex items-center">
+                  <span className="absolute left-3.5 text-app-muted pointer-events-none">
+                    <IdCard size={20} />
+                  </span>
+                  <input
+                    type="text"
+                    maxLength={60}
+                    disabled={busy}
+                    placeholder="Nhập tên của bạn trên sân"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    className="w-full h-12 bg-app-surface border border-app-border focus:border-app-primary rounded-[14px] pl-11 pr-4 text-sm text-app-text placeholder:text-app-muted/60 outline-hidden transition-colors"
+                  />
                 </div>
-
-                {/* Giới tính & Tuổi (SignUp only) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-fade-in">
-                  {/* Giới tính */}
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-app-muted">Giới tính *</label>
-                    <div className="grid grid-cols-3 gap-1 h-12 p-1 bg-app-surface border border-app-border rounded-[14px]">
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => setGender('male')}
-                        className={`h-full text-xs font-bold rounded-[10px] transition-all flex items-center justify-center cursor-pointer ${
-                          gender === 'male'
-                            ? 'bg-blue-600 text-white shadow-xs'
-                            : 'text-app-muted hover:text-app-text'
-                        }`}
-                      >
-                        Nam
-                      </button>
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => setGender('female')}
-                        className={`h-full text-xs font-bold rounded-[10px] transition-all flex items-center justify-center cursor-pointer ${
-                          gender === 'female'
-                            ? 'bg-rose-500 text-white shadow-xs'
-                            : 'text-app-muted hover:text-app-text'
-                        }`}
-                      >
-                        Nữ
-                      </button>
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => setGender('other')}
-                        className={`h-full text-xs font-bold rounded-[10px] transition-all flex items-center justify-center cursor-pointer ${
-                          gender === 'other'
-                            ? 'bg-purple-600 text-white shadow-xs'
-                            : 'text-app-muted hover:text-app-text'
-                        }`}
-                      >
-                        Khác
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Tuổi */}
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs font-medium text-app-muted">Độ tuổi *</label>
-                    <div className="relative flex items-center">
-                      <span className="absolute left-3.5 text-app-muted pointer-events-none">
-                        <Calendar size={18} />
-                      </span>
-                      <input
-                        type="number"
-                        min={6}
-                        max={100}
-                        disabled={busy}
-                        placeholder="VD: 24"
-                        value={age}
-                        onChange={(e) => setAge(e.target.value)}
-                        className="w-full h-12 bg-app-surface border border-app-border focus:border-app-primary rounded-[14px] pl-10 pr-4 text-sm text-app-text placeholder:text-app-muted/60 outline-hidden transition-colors"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </>
+              </div>
             )}
 
             {/* Email Field */}

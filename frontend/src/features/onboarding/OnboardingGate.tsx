@@ -60,12 +60,32 @@ export const OnboardingGate: React.FC<OnboardingGateProps> = ({ children }) => {
         tier_name: string | null;
       };
 
+      // Query gender and age from profiles table or auth user metadata
+      let gender: 'male' | 'female' | 'other' | null = (user?.user_metadata?.gender as any) || null;
+      let age: number | null = user?.user_metadata?.age != null ? Number(user.user_metadata.age) : null;
+
+      try {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('gender, age')
+          .eq('id', userId)
+          .maybeSingle();
+        if (prof) {
+          if (prof.gender) gender = prof.gender as 'male' | 'female' | 'other';
+          if (prof.age != null) age = Number(prof.age);
+        }
+      } catch {
+        // non-blocking
+      }
+
       setState({
         step: raw.onboarding_step,
         answers: raw.answers || [],
         displayName: raw.display_name,
         eloRating: raw.elo_rating,
         tierName: raw.tier_name,
+        gender,
+        age,
       });
     } catch {
       if (!state) {
@@ -74,11 +94,47 @@ export const OnboardingGate: React.FC<OnboardingGateProps> = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [userId, isSkipOnboarding]);
+  }, [userId, isSkipOnboarding, user?.user_metadata]);
 
   useEffect(() => {
     loadOnboardingState();
   }, [loadOnboardingState]);
+
+  const handleSaveDemographics = async (
+    gender: 'male' | 'female' | 'other',
+    age: number
+  ): Promise<void> => {
+    if (!supabase || !userId) throw new Error('Supabase client not available');
+    const currentYear = new Date().getFullYear();
+    const birthYear = currentYear - age;
+
+    try {
+      await supabase
+        .from('profiles')
+        .update({
+          gender,
+          age,
+          birth_year: birthYear,
+        })
+        .eq('id', userId);
+    } catch {
+      // non-blocking
+    }
+
+    try {
+      await supabase.auth.updateUser({
+        data: {
+          gender,
+          age,
+          birth_year: birthYear,
+        },
+      });
+    } catch {
+      // non-blocking
+    }
+
+    setState((prev) => (prev ? { ...prev, gender, age } : null));
+  };
 
   const handleSaveAnswer = async (
     questionIndex: number,
@@ -105,6 +161,8 @@ export const OnboardingGate: React.FC<OnboardingGateProps> = ({ children }) => {
       displayName: raw.display_name,
       eloRating: raw.elo_rating,
       tierName: raw.tier_name,
+      gender: state?.gender,
+      age: state?.age,
     };
     setState(nextState);
     return nextState;
@@ -158,6 +216,7 @@ export const OnboardingGate: React.FC<OnboardingGateProps> = ({ children }) => {
     <OnboardingPage
       initialState={state}
       onSaveAnswer={handleSaveAnswer}
+      onSaveDemographics={handleSaveDemographics}
       onComplete={loadOnboardingState}
       onSignOut={signOut}
     />
