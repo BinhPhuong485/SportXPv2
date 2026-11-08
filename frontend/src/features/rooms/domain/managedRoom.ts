@@ -92,6 +92,7 @@ export interface ManagedRoomData {
   canRegister: boolean;
   canEdit: boolean;
   statusLabel: string;
+  targetGender?: 'all' | 'male' | 'female';
 }
 
 export function parseManagedRoom(json: Record<string, unknown>): ManagedRoomData {
@@ -239,6 +240,7 @@ export function parseManagedRoom(json: Record<string, unknown>): ManagedRoomData
     canRegister,
     canEdit,
     statusLabel,
+    targetGender: (json.target_gender as 'all' | 'male' | 'female') || (json.targetGender as 'all' | 'male' | 'female') || 'all',
   };
 }
 
@@ -249,6 +251,7 @@ export class RoomFilterState {
   skill: number | null = null;
   maxFee: number | null = null;
   availableOnly: boolean = false;
+  gender: 'all' | 'male' | 'female' | null = null;
 
   constructor(init?: Partial<RoomFilterState>) {
     if (init) Object.assign(this, init);
@@ -261,7 +264,8 @@ export class RoomFilterState {
       this.date !== null ||
       this.skill !== null ||
       this.maxFee !== null ||
-      this.availableOnly
+      this.availableOnly ||
+      this.gender !== null
     );
   }
 
@@ -272,6 +276,7 @@ export class RoomFilterState {
     this.skill = null;
     this.maxFee = null;
     this.availableOnly = false;
+    this.gender = null;
   }
 }
 

@@ -112,6 +112,12 @@ export const ManagedRoomsPage: React.FC = () => {
             );
           });
         }
+        if (filter.gender !== null) {
+          filtered = filtered.filter((r) => {
+            const roomGen = r.targetGender || 'all';
+            return roomGen === filter.gender;
+          });
+        }
 
         setItems((prev) => (reset ? filtered : [...prev, ...filtered]));
         setMore(rows.length === 50);
@@ -221,14 +227,14 @@ export const ManagedRoomsPage: React.FC = () => {
               type="button"
               onClick={() => setIsFilterOpen(true)}
               className={`h-9 px-3.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold shadow-2xs shrink-0 transition-all active:scale-95 ${
-                filter.area !== 'Tất cả' || filter.skill !== null || filter.date !== null
+                filter.hasActiveFilter
                   ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-500 text-emerald-600 dark:text-emerald-400'
                   : 'bg-white dark:bg-app-surface border-app-border text-app-text hover:border-emerald-500/50'
               }`}
             >
               <SlidersHorizontal size={14} className="text-emerald-600" />
               <span>Bộ lọc</span>
-              {(filter.area !== 'Tất cả' || filter.skill !== null || filter.date !== null) && (
+              {filter.hasActiveFilter && (
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
               )}
             </button>
@@ -273,6 +279,29 @@ export const ManagedRoomsPage: React.FC = () => {
             >
               <Activity size={11} className="text-emerald-600" />
               <span>{filter.skill !== null ? `${filter.skill} Elo` : 'Trình độ'}</span>
+              <ChevronDown size={11} className="text-app-muted" />
+            </button>
+
+            {/* Gender Chip */}
+            <button
+              type="button"
+              onClick={() => setIsFilterOpen(true)}
+              className={`h-7 px-2.5 rounded-full border text-[11px] font-semibold flex items-center gap-1 shrink-0 whitespace-nowrap shadow-2xs transition-colors ${
+                filter.gender !== null
+                  ? 'bg-purple-50 dark:bg-purple-950/30 border-purple-500 text-purple-700 dark:text-purple-300 font-bold'
+                  : 'bg-white dark:bg-app-surface border-app-border text-app-text hover:border-emerald-500'
+              }`}
+            >
+              <Users size={11} className={filter.gender !== null ? 'text-purple-600' : 'text-emerald-600'} />
+              <span>
+                {filter.gender === 'male'
+                  ? 'Kèo Nam (♂)'
+                  : filter.gender === 'female'
+                  ? 'Kèo Nữ (♀)'
+                  : filter.gender === 'all'
+                  ? 'Nam & Nữ'
+                  : 'Giới tính: Mọi kèo'}
+              </span>
               <ChevronDown size={11} className="text-app-muted" />
             </button>
 
@@ -349,8 +378,8 @@ export const ManagedRoomsPage: React.FC = () => {
             </div>
           </div>
 
-          {/* 4-Field Detail Filter Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5">
+          {/* 5-Field Detail Filter Grid */}
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-2.5">
             {/* Area */}
             <div
               onClick={() => setIsFilterOpen(true)}
@@ -379,6 +408,29 @@ export const ManagedRoomsPage: React.FC = () => {
                   <span className="font-mono text-[10px] text-app-muted leading-none font-bold uppercase">Trình Độ Elo</span>
                   <span className="text-xs font-bold text-app-text leading-tight mt-0.5 truncate">
                     {filter.skill !== null ? `${filter.skill} Elo` : 'Bán chuyên & Phong trào'}
+                  </span>
+                </div>
+              </div>
+              <ChevronDown size={14} className="text-app-muted shrink-0" />
+            </div>
+
+            {/* Gender */}
+            <div
+              onClick={() => setIsFilterOpen(true)}
+              className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-800 px-3.5 py-2 rounded-lg flex items-center justify-between text-app-text cursor-pointer hover:border-emerald-500/50 transition-colors"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <Users size={16} className="text-emerald-600 shrink-0" />
+                <div className="flex flex-col min-w-0">
+                  <span className="font-mono text-[10px] text-app-muted leading-none font-bold uppercase">Giới Tính</span>
+                  <span className="text-xs font-bold text-app-text leading-tight mt-0.5 truncate">
+                    {filter.gender === 'male'
+                      ? 'Chỉ Nam (♂)'
+                      : filter.gender === 'female'
+                      ? 'Chỉ Nữ (♀)'
+                      : filter.gender === 'all'
+                      ? 'Nam & Nữ'
+                      : 'Tất cả giới tính'}
                   </span>
                 </div>
               </div>

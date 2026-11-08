@@ -28,6 +28,9 @@ export interface PlayerProfile {
   zaloLink?: string | null;
   facebookLink?: string | null;
   bio?: string | null;
+  gender?: 'male' | 'female' | 'other' | null;
+  age?: number | null;
+  birthYear?: number | null;
   createdAt?: string | null;
   onboardingStep: number;
   isIdentityVerified: boolean;

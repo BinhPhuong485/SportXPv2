@@ -311,29 +311,39 @@ export const PrivateGameLobbyPage: React.FC<PrivateGameLobbyPageProps> = ({ room
     h2hMatchesLast24h: 0,
   });
 
+  const statusLabel = isCompleted
+    ? 'Đã kết thúc'
+    : isStarted
+    ? 'Đang diễn ra'
+    : isRoomFull
+    ? 'Sẵn sàng đấu'
+    : 'Đang đợi đối thủ';
+
   return (
     <div className="min-h-screen w-full bg-app-background text-app-text flex flex-col select-none antialiased">
       {/* ============================================================== */}
       {/* 1. TOP APP BAR (Consistent with RoomDetailPage & SportXP)     */}
       {/* ============================================================== */}
       <header className="sticky top-0 z-30 w-full bg-app-surface/95 backdrop-blur-md border-b border-app-border">
-        <div className="w-full max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 md:px-6 h-14 md:h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
+        <div className="w-full max-w-content md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-3 sm:px-4 md:px-6 h-14 md:h-16 flex items-center justify-between gap-2">
+          {/* Left: Back button & Title block */}
+          <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1">
             <button
               onClick={() => navigate('/rooms')}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-app-text hover:bg-app-background transition-colors cursor-pointer"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-app-text hover:bg-app-background transition-colors cursor-pointer shrink-0"
               title="Quay lại danh sách kèo"
             >
               <ArrowLeft size={18} />
             </button>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/50 flex items-center gap-1">
+            <div className="flex flex-col min-w-0">
+              {/* Desktop/Tablet badges */}
+              <div className="hidden sm:flex items-center gap-2 mb-0.5">
+                <span className="text-[11px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/50 flex items-center gap-1 whitespace-nowrap">
                   <Trophy size={11} className="text-emerald-600" />
                   <span>{is1v1 ? 'Đấu Đơn 1v1 Tính Elo' : 'Đấu Đôi 2v2 Tính Elo'}</span>
                 </span>
                 <span
-                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full border whitespace-nowrap ${
                     isCompleted
                       ? 'bg-slate-100 text-slate-600 border-slate-200'
                       : isStarted
@@ -343,43 +353,69 @@ export const PrivateGameLobbyPage: React.FC<PrivateGameLobbyPageProps> = ({ room
                       : 'bg-amber-50 text-amber-700 border-amber-200'
                   }`}
                 >
-                  {isCompleted
-                    ? 'Đã kết thúc'
-                    : isStarted
-                    ? 'Đang diễn ra'
-                    : isRoomFull
-                    ? 'Sẵn sàng đấu'
-                    : 'Đang đợi đối thủ'}
+                  {statusLabel}
                 </span>
               </div>
-              <h1 className="text-sm sm:text-base font-extrabold text-app-text truncate max-w-[220px] sm:max-w-md">
+              {/* Main Room Title */}
+              <h1 className="text-sm sm:text-base font-extrabold text-app-text truncate">
                 {room.title || 'Phòng Thi Đấu 1v1'}
               </h1>
+              {/* Mobile-only compact status sub-line */}
+              <div className="flex sm:hidden items-center gap-1.5 text-[11px] text-app-muted truncate">
+                <span className="inline-flex items-center gap-1 font-bold">
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                      isStarted
+                        ? 'bg-rose-500 animate-pulse'
+                        : isRoomFull
+                        ? 'bg-emerald-500'
+                        : 'bg-amber-500'
+                    }`}
+                  />
+                  <span
+                    className={
+                      isStarted
+                        ? 'text-rose-600 dark:text-rose-400'
+                        : isRoomFull
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-amber-600 dark:text-amber-400'
+                    }
+                  >
+                    {statusLabel}
+                  </span>
+                </span>
+                <span>•</span>
+                <span className="truncate">{is1v1 ? 'Đơn 1v1 Elo' : 'Đôi 2v2 Elo'}</span>
+              </div>
             </div>
           </div>
 
-          {/* Quick Header Actions */}
-          <div className="flex items-center gap-1.5">
+          {/* Right: Quick Header Actions */}
+          <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
             {/* Join Code Chip */}
             <button
               type="button"
               onClick={handleCopyCode}
-              className="h-8 sm:h-9 px-2.5 sm:px-3 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-app-text font-mono text-xs font-bold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer shadow-2xs"
+              className="h-8 sm:h-9 px-2 sm:px-3 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-app-text font-mono text-xs font-bold flex items-center gap-1 sm:gap-1.5 transition-all active:scale-95 cursor-pointer shadow-2xs"
               title="Nhấn để chép mã phòng"
             >
-              <span className="text-app-muted font-sans font-normal text-[11px]">MÃ:</span>
-              <span className="text-emerald-700 dark:text-emerald-400 font-black">{joinCode}</span>
-              {copiedCode ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} className="text-app-muted" />}
+              <span className="hidden sm:inline text-app-muted font-sans font-normal text-[11px]">MÃ:</span>
+              <span className="text-emerald-700 dark:text-emerald-400 font-black">#{joinCode}</span>
+              {copiedCode ? (
+                <Check size={12} className="text-emerald-600 shrink-0" />
+              ) : (
+                <Copy size={12} className="text-app-muted shrink-0" />
+              )}
             </button>
 
             {/* QR Code trigger */}
             <button
               type="button"
               onClick={() => setShowQrModal(true)}
-              className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-app-text flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+              className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-app-text flex items-center justify-center transition-all cursor-pointer shadow-2xs shrink-0"
               title="Mã QR phòng"
             >
-              <QrCode size={16} />
+              <QrCode size={15} />
             </button>
 
             {/* Reload button */}
@@ -389,10 +425,10 @@ export const PrivateGameLobbyPage: React.FC<PrivateGameLobbyPageProps> = ({ room
                 onReload();
                 loadMatches();
               }}
-              className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-app-text flex items-center justify-center transition-all cursor-pointer shadow-2xs"
+              className="w-8 sm:w-9 h-8 sm:h-9 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-app-text flex items-center justify-center transition-all cursor-pointer shadow-2xs shrink-0"
               title="Tải lại phòng"
             >
-              <RotateCcw size={15} className={busy ? 'animate-spin text-emerald-600' : ''} />
+              <RotateCcw size={14} className={busy ? 'animate-spin text-emerald-600' : ''} />
             </button>
           </div>
         </div>
@@ -430,7 +466,30 @@ export const PrivateGameLobbyPage: React.FC<PrivateGameLobbyPageProps> = ({ room
       {/* ============================================================== */}
       {/* 3. MAIN ARENA CONTENT (SportXP Light Theme)                    */}
       {/* ============================================================== */}
-      <main className="w-full max-w-content md:max-w-4xl lg:max-w-5xl mx-auto px-4 md:px-6 py-5 flex flex-col gap-5 flex-1">
+      <main className="w-full max-w-content md:max-w-4xl lg:max-w-5xl mx-auto px-4 md:px-6 py-4 sm:py-5 flex flex-col gap-4 sm:gap-5 flex-1">
+        {/* Mobile Format & Status Badge Bar */}
+        <div className="flex sm:hidden items-center justify-between gap-2 px-0.5">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[11px] font-black uppercase px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/50 flex items-center gap-1 shadow-2xs whitespace-nowrap">
+              <Trophy size={12} className="text-emerald-600 shrink-0" />
+              <span>{is1v1 ? 'Đấu Đơn 1v1 Tính Elo' : 'Đấu Đôi 2v2 Tính Elo'}</span>
+            </span>
+            <span
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border whitespace-nowrap ${
+                isCompleted
+                  ? 'bg-slate-100 text-slate-600 border-slate-200'
+                  : isStarted
+                  ? 'bg-rose-50 text-rose-700 border-rose-200'
+                  : isRoomFull
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : 'bg-amber-50 text-amber-700 border-amber-200'
+              }`}
+            >
+              {statusLabel}
+            </span>
+          </div>
+        </div>
+
         {/* ============================================================ */}
         {/* ARENA CARD: BADMINTON COURT (BÊN A VS BÊN B)                */}
         {/* ============================================================ */}
