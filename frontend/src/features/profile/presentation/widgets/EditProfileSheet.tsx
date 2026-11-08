@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, MapPin, Phone, MessageSquare, ExternalLink, FileText } from 'lucide-react';
+import { X, User, MapPin, Phone, MessageSquare, ExternalLink, FileText, Calendar } from 'lucide-react';
 import { PlayerProfile } from '../../domain/playerProfile';
 import { Court } from '../../../rooms/data/managedRoomRepository';
 import { Button } from '../../../../shared/components/Button';
@@ -17,6 +17,9 @@ interface EditProfileSheetProps {
     facebookLink?: string | null;
     bio?: string | null;
     district?: string | null;
+    gender?: 'male' | 'female' | 'other' | null;
+    age?: number | null;
+    birthYear?: number | null;
   }) => Promise<void>;
 }
 
@@ -30,6 +33,8 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
   const [displayName, setDisplayName] = useState(profile.displayName || '');
   const [homeCourtId, setHomeCourtId] = useState<string | null>(profile.homeCourtId || null);
   const [district, setDistrict] = useState(profile.district || '');
+  const [gender, setGender] = useState<'male' | 'female' | 'other' | null>(profile.gender || null);
+  const [age, setAge] = useState<string>(profile.age != null ? String(profile.age) : '');
   const [zaloPhone, setZaloPhone] = useState(profile.zaloPhone || '');
   const [zaloLink, setZaloLink] = useState(profile.zaloLink || '');
   const [facebookLink, setFacebookLink] = useState(profile.facebookLink || '');
@@ -45,6 +50,8 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
       setDisplayName(profile.displayName || '');
       setHomeCourtId(profile.homeCourtId || null);
       setDistrict(profile.district || '');
+      setGender(profile.gender || null);
+      setAge(profile.age != null ? String(profile.age) : '');
       setZaloPhone(profile.zaloPhone || '');
       setZaloLink(profile.zaloLink || '');
       setFacebookLink(profile.facebookLink || '');
@@ -82,6 +89,12 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
     setSaving(true);
     setError(null);
     try {
+      const parsedAge = age.trim() ? parseInt(age.trim(), 10) : null;
+      if (parsedAge !== null && (isNaN(parsedAge) || parsedAge < 6 || parsedAge > 100)) {
+        setError('Độ tuổi không hợp lệ (từ 6 đến 100 tuổi).');
+        setSaving(false);
+        return;
+      }
       await onSave({
         displayName: trimmed,
         homeCourtId,
@@ -90,6 +103,9 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
         zaloLink: zaloLink.trim() || null,
         facebookLink: facebookLink.trim() || null,
         bio: bio.trim() || null,
+        gender: gender || null,
+        age: parsedAge,
+        birthYear: parsedAge ? new Date().getFullYear() - parsedAge : null,
       });
       onClose();
     } catch (err: unknown) {
@@ -151,6 +167,66 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
                 placeholder="Nhập tên hiển thị..."
                 className="w-full h-12 pl-10 pr-4 rounded-btn bg-app-background border border-app-border text-app-text text-sm font-semibold focus:outline-hidden focus:border-app-primary focus:ring-1 focus:ring-app-primary/30 transition-all"
               />
+            </div>
+          </div>
+
+          {/* Gender & Age field */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Gender */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-black text-app-text">Giới tính</label>
+              <div className="grid grid-cols-3 gap-1 h-12 p-1 bg-app-background border border-app-border rounded-btn">
+                <button
+                  type="button"
+                  onClick={() => setGender('male')}
+                  className={`h-full text-xs font-bold rounded-lg transition-all flex items-center justify-center cursor-pointer ${
+                    gender === 'male'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-app-muted hover:text-app-text'
+                  }`}
+                >
+                  Nam
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGender('female')}
+                  className={`h-full text-xs font-bold rounded-lg transition-all flex items-center justify-center cursor-pointer ${
+                    gender === 'female'
+                      ? 'bg-rose-500 text-white shadow-xs'
+                      : 'text-app-muted hover:text-app-text'
+                  }`}
+                >
+                  Nữ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGender('other')}
+                  className={`h-full text-xs font-bold rounded-lg transition-all flex items-center justify-center cursor-pointer ${
+                    gender === 'other'
+                      ? 'bg-purple-600 text-white shadow-xs'
+                      : 'text-app-muted hover:text-app-text'
+                  }`}
+                >
+                  Khác
+                </button>
+              </div>
+            </div>
+
+            {/* Age */}
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-black text-app-text">Độ tuổi</label>
+              <div className="relative flex items-center">
+                <Calendar size={16} className="absolute left-3.5 text-app-muted pointer-events-none" />
+                <input
+                  type="number"
+                  min={6}
+                  max={100}
+                  value={age}
+                  onChange={(e) => setAge(e.target.value)}
+                  placeholder="VD: 24"
+                  className="w-full h-12 pl-10 pr-4 rounded-btn bg-app-background border border-app-border text-app-text text-sm font-semibold focus:outline-hidden focus:border-app-primary focus:ring-1 focus:ring-app-primary/30 transition-all"
+                />
+              </div>
             </div>
           </div>
 

@@ -38,6 +38,9 @@ CREATE TABLE public.profiles (
   zalo_link text,
   facebook_link text,
   bio text,
+  gender text CHECK (gender IN ('male', 'female', 'other')),
+  age integer CHECK (age >= 6 AND age <= 120),
+  birth_year integer,
   CONSTRAINT profiles_pkey PRIMARY KEY (id),
   CONSTRAINT profiles_id_fkey FOREIGN KEY (id) REFERENCES auth.users(id),
   CONSTRAINT profiles_home_court_id_fkey FOREIGN KEY (home_court_id) REFERENCES public.courts(id)
