@@ -11,6 +11,7 @@ import {
   User,
   Calendar,
   ArrowRight,
+  Lock,
 } from 'lucide-react';
 import { ONBOARDING_QUESTIONS, calculateRawElo, MAXIMUM_INITIAL_ELO } from './onboardingQuiz';
 import { BentoCard } from '../../shared/components/BentoCard';
@@ -76,6 +77,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   // Demographics step (Age & Gender) shown right after signup and before questions
+  const isGenderLocked = Boolean(initialState.gender);
   const [showDemographics, setShowDemographics] = useState<boolean>(() => {
     if (forcedStep !== null) return false;
     return !initialState.gender || !initialState.age;
@@ -101,7 +103,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
     setDemographicsError(null);
     try {
       if (onSaveDemographics) {
-        await onSaveDemographics(gender, parsedAge);
+        await onSaveDemographics(isGenderLocked ? initialState.gender! : gender, parsedAge);
       }
       setShowDemographics(false);
     } catch {
@@ -184,15 +186,29 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
               <div className="flex flex-col gap-5">
                 {/* Gender field */}
                 <div className="flex flex-col gap-2">
-                  <label className="text-xs font-bold text-app-text uppercase tracking-wider flex items-center gap-1.5">
-                    <User size={14} className="text-app-primary" />
-                    Giới tính của bạn
-                  </label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-app-text uppercase tracking-wider flex items-center gap-1.5">
+                      <User size={14} className="text-app-primary" />
+                      Giới tính của bạn
+                    </label>
+                    {isGenderLocked ? (
+                      <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                        <Lock size={11} /> Cố định
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                        Chỉ chọn 1 lần
+                      </span>
+                    )}
+                  </div>
+                  <div className={`grid grid-cols-3 gap-2 ${isGenderLocked ? 'opacity-85' : ''}`}>
                     <button
                       type="button"
-                      onClick={() => setGender('male')}
-                      className={`h-12 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 border cursor-pointer ${
+                      disabled={isGenderLocked}
+                      onClick={() => !isGenderLocked && setGender('male')}
+                      className={`h-12 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 border ${
+                        isGenderLocked ? 'cursor-not-allowed' : 'cursor-pointer'
+                      } ${
                         gender === 'male'
                           ? 'bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-blue-600/30'
                           : 'bg-app-background border-app-border text-app-muted hover:text-app-text hover:border-app-border/80'
@@ -203,8 +219,11 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
                     </button>
                     <button
                       type="button"
-                      onClick={() => setGender('female')}
-                      className={`h-12 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 border cursor-pointer ${
+                      disabled={isGenderLocked}
+                      onClick={() => !isGenderLocked && setGender('female')}
+                      className={`h-12 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 border ${
+                        isGenderLocked ? 'cursor-not-allowed' : 'cursor-pointer'
+                      } ${
                         gender === 'female'
                           ? 'bg-rose-500 text-white border-rose-500 shadow-md ring-2 ring-rose-500/30'
                           : 'bg-app-background border-app-border text-app-muted hover:text-app-text hover:border-app-border/80'
@@ -215,8 +234,11 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
                     </button>
                     <button
                       type="button"
-                      onClick={() => setGender('other')}
-                      className={`h-12 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 border cursor-pointer ${
+                      disabled={isGenderLocked}
+                      onClick={() => !isGenderLocked && setGender('other')}
+                      className={`h-12 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 border ${
+                        isGenderLocked ? 'cursor-not-allowed' : 'cursor-pointer'
+                      } ${
                         gender === 'other'
                           ? 'bg-purple-600 text-white border-purple-600 shadow-md ring-2 ring-purple-600/30'
                           : 'bg-app-background border-app-border text-app-muted hover:text-app-text hover:border-app-border/80'
@@ -226,6 +248,15 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
                       {gender === 'other' && <CheckCircle2 size={15} />}
                     </button>
                   </div>
+                  {isGenderLocked ? (
+                    <p className="text-[11px] text-app-muted">
+                      Giới tính đã được xác thực và không thể thay đổi.
+                    </p>
+                  ) : (
+                    <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                      Lưu ý: Giới tính không thể thay đổi sau khi xác nhận.
+                    </p>
+                  )}
                 </div>
 
                 {/* Age field */}
@@ -376,7 +407,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
                     className="flex items-center gap-1 text-xs text-app-primary hover:underline font-semibold cursor-pointer"
                   >
                     <ArrowLeft size={14} />
-                    <span>Sửa tuổi & giới tính</span>
+                    <span>{isGenderLocked ? 'Sửa thông tin độ tuổi' : 'Sửa tuổi & giới tính'}</span>
                   </button>
                 )}
               </div>

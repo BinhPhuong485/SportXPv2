@@ -40,3 +40,20 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- 5. Trigger bảo đảm tính bất biến: Không cho phép đổi giới tính khi đã có
+CREATE OR REPLACE FUNCTION public.prevent_gender_modification()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF OLD.gender IS NOT NULL AND NEW.gender IS DISTINCT FROM OLD.gender THEN
+    RAISE EXCEPTION 'Giới tính đã được thiết lập và không thể thay đổi.';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_prevent_gender_modification ON public.profiles;
+CREATE TRIGGER trg_prevent_gender_modification
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION public.prevent_gender_modification();

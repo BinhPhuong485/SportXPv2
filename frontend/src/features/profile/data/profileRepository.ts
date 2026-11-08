@@ -278,7 +278,19 @@ export class ProfileRepository {
       updates.district = params.district && params.district.trim().length > 0 ? params.district.trim() : null;
     }
     if (params.gender !== undefined) {
-      updates.gender = params.gender || null;
+      try {
+        const { data: cur } = await supabase
+          .from('profiles')
+          .select('gender')
+          .eq('id', user.id)
+          .maybeSingle();
+        // Only allow updating gender if it was never set before
+        if (!cur?.gender) {
+          updates.gender = params.gender || null;
+        }
+      } catch {
+        updates.gender = params.gender || null;
+      }
     }
     if (params.age !== undefined) {
       updates.age = params.age != null ? params.age : null;

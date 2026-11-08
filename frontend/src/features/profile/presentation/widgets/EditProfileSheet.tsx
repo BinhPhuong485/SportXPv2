@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, User, MapPin, Phone, MessageSquare, ExternalLink, FileText, Calendar } from 'lucide-react';
+import { X, User, MapPin, Phone, MessageSquare, ExternalLink, FileText, Calendar, Lock } from 'lucide-react';
 import { PlayerProfile } from '../../domain/playerProfile';
 import { Court } from '../../../rooms/data/managedRoomRepository';
 import { Button } from '../../../../shared/components/Button';
@@ -30,6 +30,7 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
   onClose,
   onSave,
 }) => {
+  const isGenderLocked = Boolean(profile.gender);
   const [displayName, setDisplayName] = useState(profile.displayName || '');
   const [homeCourtId, setHomeCourtId] = useState<string | null>(profile.homeCourtId || null);
   const [district, setDistrict] = useState(profile.district || '');
@@ -103,7 +104,7 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
         zaloLink: zaloLink.trim() || null,
         facebookLink: facebookLink.trim() || null,
         bio: bio.trim() || null,
-        gender: gender || null,
+        gender: isGenderLocked ? profile.gender : (gender || null),
         age: parsedAge,
         birthYear: parsedAge ? new Date().getFullYear() - parsedAge : null,
       });
@@ -174,12 +175,31 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Gender */}
             <div className="flex flex-col gap-1.5">
-              <label className="text-xs font-black text-app-text">Giới tính</label>
-              <div className="grid grid-cols-3 gap-1 h-12 p-1 bg-app-background border border-app-border rounded-btn">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-black text-app-text">Giới tính</label>
+                {isGenderLocked ? (
+                  <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                    <Lock size={11} /> Cố định
+                  </span>
+                ) : (
+                  <span className="text-[10px] font-semibold text-app-muted">
+                    Chưa thiết lập
+                  </span>
+                )}
+              </div>
+              <div
+                className={`grid grid-cols-3 gap-1 h-12 p-1 bg-app-background border border-app-border rounded-btn ${
+                  isGenderLocked ? 'opacity-85' : ''
+                }`}
+              >
                 <button
                   type="button"
-                  onClick={() => setGender('male')}
-                  className={`h-full text-xs font-bold rounded-lg transition-all flex items-center justify-center cursor-pointer ${
+                  disabled={isGenderLocked}
+                  onClick={() => !isGenderLocked && setGender('male')}
+                  title={isGenderLocked ? 'Giới tính đã được thiết lập cố định' : undefined}
+                  className={`h-full text-xs font-bold rounded-lg transition-all flex items-center justify-center ${
+                    isGenderLocked ? 'cursor-not-allowed' : 'cursor-pointer'
+                  } ${
                     gender === 'male'
                       ? 'bg-blue-600 text-white shadow-xs'
                       : 'text-app-muted hover:text-app-text'
@@ -189,8 +209,12 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setGender('female')}
-                  className={`h-full text-xs font-bold rounded-lg transition-all flex items-center justify-center cursor-pointer ${
+                  disabled={isGenderLocked}
+                  onClick={() => !isGenderLocked && setGender('female')}
+                  title={isGenderLocked ? 'Giới tính đã được thiết lập cố định' : undefined}
+                  className={`h-full text-xs font-bold rounded-lg transition-all flex items-center justify-center ${
+                    isGenderLocked ? 'cursor-not-allowed' : 'cursor-pointer'
+                  } ${
                     gender === 'female'
                       ? 'bg-rose-500 text-white shadow-xs'
                       : 'text-app-muted hover:text-app-text'
@@ -200,8 +224,12 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setGender('other')}
-                  className={`h-full text-xs font-bold rounded-lg transition-all flex items-center justify-center cursor-pointer ${
+                  disabled={isGenderLocked}
+                  onClick={() => !isGenderLocked && setGender('other')}
+                  title={isGenderLocked ? 'Giới tính đã được thiết lập cố định' : undefined}
+                  className={`h-full text-xs font-bold rounded-lg transition-all flex items-center justify-center ${
+                    isGenderLocked ? 'cursor-not-allowed' : 'cursor-pointer'
+                  } ${
                     gender === 'other'
                       ? 'bg-purple-600 text-white shadow-xs'
                       : 'text-app-muted hover:text-app-text'
@@ -210,6 +238,15 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
                   Khác
                 </button>
               </div>
+              {isGenderLocked ? (
+                <p className="text-[10px] text-app-muted">
+                  Giới tính đã được xác thực và không thể thay đổi.
+                </p>
+              ) : (
+                <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                  Lưu ý: Giới tính sẽ được cố định và không thể đổi sau khi lưu.
+                </p>
+              )}
             </div>
 
             {/* Age */}
@@ -227,6 +264,9 @@ export const EditProfileSheet: React.FC<EditProfileSheetProps> = ({
                   className="w-full h-12 pl-10 pr-4 rounded-btn bg-app-background border border-app-border text-app-text text-sm font-semibold focus:outline-hidden focus:border-app-primary focus:ring-1 focus:ring-app-primary/30 transition-all"
                 />
               </div>
+              <p className="text-[10px] text-app-muted">
+                Có thể cập nhật khi tăng tuổi.
+              </p>
             </div>
           </div>
 
