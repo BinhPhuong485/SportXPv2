@@ -186,9 +186,25 @@ export const RoomCard: React.FC<RoomCardProps> = ({
               Elo {room.minElo} - {room.maxElo} ({RoomUiFormatters.skillRange(room.minElo, room.maxElo)})
             </span>
             <span className="font-mono text-[10px] px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-app-muted border border-app-border font-medium">
-              {room.capacity <= 2 ? 'Đơn (1v1)' : room.capacity === 4 ? 'Đôi Nam / Nữ' : `Kèo ${room.capacity} người`}
+              {room.capacity <= 2 ? 'Đơn (1v1)' : room.capacity === 4 ? 'Đôi' : `Kèo ${room.capacity} người`}
             </span>
             {renderSlotBadge()}
+            {room.targetGender === 'female' ? (
+              <span className="font-mono text-[10px] px-2.5 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/25 font-bold flex items-center gap-1">
+                <span>♀</span>
+                <span>Kèo Nữ</span>
+              </span>
+            ) : room.targetGender === 'male' ? (
+              <span className="font-mono text-[10px] px-2.5 py-0.5 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/25 font-bold flex items-center gap-1">
+                <span>♂</span>
+                <span>Kèo Nam</span>
+              </span>
+            ) : (
+              <span className="font-mono text-[10px] px-2.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/25 font-bold flex items-center gap-1">
+                <span>⚥</span>
+                <span>Nam & Nữ</span>
+              </span>
+            )}
             {room.isRated && (
               <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 border border-amber-500/25 text-[10px] font-mono font-bold flex items-center gap-1">
                 <Trophy size={10} />

@@ -74,6 +74,7 @@ CREATE TABLE public.match_rooms (
   join_code text,
   is_rated boolean NOT NULL DEFAULT false,
   zalo_group_link text,
+  target_gender text DEFAULT 'all'::text CHECK (target_gender = ANY (ARRAY['all'::text, 'male'::text, 'female'::text])),
   CONSTRAINT match_rooms_pkey PRIMARY KEY (id),
   CONSTRAINT match_rooms_court_id_fkey FOREIGN KEY (court_id) REFERENCES public.courts(id),
   CONSTRAINT match_rooms_host_id_fkey FOREIGN KEY (host_id) REFERENCES public.profiles(id)

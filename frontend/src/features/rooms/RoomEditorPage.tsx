@@ -84,6 +84,7 @@ export const RoomEditorPage: React.FC = () => {
   const [zaloGroupLink, setZaloGroupLink] = useState('');
   const [hostPlays, setHostPlays] = useState(true);
   const [isDraft, setIsDraft] = useState(false);
+  const [targetGender, setTargetGender] = useState<'all' | 'male' | 'female'>('all');
 
   // Start date/time state
   const [startsAt, setStartsAt] = useState<Date>(() => {
@@ -133,6 +134,7 @@ export const RoomEditorPage: React.FC = () => {
               }
             }
             if (existing.zaloGroupLink) setZaloGroupLink(existing.zaloGroupLink);
+            if (existing.targetGender) setTargetGender(existing.targetGender);
             if (existing.joinCode) {
               setJoinCode(existing.joinCode);
               setRoomCode(`#${existing.joinCode}`);
@@ -357,6 +359,7 @@ export const RoomEditorPage: React.FC = () => {
         ? `Trận ${matchFormat.toUpperCase()} Tính Điểm Elo [CODE:${effectiveJoinCode}]`
         : notes,
       court_label: courtLabel.trim(),
+      target_gender: targetGender,
       draft: isPrivateRated ? false : isDraft, // NEVER draft for private match
       room_code: roomCode,
       ...(room ? { expected_revision: room.revision } : {}),
@@ -726,6 +729,40 @@ export const RoomEditorPage: React.FC = () => {
                       </div>
                     )}
                   </div>
+                </div>
+              </div>
+
+              {/* 5. YÊU CẦU GIỚI TÍNH ĐỐI THỦ */}
+              <div className="p-4 bg-app-surface rounded-2xl border border-app-border flex flex-col gap-3 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-app-muted uppercase tracking-wider flex items-center gap-1.5">
+                    <Users size={14} className="text-emerald-500" />
+                    <span>GIỚI TÍNH YÊU CẦU</span>
+                  </span>
+                  <span className="text-[11px] font-bold text-emerald-500">
+                    {targetGender === 'female' ? 'Chỉ Nữ (♀)' : targetGender === 'male' ? 'Chỉ Nam (♂)' : 'Nam & Nữ (⚥)'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'all', label: 'Nam & Nữ', icon: '⚥' },
+                    { id: 'male', label: 'Chỉ Nam', icon: '♂' },
+                    { id: 'female', label: 'Chỉ Nữ', icon: '♀' },
+                  ].map((g) => (
+                    <button
+                      key={g.id}
+                      type="button"
+                      onClick={() => setTargetGender(g.id as 'all' | 'male' | 'female')}
+                      className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
+                        targetGender === g.id
+                          ? 'bg-emerald-500/15 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-black shadow-xs'
+                          : 'bg-app-background border-app-border text-app-muted hover:text-app-text hover:border-app-border/80'
+                      }`}
+                    >
+                      <span className="text-sm">{g.icon}</span>
+                      <span>{g.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -1133,6 +1170,41 @@ export const RoomEditorPage: React.FC = () => {
                         </span>
                       </div>
                     </div>
+                  </div>
+                </section>
+
+                {/* YÊU CẦU GIỚI TÍNH */}
+                <section className="bg-app-surface rounded-[20px] p-4 border border-app-border flex flex-col gap-3.5 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs font-extrabold text-app-muted tracking-wider uppercase">
+                      <Users size={15} className="text-app-primary" />
+                      <span>YÊU CẦU GIỚI TÍNH</span>
+                    </div>
+                    <span className="text-[11px] font-bold text-app-primary">
+                      {targetGender === 'female' ? 'Chỉ Nữ (♀)' : targetGender === 'male' ? 'Chỉ Nam (♂)' : 'Nam & Nữ (⚥)'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'all', label: 'Nam & Nữ', icon: '⚥' },
+                      { id: 'male', label: 'Chỉ Nam', icon: '♂' },
+                      { id: 'female', label: 'Chỉ Nữ', icon: '♀' },
+                    ].map((g) => (
+                      <button
+                        key={g.id}
+                        type="button"
+                        onClick={() => setTargetGender(g.id as 'all' | 'male' | 'female')}
+                        className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
+                          targetGender === g.id
+                            ? 'bg-app-primary/15 border-app-primary text-app-primary font-black shadow-xs'
+                            : 'bg-app-background border-app-border text-app-muted hover:text-app-text hover:border-app-border/80'
+                        }`}
+                      >
+                        <span className="text-sm">{g.icon}</span>
+                        <span>{g.label}</span>
+                      </button>
+                    ))}
                   </div>
                 </section>
 

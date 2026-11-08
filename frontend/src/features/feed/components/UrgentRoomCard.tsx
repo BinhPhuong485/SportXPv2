@@ -86,10 +86,28 @@ export const UrgentRoomCard: React.FC<UrgentRoomCardProps> = ({ urgentRoom }) =>
           </div>
         </div>
 
-        <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 font-mono text-[10px] font-bold border border-rose-500/20 shrink-0 whitespace-nowrap">
-          <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-          CẦN TUYỂN GẤP
-        </span>
+        <div className="flex items-center gap-1.5 shrink-0 flex-wrap justify-end">
+          {urgentRoom.targetGender === 'female' ? (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 font-mono text-[10px] font-bold border border-rose-500/20 whitespace-nowrap">
+              <span>♀</span>
+              <span>Kèo Nữ</span>
+            </span>
+          ) : urgentRoom.targetGender === 'male' ? (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono text-[10px] font-bold border border-blue-500/20 whitespace-nowrap">
+              <span>♂</span>
+              <span>Kèo Nam</span>
+            </span>
+          ) : (
+            <span className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-600 dark:text-purple-400 font-mono text-[10px] font-bold border border-purple-500/20 whitespace-nowrap">
+              <span>⚥</span>
+              <span>Nam & Nữ</span>
+            </span>
+          )}
+          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 font-mono text-[10px] font-bold border border-rose-500/20 shrink-0 whitespace-nowrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+            CẦN TUYỂN GẤP
+          </span>
+        </div>
       </div>
 
       {/* 2. Lobby Brief Box */}
@@ -238,3 +256,4 @@ export const UrgentRoomCard: React.FC<UrgentRoomCardProps> = ({ urgentRoom }) =>
     </article>
   );
 };
+
