@@ -14,3 +14,4 @@ COMMENT ON COLUMN public.match_rooms.target_gender IS 'Yêu cầu giới tính c
 UPDATE public.match_rooms
 SET target_gender = 'all'
 WHERE target_gender IS NULL;
+
