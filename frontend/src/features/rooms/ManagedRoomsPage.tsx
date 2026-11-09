@@ -207,7 +207,7 @@ export const ManagedRoomsPage: React.FC = () => {
 
   return (
     <div className="w-full flex flex-col bg-app-background min-h-[calc(100vh-64px)] select-none pb-12">
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col gap-5">
+      <div className="w-full max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 pt-0.5 sm:pt-2 md:pt-3 pb-5 flex flex-col gap-4 sm:gap-5">
         {/* ========================================================= */}
         {/* MOBILE COMPACT FILTER DOCK (< md) - No search bar         */}
         {/* ========================================================= */}

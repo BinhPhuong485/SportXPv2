@@ -5,20 +5,15 @@ import {
   Trophy,
   Star,
   RefreshCw,
-  Award,
-  ChevronRight,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
 import { FeedViewProps } from '../types';
 import { PostCard } from '../components/PostCard';
 import { PostSkeleton } from '../components/PostSkeleton';
-import { UpcomingRoomsStrip } from '../../calendar/presentation/widgets/UpcomingRoomsStrip';
 import { Avatar } from '../../../shared/components/Avatar';
 
 export const FeedTabletView: React.FC<FeedViewProps> = ({
   posts,
   filteredPosts,
-  upcomingEvents,
   activeTab,
   setActiveTab,
   loading,
@@ -31,18 +26,9 @@ export const FeedTabletView: React.FC<FeedViewProps> = ({
   onRefreshFeed,
   onShowToast,
 }) => {
-  const navigate = useNavigate();
-
   return (
     <div className="w-full max-w-[720px] md:max-w-[760px] lg:max-w-[820px] mx-auto flex flex-col gap-4 pb-12 select-none px-2 sm:px-4">
-      {/* 1. Upcoming Matches Carousel Strip */}
-      {upcomingEvents.length > 0 && (
-        <div className="w-full">
-          <UpcomingRoomsStrip events={upcomingEvents} />
-        </div>
-      )}
-
-      {/* 2. Tablet Post Composer Card (Expanded & Touch-Optimized) */}
+      {/* 1. Tablet Post Composer Card (Expanded & Touch-Optimized) */}
       <div className="bg-white dark:bg-app-surface rounded-2xl border border-app-border/80 p-4 shadow-2xs flex flex-col gap-3">
         {/* Top row: Avatar + Pill input trigger */}
         <div className="flex items-center gap-3">
@@ -100,49 +86,7 @@ export const FeedTabletView: React.FC<FeedViewProps> = ({
         </div>
       </div>
 
-      {/* 3. Featured Highlight Banner (Compact Tablet Callout) */}
-      {upcomingEvents.length > 0 && (
-        <div className="bg-white dark:bg-app-surface rounded-2xl border border-app-border/80 p-3.5 shadow-2xs flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center shrink-0">
-              <Award size={20} />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-app-text truncate">
-                  {upcomingEvents[0].title}
-                </span>
-                <span className="px-1.5 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-black uppercase">
-                  HOT
-                </span>
-              </div>
-              <span className="text-[11px] text-app-muted truncate">
-                {new Date(upcomingEvents[0].startsAt).toLocaleTimeString('vi-VN', {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}{' '}
-                · {upcomingEvents[0].subtitle || 'Sân cầu nổi bật'}
-              </span>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              if (upcomingEvents[0].rawRoom) {
-                navigate(`/rooms/${upcomingEvents[0].rawRoom.id}`);
-              } else {
-                navigate('/rooms');
-              }
-            }}
-            className="h-8 px-3 rounded-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs flex items-center gap-1 shadow-xs transition-all shrink-0"
-          >
-            <span>Xem chi tiết</span>
-            <ChevronRight size={13} />
-          </button>
-        </div>
-      )}
-
-      {/* 4. Subheader Filter Tabs & Refresh Bar */}
+      {/* 2. Subheader Filter Tabs & Refresh Bar */}
       <div className="flex items-center justify-between gap-2 py-0.5">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
           {[

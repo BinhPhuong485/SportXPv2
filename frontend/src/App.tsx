@@ -68,9 +68,9 @@ export const App: React.FC = () => {
           </AuthGate>
         }
       >
-        <Route path="/" element={<FeedPage />} />
-        <Route path="/feed" element={<Navigate to="/" replace />} />
+        <Route path="/" element={<Navigate to="/rooms" replace />} />
         <Route path="/rooms" element={<ManagedRoomsPage />} />
+        <Route path="/feed" element={<FeedPage />} />
         <Route path="/rankings" element={<LeaderboardPage />} />
         <Route path="/tournaments" element={<TournamentsPage />} />
         <Route path="/profile" element={<ProfilePage />} />
