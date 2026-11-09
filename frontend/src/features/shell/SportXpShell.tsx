@@ -10,7 +10,7 @@ export const SportXpShell: React.FC = () => {
       <TopAppBar />
 
       {/* 2. Main Responsive Content Area */}
-      <main className="w-full flex-1 flex justify-center px-3 sm:px-4 lg:px-6 py-4 sm:py-5 pb-28 xl:pb-8">
+      <main className="w-full flex-1 flex justify-center px-3 sm:px-4 lg:px-6 py-4 sm:py-5 pb-32 xl:pb-8">
         <Outlet />
       </main>
 
