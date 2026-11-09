@@ -94,18 +94,18 @@ export const BottomNav: React.FC = () => {
         <div className="flex-1 h-full flex flex-col items-center justify-center select-none pt-0.5">
           <NavLink
             to="/rooms/new"
-            className="flex flex-col items-center -mt-6 sm:-mt-7 transition-transform active:scale-95 group"
+            className="flex flex-col items-center -mt-7 sm:-mt-8 transition-transform active:scale-95 group"
           >
             {({ isActive }) => (
               <>
                 <div
-                  className={`w-13 h-13 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-200 border-4 border-app-surface ${
+                  className={`w-[58px] h-[58px] sm:w-[62px] sm:h-[62px] rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-200 border-[3.5px] border-app-surface ${
                     isActive
-                      ? 'bg-emerald-700 ring-2 ring-emerald-500 shadow-emerald-500/30'
-                      : 'bg-gradient-to-tr from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 shadow-emerald-600/30 group-hover:shadow-emerald-600/40'
+                      ? 'bg-emerald-700 ring-2 ring-emerald-500 shadow-emerald-500/40'
+                      : 'bg-gradient-to-tr from-emerald-600 via-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 shadow-emerald-600/35 group-hover:shadow-emerald-600/50'
                   }`}
                 >
-                  <Plus size={28} strokeWidth={2.6} />
+                  <Plus size={30} strokeWidth={2.8} />
                 </div>
                 <span
                   className={`text-[11px] sm:text-xs leading-tight mt-1 transition-all ${
