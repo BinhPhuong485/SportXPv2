@@ -39,10 +39,9 @@ const PersonIcon: React.FC<{ active?: boolean }> = () => (
 
 export const BottomNav: React.FC = () => {
   const tabs = [
-    { to: '/', label: 'Bản tin', icon: FeedIcon },
     { to: '/rooms', label: 'Tìm kèo', icon: TennisIcon },
+    { to: '/feed', label: 'Bản tin', icon: FeedIcon },
     { to: '/rankings', label: 'Xếp hạng', icon: LeaderboardIcon },
-
     { to: '/profile', label: 'Hồ sơ', icon: PersonIcon },
   ];
 
@@ -55,7 +54,7 @@ export const BottomNav: React.FC = () => {
             <NavLink
               key={tab.to}
               to={tab.to}
-              end={tab.to === '/'}
+              end={false}
               className={({ isActive }) =>
                 `flex-1 h-full flex flex-col items-center justify-center transition-all select-none ${
                   isActive ? 'text-app-primary' : 'text-app-muted hover:text-app-text'

@@ -9,7 +9,6 @@ import {
 import { FeedViewProps } from '../types';
 import { PostCard } from '../components/PostCard';
 import { PostSkeleton } from '../components/PostSkeleton';
-import { UrgentRoomCard } from '../components/UrgentRoomCard';
 import { Avatar } from '../../../shared/components/Avatar';
 
 export const FeedDesktopView: React.FC<FeedViewProps> = ({
@@ -26,7 +25,6 @@ export const FeedDesktopView: React.FC<FeedViewProps> = ({
   onOpenCreateModal,
   onRefreshFeed,
   onShowToast,
-  urgentRoom,
 }) => {
   return (
     <div className="w-full max-w-[760px] mx-auto flex flex-col gap-3 sm:gap-3.5 select-none pb-12 px-3 sm:px-4">
@@ -153,12 +151,7 @@ export const FeedDesktopView: React.FC<FeedViewProps> = ({
         </button>
       </div>
 
-      {/* 4. FEATURED URGENT MATCHMAKING BROADCAST (Atomic Organism) */}
-      {(activeTab === 'all' || activeTab === 'general') && (
-        <UrgentRoomCard urgentRoom={urgentRoom} />
-      )}
-
-      {/* 5. STREAM OF POST CARDS */}
+      {/* 4. STREAM OF POST CARDS */}
       <div className="space-y-3 sm:space-y-3.5">
         {loading && posts.length === 0 ? (
           <>

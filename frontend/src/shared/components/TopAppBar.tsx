@@ -36,8 +36,8 @@ export const TopAppBar: React.FC = () => {
   } = useReminderScheduler();
 
   const navLinks = [
-    { to: '/', label: 'Bản tin', icon: Flame, end: true },
     { to: '/rooms', label: 'Tìm kèo', icon: Users, end: false },
+    { to: '/feed', label: 'Bản tin', icon: Flame, end: false },
     { to: '/rankings', label: 'Xếp hạng', icon: Trophy, end: false },
     { to: '/calendar', label: 'Lịch đấu', icon: Calendar, end: false },
     { to: '/tournaments', label: 'Giải đấu', icon: Medal, end: false },
@@ -59,7 +59,7 @@ export const TopAppBar: React.FC = () => {
           <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 z-10">
             {/* SportXP Monogram Logo */}
             <div
-              onClick={() => navigate('/')}
+              onClick={() => navigate('/rooms')}
               className="flex items-center gap-2 cursor-pointer select-none group"
             >
               <img
