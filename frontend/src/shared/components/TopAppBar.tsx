@@ -70,8 +70,8 @@ export const TopAppBar: React.FC = () => {
                   (e.target as HTMLElement).style.display = 'none';
                 }}
               />
-              <span className="text-base font-black tracking-tight text-app-text hidden sm:inline group-hover:text-emerald-600 transition-colors">
-                SPORTXP
+              <span className="text-base sm:text-lg font-black tracking-tight text-app-text group-hover:text-emerald-600 transition-colors">
+                SportXP
               </span>
             </div>
 
