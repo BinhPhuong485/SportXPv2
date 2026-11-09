@@ -127,6 +127,7 @@ export class ManagedRoomRepository {
         zaloGroupLink: 'https://zalo.me/g/sportxp9821',
         canRegister: true,
         canEdit: false,
+        targetGender: 'all',
         members: [
           {
             id: 'tm-host',
@@ -202,6 +203,7 @@ export class ManagedRoomRepository {
         zaloGroupLink: null,
         canRegister: false,
         canEdit: true,
+        targetGender: 'male',
         members: [
           {
             id: 'b86ef8fb-4486-4a71-a5a9-d6430f48857d',
@@ -266,6 +268,7 @@ export class ManagedRoomRepository {
         zaloGroupLink: null,
         canRegister: false,
         canEdit: false,
+        targetGender: 'male',
         members: [
           {
             id: '9ded99f9-af7d-4297-829a-18e213294403',
@@ -329,6 +332,7 @@ export class ManagedRoomRepository {
         zaloGroupLink: null,
         canRegister: true,
         canEdit: false,
+        targetGender: 'female',
         members: [
           {
             id: 'pl-host',
@@ -392,6 +396,7 @@ export class ManagedRoomRepository {
         zaloGroupLink: null,
         canRegister: false,
         canEdit: false,
+        targetGender: 'all',
         members: [
           {
             id: 'hit-host',
@@ -479,6 +484,7 @@ export class ManagedRoomRepository {
         zaloGroupLink: null,
         canRegister: true,
         canEdit: false,
+        targetGender: 'male',
         members: [
           {
             id: 'tk-host',
@@ -508,6 +514,7 @@ export class ManagedRoomRepository {
             startsAt: new Date(r.startsAt),
             endsAt: new Date(r.endsAt),
             cancelBy: new Date(r.cancelBy),
+            targetGender: r.targetGender || 'all',
           }));
           return;
         }
@@ -655,6 +662,7 @@ export class ManagedRoomRepository {
       canRegister: !myMember && effectiveStatus === 'OPEN' && reserved < (row.max_slots || 2),
       canEdit: Boolean(isHost),
       statusLabel: effectiveStatus === 'OPEN' ? 'Đang tuyển' : effectiveStatus === 'IN_PROGRESS' ? 'Đang diễn ra' : 'Đã kết thúc',
+      targetGender: (row.target_gender as 'all' | 'male' | 'female') || (row.targetGender as 'all' | 'male' | 'female') || 'all',
     };
   }
 
@@ -819,6 +827,7 @@ export class ManagedRoomRepository {
       zaloGroupLink: null,
       canRegister: false,
       canEdit: true,
+      targetGender: 'all',
       members: [
         {
           id: hostUser.id,
@@ -989,6 +998,7 @@ export class ManagedRoomRepository {
             is_rated: isPrivate ? true : Boolean(payload.is_rated),
             notes,
             court_label: (payload.court_label as string) || '',
+            target_gender: (payload.target_gender as string) || (payload.targetGender as string) || 'all',
           });
 
           // Insert host into room_members
@@ -1037,6 +1047,7 @@ export class ManagedRoomRepository {
         joinCode: isPrivate ? cleanJoinCode : null,
         isRated: isPrivate ? true : Boolean(payload.is_rated),
         zaloGroupLink: (payload.zalo_group_link as string) || null,
+        targetGender: (payload.target_gender as 'all' | 'male' | 'female') || (payload.targetGender as 'all' | 'male' | 'female') || 'all',
         members: [
           {
             id: user.id,

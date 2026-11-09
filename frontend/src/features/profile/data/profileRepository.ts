@@ -10,6 +10,9 @@ export interface UpdateProfileParams {
   facebookLink?: string | null;
   bio?: string | null;
   district?: string | null;
+  gender?: 'male' | 'female' | 'other' | null;
+  age?: number | null;
+  birthYear?: number | null;
 }
 
 export class ProfileRepository {
@@ -39,6 +42,9 @@ export class ProfileRepository {
           zalo_link,
           facebook_link,
           bio,
+          gender,
+          age,
+          birth_year,
           created_at,
           onboarding_step,
           courts (
@@ -75,6 +81,9 @@ export class ProfileRepository {
               zalo_link,
               facebook_link,
               bio,
+              gender,
+              age,
+              birth_year,
               created_at,
               onboarding_step,
               courts (
@@ -149,6 +158,9 @@ export class ProfileRepository {
         zaloLink: data.zalo_link || null,
         facebookLink: data.facebook_link || null,
         bio: data.bio || null,
+        gender: data.gender || user.user_metadata?.gender || null,
+        age: data.age != null ? data.age : (user.user_metadata?.age != null ? Number(user.user_metadata.age) : null),
+        birthYear: data.birth_year != null ? data.birth_year : (user.user_metadata?.birth_year != null ? Number(user.user_metadata.birth_year) : null),
         createdAt: data.created_at,
         onboardingStep: data.onboarding_step ?? 0,
         isIdentityVerified: false,
@@ -207,24 +219,28 @@ export class ProfileRepository {
         }
       }
 
+      const row = fbData as any;
       return {
-        id: fbData.id,
-        displayName: fbData.display_name || user.user_metadata?.display_name || 'Vận động viên',
-        avatarUrl: fbData.avatar_url,
-        eloRating: fbData.elo_rating,
-        tierName: fbData.tier_name || 'Chưa xếp hạng',
-        trustScore: fbData.trust_score ?? 100,
-        winStreak: fbData.win_streak ?? 0,
-        homeCourtId: fbData.home_court_id,
+        id: row.id,
+        displayName: row.display_name || user.user_metadata?.display_name || 'Vận động viên',
+        avatarUrl: row.avatar_url,
+        eloRating: row.elo_rating,
+        tierName: row.tier_name || 'Chưa xếp hạng',
+        trustScore: row.trust_score ?? 100,
+        winStreak: row.win_streak ?? 0,
+        homeCourtId: row.home_court_id,
         homeCourtName: fallbackCourtName,
-        district: fbData.district || null,
-        city: fbData.city || 'TP. Hồ Chí Minh',
-        zaloPhone: fbData.zalo_phone || null,
-        zaloLink: fbData.zalo_link || null,
-        facebookLink: fbData.facebook_link || null,
-        bio: fbData.bio || null,
-        createdAt: fbData.created_at,
-        onboardingStep: fbData.onboarding_step ?? 0,
+        district: row.district || null,
+        city: row.city || 'TP. Hồ Chí Minh',
+        zaloPhone: row.zalo_phone || null,
+        zaloLink: row.zalo_link || null,
+        facebookLink: row.facebook_link || null,
+        bio: row.bio || null,
+        gender: row.gender || user.user_metadata?.gender || null,
+        age: row.age != null ? row.age : (user.user_metadata?.age != null ? Number(user.user_metadata.age) : null),
+        birthYear: row.birth_year != null ? row.birth_year : (user.user_metadata?.birth_year != null ? Number(user.user_metadata.birth_year) : null),
+        createdAt: row.created_at,
+        onboardingStep: row.onboarding_step ?? 0,
         isIdentityVerified: false,
         confirmedMatchesCount: 0,
         rankDelta: 0,
@@ -260,6 +276,27 @@ export class ProfileRepository {
     }
     if (params.district !== undefined) {
       updates.district = params.district && params.district.trim().length > 0 ? params.district.trim() : null;
+    }
+    if (params.gender !== undefined) {
+      try {
+        const { data: cur } = await supabase
+          .from('profiles')
+          .select('gender')
+          .eq('id', user.id)
+          .maybeSingle();
+        // Only allow updating gender if it was never set before
+        if (!cur?.gender) {
+          updates.gender = params.gender || null;
+        }
+      } catch {
+        updates.gender = params.gender || null;
+      }
+    }
+    if (params.age !== undefined) {
+      updates.age = params.age != null ? params.age : null;
+    }
+    if (params.birthYear !== undefined) {
+      updates.birth_year = params.birthYear != null ? params.birthYear : null;
     }
 
     if (Object.keys(updates).length === 0) return;

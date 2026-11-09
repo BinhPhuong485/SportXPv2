@@ -84,6 +84,7 @@ export const RoomEditorPage: React.FC = () => {
   const [zaloGroupLink, setZaloGroupLink] = useState('');
   const [hostPlays, setHostPlays] = useState(true);
   const [isDraft, setIsDraft] = useState(false);
+  const [targetGender, setTargetGender] = useState<'all' | 'male' | 'female'>('all');
 
   // Start date/time state
   const [startsAt, setStartsAt] = useState<Date>(() => {
@@ -133,6 +134,7 @@ export const RoomEditorPage: React.FC = () => {
               }
             }
             if (existing.zaloGroupLink) setZaloGroupLink(existing.zaloGroupLink);
+            if (existing.targetGender) setTargetGender(existing.targetGender);
             if (existing.joinCode) {
               setJoinCode(existing.joinCode);
               setRoomCode(`#${existing.joinCode}`);
@@ -357,6 +359,7 @@ export const RoomEditorPage: React.FC = () => {
         ? `Trận ${matchFormat.toUpperCase()} Tính Điểm Elo [CODE:${effectiveJoinCode}]`
         : notes,
       court_label: courtLabel.trim(),
+      target_gender: targetGender,
       draft: isPrivateRated ? false : isDraft, // NEVER draft for private match
       room_code: roomCode,
       ...(room ? { expected_revision: room.revision } : {}),
@@ -493,9 +496,9 @@ export const RoomEditorPage: React.FC = () => {
           {/* MODE 1: PRIVATE RATED CUSTOM MATCH LOBBY (1v1 / 2v2 TÍNH ELO)  */}
           {/* ============================================================== */}
           {roomType === 'PRIVATE_RATED' ? (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 sm:gap-5">
               {/* 1. MÃ PHÒNG (JOIN CODE) - ĐƯỢC ĐẶT LÊN ĐẦU TIÊN */}
-              <div className="p-4 bg-app-surface rounded-2xl border border-emerald-500/40 relative overflow-hidden shadow-xs">
+              <div className="p-4 sm:p-5 bg-app-surface rounded-[20px] border border-emerald-500/40 relative overflow-hidden shadow-xs flex flex-col gap-3.5">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex flex-col min-w-0">
                     <div className="flex items-center gap-1.5 text-xs font-black text-emerald-500 uppercase tracking-wider">
@@ -538,7 +541,7 @@ export const RoomEditorPage: React.FC = () => {
               </div>
 
               {/* 2. CHUNG 1 CARD DUY NHẤT: THỂ THỨC THI ĐẤU (FIX UX TRÀN TITLE) */}
-              <div className="p-4 bg-app-surface rounded-2xl border border-app-border flex flex-col gap-3 shadow-xs">
+              <div className="p-4 sm:p-5 bg-app-surface rounded-[20px] border border-app-border flex flex-col gap-3.5 shadow-xs">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-extrabold text-app-muted uppercase tracking-wider flex items-center gap-1.5">
                     <Swords size={14} className="text-emerald-500" />
@@ -602,7 +605,7 @@ export const RoomEditorPage: React.FC = () => {
               </div>
 
               {/* 3. ĐỊA ĐIỂM SÂN ĐẤU */}
-              <div className="flex flex-col gap-3 p-4 bg-app-surface rounded-2xl border border-app-border shadow-xs">
+              <div className="flex flex-col gap-3.5 p-4 sm:p-5 bg-app-surface rounded-[20px] border border-app-border shadow-xs">
                 <label className="text-xs font-extrabold text-app-muted uppercase tracking-wider flex items-center gap-1.5">
                   <MapPin size={14} className="text-emerald-500" />
                   <span>ĐỊA ĐIỂM SÂN ĐẤU</span>
@@ -629,7 +632,7 @@ export const RoomEditorPage: React.FC = () => {
               </div>
 
               {/* 4. SƠ ĐỒ ĐỘI HÌNH TRỰC QUAN (LOBBY ROSTER - GAMING STYLE) */}
-              <div className="p-4 bg-app-surface rounded-2xl border border-app-border flex flex-col gap-3.5 shadow-xs">
+              <div className="p-4 sm:p-5 bg-app-surface rounded-[20px] border border-app-border flex flex-col gap-3.5 shadow-xs">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-black text-app-muted uppercase tracking-wider flex items-center gap-1.5">
                     <Users size={14} className="text-emerald-500" />
@@ -729,9 +732,43 @@ export const RoomEditorPage: React.FC = () => {
                 </div>
               </div>
 
+              {/* 5. YÊU CẦU GIỚI TÍNH ĐỐI THỦ */}
+              <div className="p-4 sm:p-5 bg-app-surface rounded-[20px] border border-app-border flex flex-col gap-3.5 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-app-muted uppercase tracking-wider flex items-center gap-1.5">
+                    <Users size={14} className="text-emerald-500" />
+                    <span>GIỚI TÍNH YÊU CẦU</span>
+                  </span>
+                  <span className="text-[11px] font-bold text-emerald-500">
+                    {targetGender === 'female' ? 'Chỉ Nữ (♀)' : targetGender === 'male' ? 'Chỉ Nam (♂)' : 'Nam & Nữ (⚥)'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'all', label: 'Nam & Nữ', icon: '⚥' },
+                    { id: 'male', label: 'Chỉ Nam', icon: '♂' },
+                    { id: 'female', label: 'Chỉ Nữ', icon: '♀' },
+                  ].map((g) => (
+                    <button
+                      key={g.id}
+                      type="button"
+                      onClick={() => setTargetGender(g.id as 'all' | 'male' | 'female')}
+                      className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
+                        targetGender === g.id
+                          ? 'bg-emerald-500/15 border-emerald-500 text-emerald-600 dark:text-emerald-400 font-black shadow-xs'
+                          : 'bg-app-background border-app-border text-app-muted hover:text-app-text hover:border-app-border/80'
+                      }`}
+                    >
+                      <span className="text-sm">{g.icon}</span>
+                      <span>{g.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Error Banner */}
               {error && (
-                <div className="p-3.5 rounded-xl bg-app-loss/10 border border-app-loss/40 flex items-start gap-2.5 text-app-loss text-xs font-semibold">
+                <div className="p-4 rounded-[20px] bg-app-loss/10 border border-app-loss/40 flex items-start gap-2.5 text-app-loss text-xs font-semibold">
                   <AlertCircle size={17} className="shrink-0 mt-0.5" />
                   <span>{error}</span>
                 </div>
@@ -741,7 +778,7 @@ export const RoomEditorPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={busy}
-                className="w-full py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 disabled:opacity-50 text-white font-black text-base tracking-wide uppercase transition-all shadow-lg flex items-center justify-center gap-2.5 cursor-pointer mt-2"
+                className="w-full py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-98 disabled:opacity-50 text-white font-black text-base tracking-wide uppercase transition-all shadow-lg flex items-center justify-center gap-2.5 cursor-pointer"
               >
                 {busy ? (
                   <>
@@ -760,32 +797,11 @@ export const RoomEditorPage: React.FC = () => {
             /* ============================================================== */
             /* MODE 2: PUBLIC RECRUITMENT FLOW (TUYỂN QUÂN CÔNG KHAI)          */
             /* ============================================================== */
-            <div className="w-full flex flex-col lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
-              {/* LEFT COLUMN: Arena & Time */}
-              <div className="flex flex-col gap-4">
-                {/* Zalo Group Link */}
-                <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-app-background border border-app-border">
-                  <label className="text-xs font-bold text-app-text flex items-center gap-1.5">
-                    <MessageCircle size={14} className="text-app-primary" />
-                    <span>Link nhóm Zalo buổi chơi (Host đính kèm)</span>
-                  </label>
-                  <div className="relative flex items-center">
-                    <Link2 size={14} className="absolute left-3 text-app-muted" />
-                    <input
-                      type="url"
-                      value={zaloGroupLink}
-                      onChange={(e) => setZaloGroupLink(e.target.value)}
-                      placeholder="https://zalo.me/g/..."
-                      className="w-full h-10 pl-8 pr-3 rounded-lg bg-app-surface border border-app-border text-xs text-app-text focus:border-app-primary focus:outline-none"
-                    />
-                  </div>
-                  <span className="text-[11px] text-app-muted">
-                    Thành viên vãng lai bấm nút trên trang phòng để mở ngay nhóm Zalo trao đổi cách vào sân.
-                  </span>
-                </div>
-
-                {/* Sân đấu & Lịch trình */}
-                <section className="bg-app-surface rounded-[20px] p-4 border border-app-border flex flex-col gap-3.5 shadow-xs">
+            <div className="w-full flex flex-col gap-4 sm:gap-5 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
+              {/* LEFT COLUMN: Arena & Schedule, Slots & Roles, Target Gender */}
+              <div className="flex flex-col gap-4 sm:gap-5">
+                {/* 1. SÂN ĐẤU & THỜI GIAN */}
+                <section className="bg-app-surface rounded-[20px] p-4 sm:p-5 border border-app-border flex flex-col gap-3.5 sm:gap-4 shadow-xs">
                   <div className="flex items-center gap-1.5 text-xs font-extrabold text-app-muted tracking-wider uppercase">
                     <MapPin size={15} className="text-app-primary" />
                     <span>SÂN ĐẤU & THỜI GIAN</span>
@@ -973,12 +989,9 @@ export const RoomEditorPage: React.FC = () => {
                     />
                   </div>
                 </section>
-              </div>
 
-              {/* RIGHT COLUMN: Slots, Matchmaking, Fee, Notes, Submit */}
-              <div className="flex flex-col gap-4">
-                {/* SLOTS THI ĐẤU */}
-                <section className="bg-app-surface rounded-[20px] p-4 border border-app-border flex flex-col gap-3.5 shadow-xs">
+                {/* 2. SLOTS THI ĐẤU & VAI TRÒ HOST */}
+                <section className="bg-app-surface rounded-[20px] p-4 sm:p-5 border border-app-border flex flex-col gap-3.5 sm:gap-4 shadow-xs">
                   <div className="flex items-center gap-1.5 text-xs font-extrabold text-app-muted tracking-wider uppercase">
                     <Users size={15} className="text-app-primary" />
                     <span>SLOTS THI ĐẤU & VAI TRÒ HOST</span>
@@ -1055,8 +1068,46 @@ export const RoomEditorPage: React.FC = () => {
                   </label>
                 </section>
 
-                {/* GIỚI HẠN RANK ELO */}
-                <section className="bg-app-surface rounded-[20px] p-4 border border-app-border flex flex-col gap-3.5 shadow-xs">
+                {/* 3. YÊU CẦU GIỚI TÍNH */}
+                <section className="bg-app-surface rounded-[20px] p-4 sm:p-5 border border-app-border flex flex-col gap-3.5 sm:gap-4 shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs font-extrabold text-app-muted tracking-wider uppercase">
+                      <Users size={15} className="text-app-primary" />
+                      <span>YÊU CẦU GIỚI TÍNH</span>
+                    </div>
+                    <span className="text-[11px] font-bold text-app-primary">
+                      {targetGender === 'female' ? 'Chỉ Nữ (♀)' : targetGender === 'male' ? 'Chỉ Nam (♂)' : 'Nam & Nữ (⚥)'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { id: 'all', label: 'Nam & Nữ', icon: '⚥' },
+                      { id: 'male', label: 'Chỉ Nam', icon: '♂' },
+                      { id: 'female', label: 'Chỉ Nữ', icon: '♀' },
+                    ].map((g) => (
+                      <button
+                        key={g.id}
+                        type="button"
+                        onClick={() => setTargetGender(g.id as 'all' | 'male' | 'female')}
+                        className={`py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer border ${
+                          targetGender === g.id
+                            ? 'bg-app-primary/15 border-app-primary text-app-primary font-black shadow-xs'
+                            : 'bg-app-background border-app-border text-app-muted hover:text-app-text hover:border-app-border/80'
+                        }`}
+                      >
+                        <span className="text-sm">{g.icon}</span>
+                        <span>{g.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              </div>
+
+              {/* RIGHT COLUMN: Skill Range, Fee & Details, Zalo Group, Draft, Submit */}
+              <div className="flex flex-col gap-4 sm:gap-5">
+                {/* 4. GIỚI HẠN RANK ELO */}
+                <section className="bg-app-surface rounded-[20px] p-4 sm:p-5 border border-app-border flex flex-col gap-3.5 sm:gap-4 shadow-xs">
                   <div className="flex items-center gap-1.5 text-xs font-extrabold text-app-muted tracking-wider uppercase">
                     <Trophy size={15} className="text-app-primary" />
                     <span>GIỚI HẠN RANK ELO (MATCHMAKING)</span>
@@ -1136,8 +1187,8 @@ export const RoomEditorPage: React.FC = () => {
                   </div>
                 </section>
 
-                {/* CHI PHÍ & THÔNG TIN PHÒNG */}
-                <section className="bg-app-surface rounded-[20px] p-4 border border-app-border flex flex-col gap-3.5 shadow-xs">
+                {/* 5. CHI PHÍ & THÔNG TIN PHÒNG */}
+                <section className="bg-app-surface rounded-[20px] p-4 sm:p-5 border border-app-border flex flex-col gap-3.5 sm:gap-4 shadow-xs">
                   <div className="flex items-center gap-1.5 text-xs font-extrabold text-app-muted tracking-wider uppercase">
                     <DollarSign size={15} className="text-app-primary" />
                     <span>CHI PHÍ & THÔNG TIN PHÒNG</span>
@@ -1243,9 +1294,36 @@ export const RoomEditorPage: React.FC = () => {
                   </div>
                 </section>
 
-                {/* DRAFT TOGGLE */}
+                {/* 6. NHÓM ZALO BUỔI CHƠI (TÙY CHỌN) */}
+                <section className="bg-app-surface rounded-[20px] p-4 sm:p-5 border border-app-border flex flex-col gap-3.5 shadow-xs">
+                  <div className="flex items-center gap-1.5 text-xs font-extrabold text-app-muted tracking-wider uppercase">
+                    <MessageCircle size={15} className="text-app-primary" />
+                    <span>LINK NHÓM ZALO BUỔI CHƠI (TÙY CHỌN)</span>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-xs font-semibold text-app-muted">
+                      Link nhóm Zalo (Host đính kèm)
+                    </label>
+                    <div className="relative flex items-center">
+                      <Link2 size={16} className="absolute left-3.5 text-app-muted" />
+                      <input
+                        type="url"
+                        value={zaloGroupLink}
+                        onChange={(e) => setZaloGroupLink(e.target.value)}
+                        placeholder="https://zalo.me/g/..."
+                        disabled={busy}
+                        className="w-full bg-app-background border border-app-border rounded-xl pl-10 pr-3.5 py-2.5 text-sm font-medium text-app-text outline-none focus:border-app-primary transition-colors"
+                      />
+                    </div>
+                    <span className="text-[11px] text-app-muted">
+                      Thành viên vãng lai bấm nút trên trang phòng để mở ngay nhóm Zalo trao đổi trước giờ thi đấu.
+                    </span>
+                  </div>
+                </section>
+
+                {/* 7. DRAFT TOGGLE */}
                 {(!isEditing || room?.status === 'DRAFT') && (
-                  <label className="p-3.5 rounded-2xl bg-app-surface border border-app-border flex items-center justify-between cursor-pointer shadow-xs">
+                  <label className="bg-app-surface rounded-[20px] p-4 sm:p-5 border border-app-border flex items-center justify-between cursor-pointer shadow-xs">
                     <div className="flex flex-col">
                       <span className="text-sm font-bold text-app-text">
                         Lưu nháp, chưa mở đăng ký
@@ -1266,7 +1344,7 @@ export const RoomEditorPage: React.FC = () => {
 
                 {/* Error Banner */}
                 {error && (
-                  <div className="p-3.5 rounded-xl bg-app-loss/10 border border-app-loss/40 flex items-start gap-2.5 text-app-loss text-xs font-semibold">
+                  <div className="p-4 rounded-[20px] bg-app-loss/10 border border-app-loss/40 flex items-start gap-2.5 text-app-loss text-xs font-semibold">
                     <AlertCircle size={17} className="shrink-0 mt-0.5" />
                     <span>{error}</span>
                   </div>
@@ -1276,7 +1354,7 @@ export const RoomEditorPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={busy}
-                  className="w-full py-4 px-6 rounded-btn bg-emerald-600 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 text-white font-black text-base tracking-wide uppercase transition-all shadow-md mt-2 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 disabled:opacity-50 text-white font-black text-base tracking-wide uppercase transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {busy ? (
                     <>

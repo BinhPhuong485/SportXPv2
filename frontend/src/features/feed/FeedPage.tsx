@@ -269,13 +269,13 @@ export const FeedPage: React.FC = () => {
         </div>
       )}
 
-      {/* 1. DESKTOP VIEW (Visible on desktop screen >= 1280px) */}
-      <div className="hidden xl:flex justify-center w-full">
+      {/* 1. DESKTOP VIEW (Visible on desktop screen >= 1024px) */}
+      <div className="hidden lg:flex justify-center w-full">
         <FeedDesktopView {...sharedProps} />
       </div>
 
-      {/* 2. TABLET / IPAD VIEW (Visible on iPad / tablet screens 768px - 1279px) */}
-      <div className="hidden md:flex xl:hidden justify-center w-full">
+      {/* 2. TABLET / IPAD VIEW (Visible on iPad / tablet screens 768px - 1023px) */}
+      <div className="hidden md:flex lg:hidden justify-center w-full">
         <FeedTabletView {...sharedProps} />
       </div>
 

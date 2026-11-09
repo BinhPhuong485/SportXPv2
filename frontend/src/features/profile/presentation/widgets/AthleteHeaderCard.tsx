@@ -90,6 +90,14 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
                 >
                   {player.tierName || 'Nhập môn'}
                 </span>
+                {/* Gender & Age Badge */}
+                {(player.gender || player.age) && (
+                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
+                    {player.gender === 'male' ? 'Nam' : player.gender === 'female' ? 'Nữ' : player.gender ? 'Khác' : ''}
+                    {player.gender && player.age ? ' • ' : ''}
+                    {player.age ? `${player.age}t` : ''}
+                  </span>
+                )}
               </div>
 
               {/* Equipped Badges Chips (up to 3) */}
@@ -296,6 +304,13 @@ export const AthleteHeaderCard: React.FC<AthleteHeaderCardProps> = ({
               >
                 {player.tierName || 'Nhập môn'}
               </span>
+              {(player.gender || player.age) && (
+                <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
+                  {player.gender === 'male' ? 'Nam' : player.gender === 'female' ? 'Nữ' : player.gender ? 'Khác' : ''}
+                  {player.gender && player.age ? ' • ' : ''}
+                  {player.age ? `${player.age} tuổi` : ''}
+                </span>
+              )}
             </div>
 
             {/* Equipped Badges Chips (up to 3) */}

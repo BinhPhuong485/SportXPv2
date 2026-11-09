@@ -1,5 +1,18 @@
 import React, { useState } from 'react';
-import { ArrowLeft, CheckCircle2, Circle, RefreshCw, Shield, Hourglass, Trophy } from 'lucide-react';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Circle,
+  RefreshCw,
+  Shield,
+  Hourglass,
+  Trophy,
+  Sparkles,
+  User,
+  Calendar,
+  ArrowRight,
+  Lock,
+} from 'lucide-react';
 import { ONBOARDING_QUESTIONS, calculateRawElo, MAXIMUM_INITIAL_ELO } from './onboardingQuiz';
 import { BentoCard } from '../../shared/components/BentoCard';
 import { getRankTierFromElo } from '../../core/theme/tokens';
@@ -10,11 +23,14 @@ export interface OnboardingState {
   displayName: string;
   eloRating: number | null;
   tierName: string | null;
+  gender?: 'male' | 'female' | 'other' | null;
+  age?: number | null;
 }
 
 interface OnboardingPageProps {
   initialState: OnboardingState;
   onSaveAnswer: (questionIndex: number, choiceIndex: number) => Promise<OnboardingState>;
+  onSaveDemographics?: (gender: 'male' | 'female' | 'other', age: number) => Promise<void>;
   onComplete: () => void;
   onSignOut: () => void;
 }
@@ -22,6 +38,7 @@ interface OnboardingPageProps {
 export const OnboardingPage: React.FC<OnboardingPageProps> = ({
   initialState,
   onSaveAnswer,
+  onSaveDemographics,
   onComplete,
   onSignOut,
 }) => {
@@ -58,6 +75,43 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Demographics step (Age & Gender) shown right after signup and before questions
+  const isGenderLocked = Boolean(initialState.gender);
+  const [showDemographics, setShowDemographics] = useState<boolean>(() => {
+    if (forcedStep !== null) return false;
+    return !initialState.gender || !initialState.age;
+  });
+  const [gender, setGender] = useState<'male' | 'female' | 'other'>(
+    initialState.gender || 'male'
+  );
+  const [age, setAge] = useState<string>(
+    initialState.age != null ? String(initialState.age) : ''
+  );
+  const [demographicsError, setDemographicsError] = useState<string | null>(null);
+  const [savingDemographics, setSavingDemographics] = useState(false);
+
+  const handleSubmitDemographics = async () => {
+    if (savingDemographics) return;
+    const parsedAge = age.trim() ? parseInt(age.trim(), 10) : null;
+    if (parsedAge === null || isNaN(parsedAge) || parsedAge < 6 || parsedAge > 100) {
+      setDemographicsError('Vui lòng nhập độ tuổi hợp lệ (từ 6 đến 100 tuổi).');
+      return;
+    }
+
+    setSavingDemographics(true);
+    setDemographicsError(null);
+    try {
+      if (onSaveDemographics) {
+        await onSaveDemographics(isGenderLocked ? initialState.gender! : gender, parsedAge);
+      }
+      setShowDemographics(false);
+    } catch {
+      setDemographicsError('Không thể lưu thông tin. Vui lòng thử lại.');
+    } finally {
+      setSavingDemographics(false);
+    }
+  };
 
   const isCompleted = state.step === 5;
 
@@ -105,7 +159,166 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
 
       {/* Main Content Area */}
       <div className="w-full max-w-content px-4 py-6 flex-1 flex flex-col justify-start">
-        {isCompleted ? (
+        {showDemographics ? (
+          /* ATHLETE DEMOGRAPHICS STEP (GENDER & AGE) */
+          <div className="flex flex-col gap-6 animate-fade-in py-2">
+            {/* Step tag */}
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold tracking-[0.15em] text-app-primary uppercase flex items-center gap-1.5">
+                <Sparkles size={13} className="text-app-streak" />
+                Bước khởi đầu · Thông tin cá nhân
+              </span>
+              <span className="text-xs font-semibold text-app-muted">
+                1 phút hoàn thành
+              </span>
+            </div>
+
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-app-text leading-tight mb-2">
+                Thông tin vận động viên
+              </h2>
+              <p className="text-xs text-app-muted leading-relaxed">
+                Cho SportXP biết giới tính và độ tuổi để tìm đối thủ vừa sức, ghép cặp trận đấu công bằng và chuẩn bị bảng xếp hạng cho bạn.
+              </p>
+            </div>
+
+            <BentoCard>
+              <div className="flex flex-col gap-5">
+                {/* Gender field */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-app-text uppercase tracking-wider flex items-center gap-1.5">
+                      <User size={14} className="text-app-primary" />
+                      Giới tính của bạn
+                    </label>
+                    {isGenderLocked ? (
+                      <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                        <Lock size={11} /> Cố định
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                        Chỉ chọn 1 lần
+                      </span>
+                    )}
+                  </div>
+                  <div className={`grid grid-cols-3 gap-2 ${isGenderLocked ? 'opacity-85' : ''}`}>
+                    <button
+                      type="button"
+                      disabled={isGenderLocked}
+                      onClick={() => !isGenderLocked && setGender('male')}
+                      className={`h-12 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 border ${
+                        isGenderLocked ? 'cursor-not-allowed' : 'cursor-pointer'
+                      } ${
+                        gender === 'male'
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-md ring-2 ring-blue-600/30'
+                          : 'bg-app-background border-app-border text-app-muted hover:text-app-text hover:border-app-border/80'
+                      }`}
+                    >
+                      <span>Nam</span>
+                      {gender === 'male' && <CheckCircle2 size={15} />}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isGenderLocked}
+                      onClick={() => !isGenderLocked && setGender('female')}
+                      className={`h-12 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 border ${
+                        isGenderLocked ? 'cursor-not-allowed' : 'cursor-pointer'
+                      } ${
+                        gender === 'female'
+                          ? 'bg-rose-500 text-white border-rose-500 shadow-md ring-2 ring-rose-500/30'
+                          : 'bg-app-background border-app-border text-app-muted hover:text-app-text hover:border-app-border/80'
+                      }`}
+                    >
+                      <span>Nữ</span>
+                      {gender === 'female' && <CheckCircle2 size={15} />}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isGenderLocked}
+                      onClick={() => !isGenderLocked && setGender('other')}
+                      className={`h-12 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 border ${
+                        isGenderLocked ? 'cursor-not-allowed' : 'cursor-pointer'
+                      } ${
+                        gender === 'other'
+                          ? 'bg-purple-600 text-white border-purple-600 shadow-md ring-2 ring-purple-600/30'
+                          : 'bg-app-background border-app-border text-app-muted hover:text-app-text hover:border-app-border/80'
+                      }`}
+                    >
+                      <span>Khác</span>
+                      {gender === 'other' && <CheckCircle2 size={15} />}
+                    </button>
+                  </div>
+                  {isGenderLocked ? (
+                    <p className="text-[11px] text-app-muted">
+                      Giới tính đã được xác thực và không thể thay đổi.
+                    </p>
+                  ) : (
+                    <p className="text-[11px] text-amber-600 dark:text-amber-400 font-medium">
+                      Lưu ý: Giới tính không thể thay đổi sau khi xác nhận.
+                    </p>
+                  )}
+                </div>
+
+                {/* Age field */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-app-text uppercase tracking-wider flex items-center gap-1.5">
+                      <Calendar size={14} className="text-app-primary" />
+                      Độ tuổi
+                    </label>
+                    {age && !isNaN(parseInt(age, 10)) && parseInt(age, 10) >= 6 && parseInt(age, 10) <= 100 && (
+                      <span className="text-[11px] font-bold text-app-primary">
+                        Sinh năm ~{new Date().getFullYear() - parseInt(age, 10)}
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative flex items-center">
+                    <input
+                      type="number"
+                      min={6}
+                      max={100}
+                      value={age}
+                      onChange={(e) => {
+                        setAge(e.target.value);
+                        setDemographicsError(null);
+                      }}
+                      placeholder="Nhập tuổi của bạn (VD: 24)"
+                      className="w-full h-12 px-4 rounded-xl bg-app-background border border-app-border text-app-text text-sm font-semibold focus:outline-hidden focus:border-app-primary focus:ring-2 focus:ring-app-primary/20 transition-all placeholder:text-app-muted/60"
+                    />
+                  </div>
+                  <p className="text-[11px] text-app-muted">
+                    Hỗ trợ độ tuổi từ 6 đến 100 tuổi.
+                  </p>
+                </div>
+
+                {demographicsError && (
+                  <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs font-semibold text-rose-600 dark:text-rose-400">
+                    {demographicsError}
+                  </div>
+                )}
+              </div>
+            </BentoCard>
+
+            {/* Next Button */}
+            <div className="pt-2">
+              <button
+                type="button"
+                disabled={savingDemographics}
+                onClick={handleSubmitDemographics}
+                className="w-full h-12 rounded-xl bg-app-primary text-app-background font-extrabold text-xs tracking-wider uppercase flex items-center justify-center gap-2 hover:brightness-105 active:scale-[0.99] disabled:opacity-50 transition-all shadow-md cursor-pointer"
+              >
+                {savingDemographics ? (
+                  <span>Đang lưu...</span>
+                ) : (
+                  <>
+                    <span>Bắt đầu khảo sát trình độ (5 câu hỏi)</span>
+                    <ArrowRight size={16} />
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        ) : isCompleted ? (
           /* RESULT VIEW */
           <div className="flex flex-col gap-6 animate-fade-in py-2">
             <div className="w-12 h-12 rounded-full bg-app-primary/10 flex items-center justify-center text-app-primary">
@@ -178,14 +391,23 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({
                 <span className="text-xs font-medium text-app-muted">
                   Bước {currentIndex + 1}/5
                 </span>
-                {currentIndex > 0 && (
+                {currentIndex > 0 ? (
                   <button
                     onClick={handleBack}
                     disabled={saving}
-                    className="flex items-center gap-1 text-xs text-app-primary hover:underline font-semibold"
+                    className="flex items-center gap-1 text-xs text-app-primary hover:underline font-semibold cursor-pointer"
                   >
                     <ArrowLeft size={14} />
                     <span>Câu trước</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowDemographics(true)}
+                    disabled={saving}
+                    className="flex items-center gap-1 text-xs text-app-primary hover:underline font-semibold cursor-pointer"
+                  >
+                    <ArrowLeft size={14} />
+                    <span>{isGenderLocked ? 'Sửa thông tin độ tuổi' : 'Sửa tuổi & giới tính'}</span>
                   </button>
                 )}
               </div>
