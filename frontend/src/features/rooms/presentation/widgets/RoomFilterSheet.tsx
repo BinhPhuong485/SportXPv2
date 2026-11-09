@@ -29,6 +29,7 @@ export const RoomFilterSheet: React.FC<RoomFilterSheetProps> = ({
   const [skill, setSkill] = useState<number | null>(initial.skill);
   const [maxFee, setMaxFee] = useState<number | null>(initial.maxFee);
   const [availableOnly, setAvailableOnly] = useState(initial.availableOnly);
+  const [gender, setGender] = useState<'all' | 'male' | 'female' | null>(initial.gender);
 
   if (!isOpen) return null;
 
@@ -84,6 +85,7 @@ export const RoomFilterSheet: React.FC<RoomFilterSheetProps> = ({
     skill !== null,
     maxFee !== null,
     availableOnly,
+    gender !== null,
   ].filter(Boolean).length;
 
   const handleReset = () => {
@@ -93,6 +95,7 @@ export const RoomFilterSheet: React.FC<RoomFilterSheetProps> = ({
     setSkill(null);
     setMaxFee(null);
     setAvailableOnly(false);
+    setGender(null);
   };
 
   const handleApply = () => {
@@ -104,6 +107,7 @@ export const RoomFilterSheet: React.FC<RoomFilterSheetProps> = ({
         skill,
         maxFee,
         availableOnly,
+        gender,
       })
     );
     onClose();
@@ -274,7 +278,36 @@ export const RoomFilterSheet: React.FC<RoomFilterSheetProps> = ({
             </div>
           </div>
 
-          {/* Section 5: Trạng thái còn chỗ */}
+          {/* Section 5: Giới tính yêu cầu */}
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-bold text-app-text mb-2.5">
+              <Users size={14} className="text-app-primary" />
+              <span>GIỚI TÍNH YÊU CẦU</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              {[
+                { label: 'Tất cả', value: null },
+                { label: 'Nam & Nữ', value: 'all' },
+                { label: 'Chỉ Nam (♂)', value: 'male' },
+                { label: 'Chỉ Nữ (♀)', value: 'female' },
+              ].map((opt) => (
+                <button
+                  key={opt.label}
+                  type="button"
+                  onClick={() => setGender(opt.value as 'all' | 'male' | 'female' | null)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all text-center cursor-pointer ${
+                    gender === opt.value
+                      ? 'bg-app-primary/15 border-app-primary text-app-primary font-bold'
+                      : 'bg-app-background border-app-border text-app-text hover:border-app-muted'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Section 6: Trạng thái còn chỗ */}
           <div className="flex items-center justify-between py-2 border-t border-app-border/40">
             <div className="flex items-center gap-2">
               <Users size={16} className="text-app-primary" />

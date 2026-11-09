@@ -8,13 +8,11 @@ import {
 import { FeedViewProps } from '../types';
 import { PostCard } from '../components/PostCard';
 import { PostSkeleton } from '../components/PostSkeleton';
-import { UpcomingRoomsStrip } from '../../calendar/presentation/widgets/UpcomingRoomsStrip';
 import { Avatar } from '../../../shared/components/Avatar';
 
 export const FeedMobileView: React.FC<FeedViewProps> = ({
   posts,
   filteredPosts,
-  upcomingEvents,
   activeTab,
   setActiveTab,
   loading,
@@ -29,14 +27,7 @@ export const FeedMobileView: React.FC<FeedViewProps> = ({
 }) => {
   return (
     <div className="w-full max-w-lg mx-auto flex flex-col gap-3 pb-8 select-none">
-      {/* 1. Mobile Upcoming Match Carousel Strip */}
-      {upcomingEvents.length > 0 && (
-        <div className="w-full">
-          <UpcomingRoomsStrip events={upcomingEvents} />
-        </div>
-      )}
-
-      {/* 2. Compact Touch-Friendly Post Composer (Mobile Optimized) */}
+      {/* 1. Compact Touch-Friendly Post Composer (Mobile Optimized) */}
       <div className="bg-white dark:bg-app-surface rounded-xl border border-app-border/80 p-3 shadow-2xs flex flex-col gap-2.5">
         <div className="flex items-center gap-2.5">
           <Avatar

@@ -48,7 +48,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
     if (isSignUp) {
       const trimmedName = displayName.trim();
       if (trimmedName.length < 2) {
-        setError('Nhập ít nhất 2 ký tự.');
+        setError('Nhập ít nhất 2 ký tự cho tên hiển thị.');
         return;
       }
       if (password.length < 6) {
@@ -72,7 +72,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
           email: trimmedEmail,
           password,
           options: {
-            data: { display_name: displayName.trim() },
+            data: {
+              display_name: displayName.trim(),
+            },
           },
         });
 
@@ -85,12 +87,12 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
         } else {
           try {
             await supabase.rpc('get_onboarding_state');
-            if (displayName.trim()) {
-              await supabase
-                .from('profiles')
-                .update({ display_name: displayName.trim() })
-                .eq('id', data.session.user.id);
-            }
+            await supabase
+              .from('profiles')
+              .update({
+                display_name: displayName.trim(),
+              })
+              .eq('id', data.session.user.id);
           } catch {
             // non-blocking
           }
@@ -188,7 +190,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({ onSuccess }) => {
             {/* Display Name Field (SignUp only) */}
             {isSignUp && (
               <div className="flex flex-col gap-1 animate-fade-in">
-                <label className="text-xs font-medium text-app-muted">Tên hiển thị</label>
+                <label className="text-xs font-medium text-app-muted">Tên hiển thị *</label>
                 <div className="relative flex items-center">
                   <span className="absolute left-3.5 text-app-muted pointer-events-none">
                     <IdCard size={20} />

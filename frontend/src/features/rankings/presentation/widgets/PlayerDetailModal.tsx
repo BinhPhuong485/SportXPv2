@@ -53,13 +53,20 @@ export const PlayerDetailModal: React.FC<PlayerDetailModalProps> = ({
           </div>
 
           <div className="flex-1 flex flex-col min-w-0">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xl font-extrabold text-app-text truncate">
                 {player.displayName}
               </span>
               {isCurrentUser && (
                 <span className="px-1.5 py-0.5 rounded bg-app-primary text-app-on-primary text-[10px] font-extrabold tracking-wider shrink-0">
                   BẠN
+                </span>
+              )}
+              {(player.gender || player.age) && (
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shrink-0">
+                  {player.gender === 'male' ? 'Nam' : player.gender === 'female' ? 'Nữ' : player.gender ? 'Khác' : ''}
+                  {player.gender && player.age ? ' • ' : ''}
+                  {player.age ? `${player.age} tuổi` : ''}
                 </span>
               )}
             </div>
