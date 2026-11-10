@@ -10,3 +10,29 @@ dist/
 .agents/
 *.tsbuildinfo
 parity-shots/
+
+# Captures, Exports & UI Artifacts
+captured_screens/
+figma_export/
+*.png
+*.jpg
+*.jpeg
+*.webp
+frontend/scripts/
+
+# Data & Spreadsheets (Surveys, Forms, Analytics)
+*.xlsx
+*.xls
+*.csv
+
+# Presentation / Slide Mocks & HTML Snapshots at root
+slide_*.html
+figma_*.html
+
+# Python Cache & Root Scratch Scripts
+__pycache__/
+*.py[cod]
+*.py
+
+# Local Utility Plugins & Tools
+tools/
