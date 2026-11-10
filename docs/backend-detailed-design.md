@@ -158,6 +158,7 @@ exe.sportxp.backend.room/
 * `title` (`String`, 100 chars): Tên kèo
 * `roomType` (`@Enumerated(EnumType.STRING)`): `PUBLIC_RECRUIT` hoặc `PRIVATE_RATED`
 * `visibility` (`String`): `'PUBLIC'` hoặc `'PRIVATE'`
+* `targetGender` (`String`): `'all'`, `'male'`, `'female'` *(MỚI - v2.3)*
 * `joinCode` (`String`, nullable): Mã 6 ký tự ngẫu nhiên (chỉ có khi `roomType = PRIVATE_RATED`)
 * `isRated` (`boolean`): `true` nếu là phòng tính Elo, `false` nếu unrated
 * `zaloGroupLink` (`String`, nullable): Đường link nhóm Zalo buổi chơi

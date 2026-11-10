@@ -160,6 +160,13 @@ spring:
     - Tích hợp sẵn `zalo_group_link` do Host đính kèm để thành viên bấm 1 nút mở ngay app Zalo trao đổi trực tiếp.
     - **Lưu ý:** Flow A không quản lý các trận đấu tính Elo lồng bên trong. Ai muốn thách đấu tính rank sẽ qua Module Match (Flow B).
 
+*   **Yêu Cầu Giới Tính & Kiểm Soát Vào Phòng (`target_gender`) — *[MỚI - v2.3]*:**
+    - **Thiết kế Domain:** Bảng `match_rooms` có cột `target_gender VARCHAR(10) DEFAULT 'all' CHECK (target_gender IN ('all', 'male', 'female'))`.
+    - **Quy tắc Nghiệp vụ:**
+      - Khi Host tạo phòng: Chọn `all` (Nam & Nữ `⚥`), `male` (Chỉ Nam `♂`), `female` (Chỉ Nữ `♀`).
+      - Khi VĐV bấm tham gia (`POST /api/rooms/{id}/join`): Service kiểm tra chéo giới tính của VĐV trong `profiles.gender`. Nếu phòng yêu cầu `female` mà VĐV là `male` (hoặc ngược lại) -> Bị chặn ngay tại tầng Service với mã lỗi `GENDER_MISMATCH` (HTTP 403).
+    - **Bộ lọc Sảnh Khám Phá:** Hỗ trợ tham số query `GET /api/rooms?gender=male|female|all` phục vụ các Chip lọc nhanh trên UI.
+
 *   **Chuẩn hóa Tra cứu Mã Phòng (Join Code Normalization) — *[MỚI - v2.2]*:**
     - Người dùng có thể nhập hoặc dán mã phòng với nhiều định dạng: `XP-AVR2`, `XP - AVR2`, `#XP-AVR2`, `xp-avr2`.
     - **Tối ưu B-Tree Index Scan (Tránh `CAST(r.id AS string)` Anti-pattern):**
@@ -365,6 +372,9 @@ spring:
 ### 4.5 Module Hồ Sơ & Mạng Xã Hội (`profile/`)
 
 *   Quản lý Hộ chiếu QR VĐV (`public_id`).
+*   **Thông tin Nhân khẩu học & Tính Bất biến *(MỚI - v2.3)*:**
+    - Cột `gender` (`male`, `female`, `other`), `age`, `birth_year`.
+    - **Quy tắc Bất biến:** Giới tính chỉ được gán trong quá trình Onboarding hoặc lần đầu cập nhật profile. Khi đã có dữ liệu (`gender IS NOT NULL`), hệ thống chặn tuyệt đối hành vi sửa đổi giới tính (được bảo vệ kép ở cả Database Trigger `trg_prevent_gender_modification` và Spring Boot Validation Service) để bảo vệ tính công bằng cho các kèo đấu giới tính (`target_gender`).
 *   Cập nhật sân nhà (`home_court_id`), số điện thoại Zalo, link Facebook, tiểu sử lối đánh.
 
 ---
@@ -388,6 +398,8 @@ spring:
 | `INVITATION_EXPIRED` | 410 | Lời mời đã hết hạn, slot đã nhường cho người tiếp theo *(MỚI — Fix #1)* |
 | `INVALID_OPERATION` | 400 | Thao tác không hợp lệ trong trạng thái hiện tại *(MỚI — Fix #1)* |
 | `NO_EXPERIENCE_AT_COURT` | 403 | Bạn cần tham gia ít nhất 1 buổi tại sân này trước khi đánh giá *(MỚI — Fix #5)* |
+| `GENDER_MISMATCH` | 403 | Giới tính của bạn không phù hợp với yêu cầu của buổi chơi này *(MỚI — v2.3)* |
+| `GENDER_ALREADY_SET` | 400 | Giới tính đã được xác thực và không thể thay đổi *(MỚI — v2.3)* |
 | `INTERNAL_ERROR` | 500 | Đã có lỗi xảy ra trong quá trình xử lý hệ thống |
 
 ---
@@ -428,7 +440,47 @@ spring:
 
 ---
 
-## 7. Changelog v2.0 → v2.2 (Lịch sử cập nhật kiến trúc)
+## 8. Kế Hoạch Phân Kỳ Triển Khai Backend (Implementation Sprints Roadmap)
+
+Toàn bộ dịch vụ Backend được chia thành 4 Sprint phát triển tuần tự, đảm bảo thông mạch từ Core CRUD đến các thuật toán mở rộng:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│ SPRINT 1 (Tuần 1 - 2): CORE ENGINE & ROOM/MATCH FLOW A/B               │
+│ - Hoàn thiện Module room/ (MatchRoom, RoomMember, Join/Leave Lock)     │
+│ - Tích hợp target_gender guard & lọc giới tính                         │
+│ - Hoàn thiện Module match/ (SessionMatch, 2-way confirm, auto-closure) │
+│ - Module profile/ cơ bản (gender immutability, age, stats)             │
+│ - Kết nối API thực tế với Frontend, xóa bỏ toàn bộ mock data phòng    │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ SPRINT 2 (Tuần 3 - 4): ELO ENGINE & P2P VIETQR BILL SPLITTER           │
+│ - Triển khai Baseline Elo & Canonical Lock Ordering chống Deadlock    │
+│ - Bộ đệm Redis ZSET H2H Capping (Trần 2 trận/ngày)                     │
+│ - Scheduler: WaitlistExpiryScheduler (15p TTL) & MatchAutoConfirm (24h)│
+│ - P2P VietQR Bill Splitter & Share kèo Zalo                            │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ SPRINT 3 (Tuần 5 - 8): GEOSPATIAL H3 & RETENTION FEED                  │
+│ - Tích hợp Uber H3 Res-8 k-ring search (B-Tree < 1.5ms)                │
+│ - Module post/ (Gravity Time-Decay Feed & UGC Court Review)            │
+│ - Module ranking/ (Top 100 Global, Home Court Leaderboard Caffeine)   │
+│ - Endpoint nhận telemetry từ MediaPipe Wasm Client-side                │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│ SPRINT 4 (Tuần 9 - 14): TOURNAMENT OS & FULL GLICKO-2 ENGINE           │
+│ - Tournament OS: Swiss System (Edmonds' Blossom), Single Elimination   │
+│ - Continuous Glicko-2 & Nightly Spring Batch Inactivity Decay          │
+│ - Kiểm thử tải k6 500 CCU, P99 < 25ms, Chuẩn bị Commercial Launch      │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
 
 ### Bản cập nhật v2.2 (07/11/2026):
 | Hạng mục | Vấn đề thực tế | Giải pháp Kiến trúc v2.2 |
