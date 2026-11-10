@@ -14,6 +14,8 @@ public enum ErrorCode {
     MATCH_ALREADY_CONFIRMED(HttpStatus.BAD_REQUEST, "Trận đấu này đã được xác nhận kết quả trước đó"),
     VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "Dữ liệu đầu vào không hợp lệ"),
     H2H_LIMIT_EXCEEDED(HttpStatus.OK, "Đã vượt trần 2 trận đối đầu/ngày, trận đấu chuyển sang Unrated"),
+    GENDER_MISMATCH(HttpStatus.FORBIDDEN, "Giới tính của bạn không phù hợp với yêu cầu của buổi chơi này"),
+    GENDER_ALREADY_SET(HttpStatus.BAD_REQUEST, "Giới tính đã được xác thực và không thể thay đổi"),
     INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Đã có lỗi xảy ra trong quá trình xử lý hệ thống");
 
     private final HttpStatus httpStatus;
